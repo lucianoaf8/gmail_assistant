@@ -1,0 +1,55 @@
+{
+  "emails": [
+    {
+      "id": "msg_001",
+      "thread_id": "thread_001",
+      "from": "sender@example.com",
+      "to": "user@gmail.com",
+      "subject": "Test Email Subject",
+      "date": "2025-01-15T10:30:00Z",
+      "snippet": "This is a test email for unit testing purposes.",
+      "body_plain": "This is a test email for unit testing purposes.\n\nBest regards,\nSender",
+      "body_html": "<html><body><p>This is a test email for unit testing purposes.</p><p>Best regards,<br>Sender</p></body></html>",
+      "labels": ["INBOX", "UNREAD"],
+      "has_attachments": false
+    },
+    {
+      "id": "msg_002",
+      "thread_id": "thread_002",
+      "from": "newsletter@tech.com",
+      "to": "user@gmail.com",
+      "subject": "Weekly AI Newsletter",
+      "date": "2025-01-14T08:00:00Z",
+      "snippet": "This week in AI: Latest developments in machine learning...",
+      "body_plain": "Weekly AI Newsletter\n\nThis week in AI:\n- GPT updates\n- New research papers\n\nUnsubscribe: https://tech.com/unsub",
+      "body_html": "<html><body><h1>Weekly AI Newsletter</h1><ul><li>GPT updates</li><li>New research papers</li></ul></body></html>",
+      "labels": ["INBOX", "CATEGORY_PROMOTIONS"],
+      "has_attachments": false
+    },
+    {
+      "id": "msg_003",
+      "thread_id": "thread_003",
+      "from": "noreply@service.com",
+      "to": "user@gmail.com",
+      "subject": "Your order has shipped",
+      "date": "2025-01-13T14:22:00Z",
+      "snippet": "Your order #12345 has been shipped and is on its way.",
+      "body_plain": "Order Confirmation\n\nYour order #12345 has been shipped.\nTracking: ABC123XYZ\n\nThank you for your purchase!",
+      "body_html": "<html><body><h2>Order Confirmation</h2><p>Your order #12345 has been shipped.</p><p>Tracking: ABC123XYZ</p></body></html>",
+      "labels": ["INBOX", "CATEGORY_UPDATES"],
+      "has_attachments": true,
+      "attachments": [
+        {
+          "filename": "invoice.pdf",
+          "mime_type": "application/pdf",
+          "size": 45678
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "total_count": 3,
+    "exported_at": "2025-01-15T12:00:00Z",
+    "query": "is:unread"
+  }
+}
