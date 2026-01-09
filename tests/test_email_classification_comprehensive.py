@@ -14,11 +14,8 @@ import os
 from pathlib import Path
 from datetime import datetime, timedelta
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from core.email_classifier import EmailClassifier
-from core.email_database_importer import EmailDatabaseImporter
+from gmail_assistant.core.processing.classifier import EmailClassifier
+from gmail_assistant.core.processing.database import EmailDatabaseImporter
 
 
 class TestEmailClassifierComprehensive:

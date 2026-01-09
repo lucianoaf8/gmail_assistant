@@ -334,7 +334,7 @@ set PYTHONPATH=%PYTHONPATH%;%cd%\src
 ```bash
 # Check actual method signatures:
 python -c "
-from src.core.email_classifier import EmailClassifier
+from gmail_assistant.core.processing.classifier import EmailClassifier
 import inspect
 print(inspect.signature(EmailClassifier.classify_by_sender))
 "

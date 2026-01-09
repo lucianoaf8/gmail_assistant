@@ -3,11 +3,7 @@
 Test base64 content decoding specifically
 """
 
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-
-from src.parsers.robust_eml_converter import RobustEMLConverter
+from gmail_assistant.parsers.robust_eml_converter import RobustEMLConverter
 from pathlib import Path
 import base64
 

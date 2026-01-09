@@ -11,11 +11,8 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from analysis.email_data_converter import EmailDataConverter
-from analysis.daily_email_analysis import EmailAnalysisEngine
+from gmail_assistant.analysis.email_data_converter import EmailDataConverter
+from gmail_assistant.analysis.daily_email_analysis import EmailAnalysisEngine
 
 class TestEmailAnalysisIntegration(unittest.TestCase):
     """Test email analysis integration"""

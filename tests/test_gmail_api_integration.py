@@ -14,11 +14,8 @@ from pathlib import Path
 import sys
 from datetime import datetime, timedelta
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from core.gmail_assistant import GmailFetcher
-from core.gmail_api_client import GmailAPIClient
+from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
 
 
 class TestGmailAPIAuthentication:

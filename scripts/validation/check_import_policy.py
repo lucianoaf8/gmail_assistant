@@ -1,129 +1,177 @@
 #!/usr/bin/env python3
-# scripts/validation/check_import_policy.py
 """
-Phase 1: Check import policy violations.
+Import policy checker - validates imports follow post-migration conventions.
 
-Fixed in v4:
-- Only forbids OLD top-level package names that existed before migration
-- Does not forbid legitimate third-party packages named 'core', etc.
-- Properly checks relative imports
+Checks:
+1. No sys.path manipulation
+2. No imports from old package roots
+3. No invalid relative imports
 """
 from __future__ import annotations
 
 import ast
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
-# OLD top-level package names that existed before migration
-# These should NOT be imported directly anymore
+
+class Violation(NamedTuple):
+    file: Path
+    line: int
+    message: str
+
+
+# Old package roots that should not be imported directly
 OLD_PACKAGE_ROOTS = frozenset({
-    "src",        # Never valid as import
-    "analysis",   # Was src/analysis, now gmail_assistant.analysis
-    "deletion",   # Was src/deletion, now gmail_assistant.deletion
-    "handlers",   # Was src/handlers, now merged into gmail_assistant.cli
-    "parsers",    # Was src/parsers, now gmail_assistant.parsers
-    "plugins",    # Was src/plugins, now gmail_assistant.plugins
-    "tools",      # Was src/tools, now gmail_assistant.tools
-    "utils",      # Was src/utils, now gmail_assistant.utils
-    "cli",        # Was src/cli, now gmail_assistant.cli
-    "core",       # Was src/core, now gmail_assistant.core
+    "src",
+    "analysis",
+    "deletion",
+    "handlers",
+    "parsers",
+    "plugins",
+    "tools",
+    "utils",
+    "core",
+    "cli",
 })
 
-
-def get_import_root(module: str) -> str:
-    """Get the root package name from an import."""
-    return module.split(".")[0]
+# These are never valid as import roots
+INVALID_IMPORT_ROOTS = frozenset({"src"})
 
 
-def check_file(path: Path) -> list[str]:
-    """Check a single file for policy violations."""
-    errors: list[str] = []
-
+def check_file(path: Path) -> list[Violation]:
+    """Check a single Python file for import policy violations."""
+    violations = []
+  
     try:
         content = path.read_text(encoding="utf-8")
+    except Exception as e:
+        return [Violation(path, 0, f"Could not read file: {e}")]
+  
+    # Check for sys.path manipulation
+    if "sys.path.insert" in content or "sys.path.append" in content:
+        for i, line in enumerate(content.splitlines(), 1):
+            if "sys.path.insert" in line or "sys.path.append" in line:
+                # Skip comments
+                stripped = line.lstrip()
+                if not stripped.startswith("#"):
+                    violations.append(Violation(
+                        path, i,
+                        "sys.path manipulation is forbidden"
+                    ))
+  
+    # Parse AST for import analysis
+    try:
         tree = ast.parse(content, filename=str(path))
     except SyntaxError as e:
-        return [f"{path}:{e.lineno}: SyntaxError: {e.msg}"]
-    except UnicodeDecodeError as e:
-        return [f"{path}: UnicodeDecodeError: {e}"]
-
-    # Check for sys.path manipulation
-    for i, line in enumerate(content.splitlines(), 1):
-        if "sys.path.insert" in line or "sys.path.append" in line:
-            # Skip if it's a comment
-            stripped = line.lstrip()
-            if not stripped.startswith("#"):
-                errors.append(f"{path}:{i}: sys.path manipulation forbidden")
-
-    # Check imports
+        return violations + [Violation(path, e.lineno or 0, f"Syntax error: {e}")]
+  
     for node in ast.walk(tree):
+        # Check Import statements
         if isinstance(node, ast.Import):
             for alias in node.names:
-                root = get_import_root(alias.name)
-                if root in OLD_PACKAGE_ROOTS:
-                    errors.append(
-                        f"{path}:{node.lineno}: Old import: 'import {alias.name}' "
-                        f"- use 'from gmail_assistant.{alias.name} import ...' instead"
-                    )
-
+                root = alias.name.split(".")[0]
+                if root in INVALID_IMPORT_ROOTS:
+                    violations.append(Violation(
+                        path, node.lineno,
+                        f"Invalid import root '{root}' - 'src' is never importable"
+                    ))
+                elif root in OLD_PACKAGE_ROOTS:
+                    violations.append(Violation(
+                        path, node.lineno,
+                        f"Old import '{alias.name}' - use 'gmail_assistant.{alias.name}'"
+                    ))
+      
+        # Check ImportFrom statements
         elif isinstance(node, ast.ImportFrom):
-            if node.module is None:
-                continue  # from . import x - relative import, check separately
-
-            root = get_import_root(node.module)
-            if root in OLD_PACKAGE_ROOTS:
-                errors.append(
-                    f"{path}:{node.lineno}: Old import: 'from {node.module}' "
-                    f"- use 'from gmail_assistant.{node.module} import ...' instead"
-                )
-
-            # Also catch 'from src.x import y'
-            if node.module.startswith("src."):
-                errors.append(
-                    f"{path}:{node.lineno}: Invalid import: 'from {node.module}' "
-                    f"- 'src' is not a package"
-                )
-
-    return errors
+            if node.module:
+                root = node.module.split(".")[0]
+                if root in INVALID_IMPORT_ROOTS:
+                    violations.append(Violation(
+                        path, node.lineno,
+                        f"Invalid import root '{root}' - 'src' is never importable"
+                    ))
+                elif root in OLD_PACKAGE_ROOTS:
+                    violations.append(Violation(
+                        path, node.lineno,
+                        f"Old import 'from {node.module}' - use 'from gmail_assistant.{node.module}'"
+                    ))
+          
+            # Check relative imports
+            if node.level > 0:
+                # Relative imports are only allowed within src/gmail_assistant
+                try:
+                    rel = path.relative_to(Path.cwd() / "src" / "gmail_assistant")
+                    # Check that relative import doesn't escape package
+                    depth = len(rel.parts) - 1  # -1 for the file itself
+                    if node.level > depth:
+                        violations.append(Violation(
+                            path, node.lineno,
+                            f"Relative import level {node.level} escapes package boundary"
+                        ))
+                except ValueError:
+                    # File not in src/gmail_assistant - relative imports not allowed
+                    violations.append(Violation(
+                        path, node.lineno,
+                        "Relative imports only allowed within src/gmail_assistant/"
+                    ))
+  
+    return violations
 
 
 def main() -> int:
-    # Check both src and tests directories
-    check_dirs = []
-
-    src_dir = Path("src/gmail_assistant")
-    if src_dir.exists():
-        check_dirs.append(src_dir)
-    else:
-        # Pre-migration layout
-        src_dir = Path("src")
-        if src_dir.exists():
-            check_dirs.append(src_dir)
-
-    tests_dir = Path("tests")
-    if tests_dir.exists():
-        check_dirs.append(tests_dir)
-
-    if not check_dirs:
-        print("Warning: No src/ or tests/ directory found")
-        return 0
-
-    all_errors: list[str] = []
-
+    """Run import policy checks on all Python files."""
+    repo_root = Path.cwd()
+  
+    # Directories to check
+    check_dirs = [
+        repo_root / "src",
+        repo_root / "tests",
+        repo_root / "scripts",
+    ]
+  
+    # Exclusions
+    exclude_patterns = {
+        "__pycache__",
+        ".venv",
+        "venv",
+        ".git",
+        "dist",
+        "build",
+    }
+  
+    all_violations: list[Violation] = []
+    files_checked = 0
+  
     for check_dir in check_dirs:
+        if not check_dir.exists():
+            continue
+      
         for py_file in check_dir.rglob("*.py"):
-            if "__pycache__" in str(py_file):
+            # Skip excluded directories
+            if any(excl in py_file.parts for excl in exclude_patterns):
                 continue
-            all_errors.extend(check_file(py_file))
-
-    if all_errors:
-        print(f"Import policy check FAILED ({len(all_errors)} violations):")
-        for err in sorted(set(all_errors)):
-            print(f"  {err}")
+          
+            violations = check_file(py_file)
+            all_violations.extend(violations)
+            files_checked += 1
+  
+    # Report results
+    print(f"Checked {files_checked} files")
+    print()
+  
+    if all_violations:
+        print(f"Found {len(all_violations)} violations:")
+        print()
+        for v in all_violations:
+            rel_path = v.file.relative_to(repo_root) if v.file.is_relative_to(repo_root) else v.file
+            print(f"  {rel_path}:{v.line}: {v.message}")
+        print()
+        print("FAILED: Import policy violations found")
         return 1
-
-    print(f"Import policy check PASSED")
-    return 0
+    else:
+        print("PASSED: No import policy violations")
+        return 0
 
 
 if __name__ == "__main__":

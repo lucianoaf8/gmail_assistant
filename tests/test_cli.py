@@ -10,11 +10,8 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 from argparse import Namespace
 
-# Add src to path for direct import
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.cli.main import create_parser, main
-from src.cli import fetch, delete, analyze, config, auth
+from gmail_assistant.cli.main import create_parser, main
+from gmail_assistant.cli import fetch, delete, analyze, config, auth
 
 
 class TestArgumentParser:
@@ -299,7 +296,7 @@ class TestPresetQueries:
 
     def test_preset_queries_defined(self):
         """Test all preset queries are defined."""
-        from src.cli.delete import PRESET_QUERIES
+        from gmail_assistant.cli.delete import PRESET_QUERIES
 
         assert 'old' in PRESET_QUERIES
         assert 'large' in PRESET_QUERIES
@@ -308,7 +305,7 @@ class TestPresetQueries:
 
     def test_preset_queries_are_valid(self):
         """Test preset queries are valid Gmail queries."""
-        from src.cli.delete import PRESET_QUERIES
+        from gmail_assistant.cli.delete import PRESET_QUERIES
 
         for name, query in PRESET_QUERIES.items():
             assert isinstance(query, str)

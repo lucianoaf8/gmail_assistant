@@ -15,13 +15,10 @@ import sys
 import os
 from datetime import datetime
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from core.gmail_assistant import GmailFetcher
+from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 
 try:
-    from parsers.advanced_email_parser import EmailContentParser
+    from gmail_assistant.parsers.advanced_email_parser import EmailContentParser
 except ImportError:
     EmailContentParser = None
 

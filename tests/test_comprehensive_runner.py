@@ -250,8 +250,7 @@ class TestValidationRunner:
         
         for module in app_modules:
             try:
-                # Try to import from src directory
-                sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+                # Try to import the module
                 importlib.import_module(module)
                 dependencies_check[module] = "Available"
             except ImportError as e:

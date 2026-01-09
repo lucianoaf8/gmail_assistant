@@ -9,11 +9,7 @@ import sys
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-# Add src to path for direct import
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# Import directly from the module to avoid package __init__ issues
-from src.core.protocols import (
+from gmail_assistant.core.protocols import (
     # Data Transfer Objects
     EmailMetadata,
     FetchResult,

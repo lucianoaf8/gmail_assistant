@@ -12,8 +12,6 @@ import sys
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
 class TestEmailClassifierImproved:
@@ -32,7 +30,7 @@ class TestEmailClassifierImproved:
     def test_classifier_initialization_complete(self):
         """Test complete EmailClassifier initialization."""
         try:
-            from core.email_classifier import EmailClassifier
+            from gmail_assistant.core.processing.classifier import EmailClassifier
             
             classifier = EmailClassifier(str(self.test_db))
             
@@ -60,7 +58,7 @@ class TestEmailClassifierImproved:
     def test_database_operations_mocked(self, mock_connect):
         """Test database operations with mocked connections."""
         try:
-            from core.email_classifier import EmailClassifier
+            from gmail_assistant.core.processing.classifier import EmailClassifier
             
             # Mock database connection
             mock_conn = MagicMock()
@@ -80,7 +78,7 @@ class TestEmailClassifierImproved:
     def test_classification_patterns_structure(self):
         """Test classification patterns are properly structured."""
         try:
-            from core.email_classifier import EmailClassifier
+            from gmail_assistant.core.processing.classifier import EmailClassifier
             
             classifier = EmailClassifier(str(self.test_db))
             
@@ -115,7 +113,7 @@ class TestAdvancedEmailParserImproved:
     def test_parser_initialization_comprehensive(self):
         """Test comprehensive AdvancedEmailParser initialization."""
         try:
-            from parsers.advanced_email_parser import AdvancedEmailParser
+            from gmail_assistant.parsers.advanced_email_parser import AdvancedEmailParser
             
             parser = AdvancedEmailParser()
             
@@ -135,7 +133,7 @@ class TestAdvancedEmailParserImproved:
     def test_parser_config_loading(self):
         """Test parser configuration loading."""
         try:
-            from parsers.advanced_email_parser import AdvancedEmailParser
+            from gmail_assistant.parsers.advanced_email_parser import AdvancedEmailParser
             
             # Create test config file
             test_config = {
@@ -164,7 +162,7 @@ class TestAdvancedEmailParserImproved:
     def test_html_processing_basic(self):
         """Test basic HTML processing capability."""
         try:
-            from parsers.advanced_email_parser import AdvancedEmailParser
+            from gmail_assistant.parsers.advanced_email_parser import AdvancedEmailParser
             
             parser = AdvancedEmailParser()
             
@@ -196,7 +194,7 @@ class TestGmailAPIClientImproved:
     def test_gmail_api_client_initialization(self):
         """Test GmailAPIClient initialization."""
         try:
-            from core.gmail_api_client import GmailAPIClient
+            from gmail_assistant.core.gmail_api_client import GmailAPIClient
             
             # Test initialization (should not require credentials for basic setup)
             try:
@@ -213,7 +211,7 @@ class TestGmailAPIClientImproved:
     def test_gmail_api_client_methods(self):
         """Test GmailAPIClient available methods."""
         try:
-            from core.gmail_api_client import GmailAPIClient
+            from gmail_assistant.core.gmail_api_client import GmailAPIClient
             
             # Get class methods without instantiating (to avoid credential requirements)
             client_methods = [method for method in dir(GmailAPIClient) if not method.startswith('_')]
@@ -246,7 +244,7 @@ class TestDataConverterImproved:
     def test_data_converter_initialization(self):
         """Test EmailDataConverter initialization."""
         try:
-            from analysis.email_data_converter import EmailDataConverter
+            from gmail_assistant.analysis.email_data_converter import EmailDataConverter
             
             converter = EmailDataConverter()
             assert converter is not None
@@ -263,7 +261,7 @@ class TestDataConverterImproved:
     def test_data_converter_methods(self):
         """Test EmailDataConverter available methods."""
         try:
-            from analysis.email_data_converter import EmailDataConverter
+            from gmail_assistant.analysis.email_data_converter import EmailDataConverter
             
             converter = EmailDataConverter()
             converter_methods = [method for method in dir(converter) if not method.startswith('_')]

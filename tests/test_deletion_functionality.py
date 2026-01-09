@@ -12,12 +12,9 @@ from pathlib import Path
 import tempfile
 import json
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 # Import deletion modules
-from deletion.deleter import GmailDeleter
-from deletion.ui import clean_unread_inbox
+from gmail_assistant.deletion.deleter import GmailDeleter
+from gmail_assistant.deletion.ui import clean_unread_inbox
 
 
 class TestGmailDeleter(unittest.TestCase):

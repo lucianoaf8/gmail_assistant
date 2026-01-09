@@ -14,10 +14,7 @@ from pathlib import Path
 import tempfile
 import os
 
-# Add the src directory to the path
-sys.path.append(str(Path(__file__).parent.parent.parent / 'src'))
-
-from analysis.daily_email_analyzer import (
+from gmail_assistant.analysis.daily_email_analyzer import (
     DailyEmailAnalyzer,
     DataQualityAssessment,
     HierarchicalClassifier,

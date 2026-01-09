@@ -9,10 +9,7 @@ import sys
 from pathlib import Path
 from typing import Protocol
 
-# Add src to path for direct import
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.core.container import (
+from gmail_assistant.core.container import (
     ServiceContainer,
     ServiceLifetime,
     ServiceDescriptor,

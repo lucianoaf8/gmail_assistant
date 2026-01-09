@@ -12,10 +12,7 @@ from pathlib import Path
 import sys
 import os
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from core.gmail_assistant import GmailFetcher
+from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 
 
 class TestGmailFetcherBasics:

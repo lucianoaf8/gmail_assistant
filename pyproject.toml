@@ -3,7 +3,7 @@ requires = ["hatchling>=1.21.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gmail-fetcher"
+name = "gmail-assistant"
 version = "2.0.0"
 description = "Gmail backup, analysis, and management suite"
 readme = "README.md"
@@ -64,13 +64,13 @@ dev = [
 ]
 
 [project.scripts]
-gmail-fetcher = "gmail_assistant.cli.main:main"
+gmail-assistant = "gmail_assistant.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/user/gmail-fetcher"
-Documentation = "https://github.com/user/gmail-fetcher#readme"
-Repository = "https://github.com/user/gmail-fetcher"
-Changelog = "https://github.com/user/gmail-fetcher/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/user/gmail-assistant"
+Documentation = "https://github.com/user/gmail-assistant#readme"
+Repository = "https://github.com/user/gmail-assistant"
+Changelog = "https://github.com/user/gmail-assistant/blob/main/CHANGELOG.md"
 
 # Fixed: Correct hatchling src-layout configuration
 [tool.hatch.build.targets.wheel]

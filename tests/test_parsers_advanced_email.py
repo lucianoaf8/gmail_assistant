@@ -13,11 +13,8 @@ import sys
 import email
 import os
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 try:
-    from parsers.advanced_email_parser import EmailContentParser
+    from gmail_assistant.parsers.advanced_email_parser import EmailContentParser
 except ImportError:
     EmailContentParser = None
 

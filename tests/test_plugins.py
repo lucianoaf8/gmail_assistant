@@ -11,10 +11,7 @@ from typing import Dict, Any, List
 import tempfile
 import json
 
-# Add src to path for direct import
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.plugins.base import (
+from gmail_assistant.plugins.base import (
     OutputPlugin,
     OrganizationPlugin,
     FilterPlugin,
@@ -22,17 +19,17 @@ from src.plugins.base import (
     PluginError,
     PluginNotFoundError,
 )
-from src.plugins.registry import (
+from gmail_assistant.plugins.registry import (
     PluginRegistry,
     get_default_registry,
     reset_default_registry,
 )
-from src.plugins.output.eml import EmlOutputPlugin
-from src.plugins.output.markdown import MarkdownOutputPlugin
-from src.plugins.output.json_output import JsonOutputPlugin
-from src.plugins.organization.by_date import ByDatePlugin
-from src.plugins.organization.by_sender import BySenderPlugin
-from src.plugins.organization.none import NoneOrganizationPlugin
+from gmail_assistant.plugins.output.eml import EmlOutputPlugin
+from gmail_assistant.plugins.output.markdown import MarkdownOutputPlugin
+from gmail_assistant.plugins.output.json_output import JsonOutputPlugin
+from gmail_assistant.plugins.organization.by_date import ByDatePlugin
+from gmail_assistant.plugins.organization.by_sender import BySenderPlugin
+from gmail_assistant.plugins.organization.none import NoneOrganizationPlugin
 
 
 class TestPluginRegistry:
