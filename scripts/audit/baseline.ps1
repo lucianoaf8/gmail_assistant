@@ -2,7 +2,13 @@
 <#
 .SYNOPSIS
     Captures baseline measurements and writes JSON atomically.
-    Fixed: exclusion logic uses segment-based matching.
+.DESCRIPTION
+    Measures repository structure metrics against defined targets.
+    Outputs JSON file with schema version 1.4 (corrected metric names).
+.PARAMETER OutputDir
+    Directory for baseline JSON output. Default: docs/audit
+.EXAMPLE
+    .\scripts\audit\baseline.ps1 -OutputDir docs/audit
 #>
 [CmdletBinding()]
 param(
@@ -30,27 +36,23 @@ if (-not (Test-Path $OutputDir)) {
 $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 $fileTimestamp = (Get-Date).ToString("yyyyMMdd-HHmm")
 $commitSha = & git rev-parse HEAD 2>$null
-if (-not $commitSha) {
-    $commitSha = "no-commits"
-}
+if (-not $commitSha) { $commitSha = "no-commits" }
 
-# Excluded directory names (segment-based, not path-based)
-$excludeNames = @('.git', '__pycache__', 'node_modules', 'backups', '.venv', 'venv', '.pytest_cache', '.mypy_cache', '.ruff_cache', 'htmlcov', 'dist', 'build', '*.egg-info')
+# Excluded directory names (segment-based)
+$excludeNames = @(
+    '.git', '__pycache__', 'node_modules', 'backups', '.venv', 'venv',
+    '.pytest_cache', '.mypy_cache', '.ruff_cache', 'htmlcov', 'dist', 'build', '*.egg-info'
+)
 
 function Test-ShouldExclude {
     param([string]$FullPath)
-
-    # Get path segments
     $relativePath = $FullPath.Substring($repoRoot.Length).TrimStart('\', '/')
-    $segments = $relativePath -split '[\\/]'
-
+    $segments = @($relativePath -split '[\/]')
     foreach ($segment in $segments) {
         foreach ($exclude in $excludeNames) {
             if ($exclude.Contains('*')) {
-                # Wildcard match
                 if ($segment -like $exclude) { return $true }
             } else {
-                # Exact match
                 if ($segment -eq $exclude) { return $true }
             }
         }
@@ -60,12 +62,11 @@ function Test-ShouldExclude {
 
 function Get-MaxFolderDepth {
     $maxDepth = 0
-
     Get-ChildItem -Path $repoRoot -Directory -Recurse -Force -ErrorAction SilentlyContinue |
         Where-Object { -not (Test-ShouldExclude $_.FullName) } |
         ForEach-Object {
             $relativePath = $_.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
-            $segments = @(($relativePath -split '[\\/]') | Where-Object { $_ -ne '' })
+            $segments = @(($relativePath -split '[\/]') | Where-Object { $_ -ne '' })
             $depth = $segments.Count
             if ($depth -gt $maxDepth) { $maxDepth = $depth }
         }
@@ -86,79 +87,95 @@ function Get-SysPathInsertCount {
     return $count
 }
 
-function Get-ConfigLocationCount {
-    $locations = @(
-        "config/app",
-        "config/analysis",
-        "src/analysis"
+# Checks for expected post-migration package structure
+function Get-PostMigrationPackageModuleCount {
+    $expectedModules = @(
+        "src/gmail_assistant/core",
+        "src/gmail_assistant/cli",
+        "src/gmail_assistant/analysis"
     )
-    return ($locations | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
+    return @($expectedModules | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
+}
+
+# Legacy structure modules
+function Get-LegacyPackageModuleCount {
+    $legacy = @("src/core", "src/cli", "src/analysis", "src/handlers")
+    return @($legacy | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
 }
 
 function Get-PythonFileCount {
     $srcPath = Join-Path $repoRoot "src"
     if (-not (Test-Path $srcPath)) { return 0 }
-    return (Get-ChildItem -Path $srcPath -Filter "*.py" -Recurse -File |
+    return @(Get-ChildItem -Path $srcPath -Filter "*.py" -Recurse -File |
         Where-Object { -not (Test-ShouldExclude $_.FullName) }).Count
 }
 
 function Get-TestFileCount {
     $testsPath = Join-Path $repoRoot "tests"
     if (-not (Test-Path $testsPath)) { return 0 }
-    return (Get-ChildItem -Path $testsPath -Filter "test_*.py" -Recurse -File |
+    return @(Get-ChildItem -Path $testsPath -Filter "test_*.py" -Recurse -File |
         Where-Object { -not (Test-ShouldExclude $_.FullName) }).Count
 }
 
-function Get-EntryPointCount {
-    $entryPoints = @("main.py", "src/cli/main.py")
-    return ($entryPoints | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
+function Get-PostMigrationEntryPointCount {
+    $entryPoints = @(
+        "src/gmail_assistant/cli/main.py",
+        "src/gmail_assistant/__main__.py"
+    )
+    return @($entryPoints | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
+}
+
+function Get-LegacyEntryPointCount {
+    $legacy = @("main.py", "src/cli/main.py")
+    return @($legacy | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
 }
 
 function Get-HiddenDocsCount {
     $claudeDocsPath = Join-Path $repoRoot "docs/claude-docs"
     if (-not (Test-Path $claudeDocsPath)) { return 0 }
-    return (Get-ChildItem -Path $claudeDocsPath -Filter "*.md" -File).Count
+    return @(Get-ChildItem -Path $claudeDocsPath -Filter "*.md" -File).Count
 }
 
 # Collect measurements
 Write-Host "Collecting measurements..." -ForegroundColor Cyan
 
 $measurements = [ordered]@{
-    max_folder_depth = Get-MaxFolderDepth
-    sys_path_inserts = Get-SysPathInsertCount
-    config_locations = Get-ConfigLocationCount
-    python_source_files = Get-PythonFileCount
-    test_files = Get-TestFileCount
-    entry_points = Get-EntryPointCount
-    hidden_docs = Get-HiddenDocsCount
+    max_folder_depth                  = Get-MaxFolderDepth
+    sys_path_inserts                  = Get-SysPathInsertCount
+    post_migration_package_modules    = Get-PostMigrationPackageModuleCount
+    legacy_package_modules            = Get-LegacyPackageModuleCount
+    python_source_files               = Get-PythonFileCount
+    test_files                        = Get-TestFileCount
+    post_migration_entry_points       = Get-PostMigrationEntryPointCount
+    legacy_entry_points               = Get-LegacyEntryPointCount
+    hidden_docs                       = Get-HiddenDocsCount
 }
 
-# Build JSON object
 $baseline = [ordered]@{
-    schema_version = "1.0"
-    timestamp = $timestamp
-    commit_sha = $commitSha
-    repo_root = $repoRoot
-    measurements = $measurements
+    schema_version                    = "1.4"
+    depth_convention                  = "segments_under_repo_root"
+    timestamp                         = $timestamp
+    commit_sha                        = $commitSha
+    repo_root                         = $repoRoot
+    measurements                      = $measurements
     targets = [ordered]@{
-        max_folder_depth = 3
-        sys_path_inserts = 0
-        config_locations = 1
-        entry_points = 1
-        hidden_docs = 0
+        max_folder_depth              = 3
+        sys_path_inserts              = 0
+        post_migration_package_modules = 3
+        legacy_package_modules        = 0
+        post_migration_entry_points   = 2
+        legacy_entry_points           = 0
+        hidden_docs                   = 0
     }
 }
 
-# Write atomically (write to temp, then move)
+# Write atomically
 $outputFile = Join-Path $OutputDir "${fileTimestamp}_baseline.json"
 $tempFile = [System.IO.Path]::GetTempFileName()
 
 try {
     $baseline | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8 -NoNewline
-
-    # Validate JSON before moving
     $null = Get-Content $tempFile | ConvertFrom-Json
-
     Move-Item -Path $tempFile -Destination $outputFile -Force
     Write-Host "Baseline written to: $outputFile" -ForegroundColor Green
 }
@@ -170,15 +187,29 @@ catch {
 # Display results
 Write-Host ""
 Write-Host "Measurements vs Targets:" -ForegroundColor Cyan
+$allPass = $true
 $measurements.GetEnumerator() | ForEach-Object {
     $target = $baseline.targets[$_.Key]
     if ($null -ne $target) {
-        $status = if ($_.Value -le $target) { "[PASS]" } else { "[FAIL]" }
-        $color = if ($_.Value -le $target) { "Green" } else { "Red" }
+        $pass = $_.Value -le $target
+        # For "post_migration_*" metrics, we want >= target
+        if ($_.Key -like "post_migration_*") {
+            $pass = $_.Value -ge $target
+        }
+        $status = if ($pass) { "[PASS]" } else { "[FAIL]" }
+        $color = if ($pass) { "Green" } else { "Red" }
+        if (-not $pass) { $allPass = $false }
         Write-Host "  $status $($_.Key): $($_.Value) (target: $target)" -ForegroundColor $color
     } else {
         Write-Host "  [INFO] $($_.Key): $($_.Value)" -ForegroundColor Gray
     }
 }
 
-exit 0
+Write-Host ""
+if ($allPass) {
+    Write-Host "All targets met." -ForegroundColor Green
+    exit 0
+} else {
+    Write-Host "Some targets not met." -ForegroundColor Yellow
+    exit 0  # Non-blocking for pre-migration runs
+}

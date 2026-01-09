@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.4",
+  "depth_convention": "segments_under_repo_root",
+  "timestamp": "2026-01-09T11:47:47Z",
+  "commit_sha": "8a9785f2a52a6b71451535f671d5f1c34e1bab2b",
+  "repo_root": "C:\\_Lucx\\Projects\\gmail_assistant",
+  "measurements": {
+    "max_folder_depth": 1,
+    "sys_path_inserts": 52,
+    "post_migration_package_modules": 0,
+    "legacy_package_modules": 4,
+    "python_source_files": 79,
+    "test_files": 24,
+    "post_migration_entry_points": 0,
+    "legacy_entry_points": 2,
+    "hidden_docs": 41
+  },
+  "targets": {
+    "max_folder_depth": 3,
+    "sys_path_inserts": 0,
+    "post_migration_package_modules": 3,
+    "legacy_package_modules": 0,
+    "post_migration_entry_points": 2,
+    "legacy_entry_points": 0,
+    "hidden_docs": 0
+  }
+}
