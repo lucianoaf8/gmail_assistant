@@ -128,14 +128,7 @@ omit = [
     "src/gmail_assistant/deletion/*",
     "src/gmail_assistant/analysis/*",
     "src/gmail_assistant/parsers/*",
-    # Legacy CLI modules (being replaced by Click commands)
-    "src/gmail_assistant/cli/analyze.py",
-    "src/gmail_assistant/cli/auth.py",
-    "src/gmail_assistant/cli/config.py",
-    "src/gmail_assistant/cli/delete.py",
-    "src/gmail_assistant/cli/fetch.py",
     # CLI stub commands (v2.1.0 implementation)
-    "src/gmail_assistant/cli/commands/*_handler.py",
     "src/gmail_assistant/cli/commands/analyze.py",
     "src/gmail_assistant/cli/commands/auth.py",
     "src/gmail_assistant/cli/commands/config_cmd.py",
