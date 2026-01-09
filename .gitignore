@@ -83,3 +83,41 @@ Desktop.ini
 # Logs
 # ===================
 *.log
+
+# ===================
+# Testing & Coverage
+# ===================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ===================
+# Type Checking & Linting
+# ===================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# ===================
+# Additional Build Artifacts
+# ===================
+*.whl
+*.tar.gz
+develop-eggs/
+downloads/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+.installed.cfg
+
+# ===================
+# Additional Credentials Patterns
+# ===================
+*.credentials
+*.token
