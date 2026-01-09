@@ -117,35 +117,36 @@ branch = true
 omit = [
     "*/__pycache__/*",
     "*/tests/*",
-    # Legacy modules - to be tested incrementally in future phases
+    # Entry point (trivial)
     "src/gmail_assistant/__main__.py",
-    "src/gmail_assistant/analysis/*",
-    "src/gmail_assistant/core/ai/*",
-    "src/gmail_assistant/core/auth/*",
+    # Complex conditional imports
+    "src/gmail_assistant/core/__init__.py",
+    # Modules requiring Gmail API (tested in integration)
     "src/gmail_assistant/core/fetch/*",
     "src/gmail_assistant/core/processing/*",
-    "src/gmail_assistant/core/container.py",
-    "src/gmail_assistant/core/protocols.py",
-    "src/gmail_assistant/core/constants.py",
+    "src/gmail_assistant/core/ai/*",
     "src/gmail_assistant/deletion/*",
+    "src/gmail_assistant/analysis/*",
     "src/gmail_assistant/parsers/*",
-    "src/gmail_assistant/utils/*",
-    # Legacy CLI modules (being replaced incrementally)
+    # Legacy CLI modules (being replaced by Click commands)
     "src/gmail_assistant/cli/analyze.py",
     "src/gmail_assistant/cli/auth.py",
     "src/gmail_assistant/cli/config.py",
     "src/gmail_assistant/cli/delete.py",
     "src/gmail_assistant/cli/fetch.py",
+    # CLI stub commands (v2.1.0 implementation)
     "src/gmail_assistant/cli/commands/*_handler.py",
-    # Stub command files (to be implemented)
     "src/gmail_assistant/cli/commands/analyze.py",
     "src/gmail_assistant/cli/commands/auth.py",
     "src/gmail_assistant/cli/commands/config_cmd.py",
     "src/gmail_assistant/cli/commands/delete.py",
     "src/gmail_assistant/cli/commands/fetch.py",
     "src/gmail_assistant/cli/commands/__init__.py",
-    # Core __init__ has complex conditional imports
-    "src/gmail_assistant/core/__init__.py",
+    # Large legacy processors (v2.1.0 refactoring)
+    "src/gmail_assistant/utils/audit_logger.py",
+    "src/gmail_assistant/utils/comprehensive_email_processor.py",
+    "src/gmail_assistant/utils/gmail_organizer.py",
+    "src/gmail_assistant/utils/ultimate_email_processor.py",
 ]
 
 [tool.coverage.report]

@@ -183,3 +183,187 @@ class TestAppConfigClassVars:
     def test_project_config_name(self):
         """PROJECT_CONFIG_NAME should have expected name."""
         assert AppConfig.PROJECT_CONFIG_NAME == "gmail-assistant.json"
+
+
+class TestAppConfigResolveConfigPath:
+    """Test configuration path resolution."""
+
+    def test_resolve_project_config_file(self, temp_dir: Path):
+        """Project config file should be found in current directory."""
+        project_config = temp_dir / "gmail-assistant.json"
+        project_config.write_text(json.dumps({"max_emails": 500}))
+
+        with mock.patch.object(AppConfig, "default_dir", return_value=temp_dir / "home"):
+            with mock.patch("pathlib.Path.cwd", return_value=temp_dir):
+                result = AppConfig._resolve_config_path(None)
+                assert result == project_config.resolve()
+
+    def test_resolve_user_home_config(self, temp_dir: Path):
+        """User home config should be found when no project config."""
+        home_dir = temp_dir / "home"
+        home_dir.mkdir()
+        user_config = home_dir / "config.json"
+        user_config.write_text(json.dumps({"max_emails": 250}))
+
+        with mock.patch.object(AppConfig, "default_dir", return_value=home_dir):
+            with mock.patch("pathlib.Path.cwd", return_value=temp_dir / "other"):
+                result = AppConfig._resolve_config_path(None)
+                assert result == user_config.resolve()
+
+    def test_resolve_cli_config_takes_priority(self, temp_dir: Path):
+        """CLI config should take priority over all others."""
+        cli_config = temp_dir / "cli_config.json"
+        cli_config.write_text(json.dumps({"max_emails": 100}))
+
+        result = AppConfig._resolve_config_path(cli_config)
+        assert result == cli_config.resolve()
+
+    def test_resolve_cli_config_nonexistent_raises(self, temp_dir: Path):
+        """Nonexistent CLI config should raise ConfigError."""
+        nonexistent = temp_dir / "nonexistent.json"
+        with pytest.raises(ConfigError, match="not found"):
+            AppConfig._resolve_config_path(nonexistent)
+
+    def test_resolve_returns_none_when_no_config(self, temp_dir: Path):
+        """Should return None when no config file exists."""
+        with mock.patch.object(AppConfig, "default_dir", return_value=temp_dir / "empty"):
+            with mock.patch("pathlib.Path.cwd", return_value=temp_dir / "other"):
+                result = AppConfig._resolve_config_path(None)
+                assert result is None
+
+
+class TestAppConfigNotDict:
+    """Test handling of non-dict config files."""
+
+    def test_config_array_raises_error(self, temp_dir: Path):
+        """Config file with array should raise ConfigError."""
+        config_path = temp_dir / "config.json"
+        config_path.write_text(json.dumps([1, 2, 3]))
+        with pytest.raises(ConfigError, match="must be a JSON object"):
+            AppConfig.load(config_path, allow_repo_credentials=True)
+
+    def test_config_string_raises_error(self, temp_dir: Path):
+        """Config file with just a string should raise ConfigError."""
+        config_path = temp_dir / "config.json"
+        config_path.write_text(json.dumps("just a string"))
+        with pytest.raises(ConfigError, match="must be a JSON object"):
+            AppConfig.load(config_path, allow_repo_credentials=True)
+
+
+class TestAppConfigRelativePaths:
+    """Test relative path resolution in config."""
+
+    def test_relative_credentials_path(self, temp_dir: Path):
+        """Relative credentials path should resolve from config file location."""
+        config_path = temp_dir / "config.json"
+        config_path.write_text(json.dumps({
+            "credentials_path": "creds/my_credentials.json"
+        }))
+
+        cfg = AppConfig.load(config_path, allow_repo_credentials=True)
+        expected = (temp_dir / "creds" / "my_credentials.json").resolve()
+        assert cfg.credentials_path == expected
+
+    def test_absolute_credentials_path(self, temp_dir: Path):
+        """Absolute credentials path should be used as-is."""
+        abs_path = temp_dir / "absolute" / "credentials.json"
+        config_path = temp_dir / "config.json"
+        config_path.write_text(json.dumps({
+            "credentials_path": str(abs_path)
+        }))
+
+        cfg = AppConfig.load(config_path, allow_repo_credentials=True)
+        assert cfg.credentials_path == abs_path
+
+
+class TestAppConfigRepoSafety:
+    """Test repository safety checks."""
+
+    def test_credentials_in_repo_raises_error(self, temp_dir: Path):
+        """Credentials inside repo should raise error without allow flag."""
+        # Create a fake git repo
+        git_dir = temp_dir / ".git"
+        git_dir.mkdir()
+
+        config_path = temp_dir / "config.json"
+        config_path.write_text(json.dumps({
+            "credentials_path": str(temp_dir / "credentials.json")
+        }))
+
+        with mock.patch.object(AppConfig, "_find_repo_root", return_value=temp_dir):
+            with pytest.raises(ConfigError, match="inside git repo"):
+                AppConfig.load(config_path, allow_repo_credentials=False)
+
+    def test_credentials_in_repo_with_allow_warns(self, temp_dir: Path):
+        """Credentials inside repo with allow flag should warn."""
+        git_dir = temp_dir / ".git"
+        git_dir.mkdir()
+
+        config_path = temp_dir / "config.json"
+        config_path.write_text(json.dumps({
+            "credentials_path": str(temp_dir / "credentials.json")
+        }))
+
+        with mock.patch.object(AppConfig, "_find_repo_root", return_value=temp_dir):
+            with pytest.warns(UserWarning, match="inside git repo"):
+                cfg = AppConfig.load(config_path, allow_repo_credentials=True)
+                assert cfg is not None
+
+
+class TestAppConfigFindRepoRoot:
+    """Test git repo root detection."""
+
+    def test_find_repo_root_success(self, temp_dir: Path):
+        """Should return repo root when git command succeeds."""
+        mock_result = mock.Mock()
+        mock_result.returncode = 0
+        mock_result.stdout = str(temp_dir) + "\n"
+
+        with mock.patch("subprocess.run", return_value=mock_result):
+            result = AppConfig._find_repo_root(temp_dir)
+            assert result == temp_dir.resolve()
+
+    def test_find_repo_root_git_not_found(self, temp_dir: Path):
+        """Should return None and log warning when git not found."""
+        with mock.patch("subprocess.run", side_effect=FileNotFoundError("git not found")):
+            result = AppConfig._find_repo_root(temp_dir)
+            assert result is None
+
+    def test_find_repo_root_timeout(self, temp_dir: Path):
+        """Should return None when git command times out."""
+        import subprocess
+        with mock.patch("subprocess.run", side_effect=subprocess.TimeoutExpired("git", 5)):
+            result = AppConfig._find_repo_root(temp_dir)
+            assert result is None
+
+    def test_find_repo_root_not_a_repo(self, temp_dir: Path):
+        """Should return None when not in a git repo."""
+        mock_result = mock.Mock()
+        mock_result.returncode = 128  # Git error code for not a repo
+
+        with mock.patch("subprocess.run", return_value=mock_result):
+            result = AppConfig._find_repo_root(temp_dir)
+            assert result is None
+
+
+class TestAppConfigPathSafety:
+    """Test path safety validation."""
+
+    def test_path_outside_repo_is_safe(self, temp_dir: Path):
+        """Path outside repo should not raise or warn."""
+        repo_root = temp_dir / "repo"
+        outside_path = temp_dir / "outside" / "credentials.json"
+
+        # Should not raise
+        AppConfig._check_path_safety(outside_path, "credentials_path", repo_root, allow=False)
+
+    def test_path_different_drive_is_safe(self, temp_dir: Path):
+        """Path on different drive should be considered safe (Windows)."""
+        # This tests the ValueError handling for different drives
+        repo_root = Path("C:/repo")
+        other_drive = Path("D:/credentials/creds.json")
+
+        # Mock is_relative_to to raise ValueError (simulating different drives)
+        with mock.patch.object(Path, "is_relative_to", side_effect=ValueError("different drives")):
+            # Should not raise
+            AppConfig._check_path_safety(other_drive, "credentials_path", repo_root, allow=False)

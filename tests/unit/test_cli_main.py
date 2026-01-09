@@ -199,3 +199,218 @@ class TestGlobalOptions:
         """--allow-repo-credentials flag should be accepted."""
         result = runner.invoke(main, ["--allow-repo-credentials", "config", "--show"])
         assert result.exit_code == 0
+
+
+class TestHandleErrorsDecorator:
+    """Test error handling decorator for CLI commands."""
+
+    def test_config_error_exit_code(self, runner: CliRunner, temp_dir: Path):
+        """ConfigError should result in exit code 5."""
+        from unittest import mock
+        from gmail_assistant.core.exceptions import ConfigError
+
+        with mock.patch(
+            'gmail_assistant.core.config.AppConfig.load',
+            side_effect=ConfigError("Invalid configuration")
+        ):
+            result = runner.invoke(main, ["fetch"])
+            assert result.exit_code == 5
+            assert "Configuration error" in result.output
+
+    def test_auth_error_exit_code(self, runner: CliRunner):
+        """AuthError should result in exit code 3."""
+        from unittest import mock
+        from gmail_assistant.core.exceptions import AuthError
+
+        with mock.patch(
+            'gmail_assistant.core.config.AppConfig.load',
+            side_effect=AuthError("Authentication failed")
+        ):
+            result = runner.invoke(main, ["fetch"])
+            assert result.exit_code == 3
+            assert "Authentication error" in result.output
+
+    def test_network_error_exit_code(self, runner: CliRunner):
+        """NetworkError should result in exit code 4."""
+        from unittest import mock
+        from gmail_assistant.core.exceptions import NetworkError
+
+        with mock.patch(
+            'gmail_assistant.core.config.AppConfig.load',
+            side_effect=NetworkError("Network unavailable")
+        ):
+            result = runner.invoke(main, ["fetch"])
+            assert result.exit_code == 4
+            assert "Network error" in result.output
+
+    def test_gmail_assistant_error_exit_code(self, runner: CliRunner):
+        """GmailAssistantError should result in exit code 1."""
+        from unittest import mock
+        from gmail_assistant.core.exceptions import GmailAssistantError
+
+        with mock.patch(
+            'gmail_assistant.core.config.AppConfig.load',
+            side_effect=GmailAssistantError("General error")
+        ):
+            result = runner.invoke(main, ["fetch"])
+            assert result.exit_code == 1
+            assert "Error" in result.output
+
+    def test_unexpected_error_exit_code(self, runner: CliRunner):
+        """Unexpected exceptions should result in exit code 1."""
+        from unittest import mock
+
+        with mock.patch(
+            'gmail_assistant.core.config.AppConfig.load',
+            side_effect=RuntimeError("Unexpected error")
+        ):
+            result = runner.invoke(main, ["fetch"])
+            assert result.exit_code == 1
+            assert "Unexpected error" in result.output
+
+    def test_click_exception_reraise(self, runner: CliRunner):
+        """Click exceptions should be re-raised, not caught."""
+        # Click handles its own exceptions like missing required options
+        result = runner.invoke(main, ["delete"])  # --query is required
+        assert result.exit_code == 2  # Click usage error
+
+
+class TestConfigCommandEdgeCases:
+    """Test config command edge cases."""
+
+    def test_config_init_already_exists(self, runner: CliRunner, temp_dir: Path):
+        """config --init should fail if config already exists."""
+        from unittest import mock
+        from gmail_assistant.core.config import AppConfig
+
+        config_dir = temp_dir / ".gmail-assistant"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        config_file = config_dir / "config.json"
+        config_file.write_text('{"test": "config"}')
+
+        with mock.patch.object(AppConfig, "default_dir", return_value=config_dir):
+            result = runner.invoke(main, ["config", "--init"])
+            assert result.exit_code == 5
+            assert "already exists" in result.output
+
+    def test_config_validate_invalid_config(self, runner: CliRunner, temp_dir: Path):
+        """config --validate should detect invalid config."""
+        from unittest import mock
+        from gmail_assistant.core.exceptions import ConfigError
+
+        with mock.patch(
+            'gmail_assistant.core.config.AppConfig.load',
+            side_effect=ConfigError("Invalid JSON")
+        ):
+            result = runner.invoke(main, ["config", "--validate"])
+            assert result.exit_code == 5
+            assert "invalid" in result.output.lower()
+
+    def test_config_default_shows_help(self, runner: CliRunner):
+        """config without flags should show help."""
+        result = runner.invoke(main, ["config"])
+        assert result.exit_code == 0
+        # Should show help text with available options
+        assert "--show" in result.output or "help" in result.output.lower() or "Usage" in result.output
+
+
+class TestDeleteCommandEdgeCases:
+    """Test delete command edge cases."""
+
+    def test_delete_with_confirm_flag(self, runner: CliRunner):
+        """delete --confirm should skip prompt."""
+        result = runner.invoke(
+            main, ["delete", "--query", "test@example.com", "--confirm"]
+        )
+        assert result.exit_code == 0
+
+    def test_delete_with_all_options(self, runner: CliRunner):
+        """delete with all options should work."""
+        result = runner.invoke(
+            main, [
+                "delete",
+                "--query", "is:unread",
+                "--dry-run",
+                "--confirm"
+            ]
+        )
+        assert result.exit_code == 0
+        assert "Dry run: True" in result.output
+
+
+class TestAnalyzeCommandEdgeCases:
+    """Test analyze command edge cases."""
+
+    def test_analyze_with_input_dir(self, runner: CliRunner, temp_dir: Path):
+        """analyze --input-dir should accept directory path."""
+        # Create the input directory
+        input_dir = temp_dir / "emails"
+        input_dir.mkdir()
+
+        result = runner.invoke(main, ["analyze", "--input-dir", str(input_dir)])
+        assert result.exit_code == 0
+        assert str(input_dir) in result.output
+
+    def test_analyze_detailed_report(self, runner: CliRunner):
+        """analyze --report detailed should work."""
+        result = runner.invoke(main, ["analyze", "--report", "detailed"])
+        assert result.exit_code == 0
+        assert "detailed" in result.output
+
+
+class TestFetchCommandEdgeCases:
+    """Test fetch command edge cases."""
+
+    def test_fetch_with_max_emails(self, runner: CliRunner):
+        """fetch --max-emails should accept integer."""
+        result = runner.invoke(main, ["fetch", "--max-emails", "500"])
+        assert result.exit_code == 0
+        assert "500" in result.output
+
+    def test_fetch_with_output_dir(self, runner: CliRunner, temp_dir: Path):
+        """fetch --output-dir should accept path."""
+        output_dir = temp_dir / "backups"
+        result = runner.invoke(main, ["fetch", "--output-dir", str(output_dir)])
+        assert result.exit_code == 0
+        assert str(output_dir) in result.output
+
+    def test_fetch_with_eml_format(self, runner: CliRunner):
+        """fetch --format eml should work."""
+        result = runner.invoke(main, ["fetch", "--format", "eml"])
+        assert result.exit_code == 0
+        assert "eml" in result.output
+
+    def test_fetch_with_all_options(self, runner: CliRunner, temp_dir: Path):
+        """fetch with all options should work."""
+        output_dir = temp_dir / "output"
+        result = runner.invoke(
+            main, [
+                "fetch",
+                "--query", "is:starred",
+                "--max-emails", "100",
+                "--output-dir", str(output_dir),
+                "--format", "json"
+            ]
+        )
+        assert result.exit_code == 0
+        assert "is:starred" in result.output
+
+
+class TestMainEntryPoint:
+    """Test main entry point behavior."""
+
+    def test_main_with_no_args(self, runner: CliRunner):
+        """main with no args should show help or usage."""
+        result = runner.invoke(main, [])
+        # Either shows help (exit 0) or usage error
+        assert result.exit_code in (0, 2)
+
+    def test_main_with_unknown_command(self, runner: CliRunner):
+        """main with unknown command should error."""
+        result = runner.invoke(main, ["unknown_command"])
+        assert result.exit_code == 2  # Click usage error
+
+    def test_main_with_invalid_option(self, runner: CliRunner):
+        """main with invalid option should error."""
+        result = runner.invoke(main, ["--invalid-option"])
+        assert result.exit_code == 2  # Click usage error
