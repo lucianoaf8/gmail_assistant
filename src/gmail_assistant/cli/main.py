@@ -1,170 +1,242 @@
 """
-Main CLI entry point for Gmail Fetcher.
+Gmail Assistant CLI - Click-based command line interface.
 
-Provides the main argument parser and command routing.
+Exit Codes:
+    0: Success
+    1: General error
+    2: Usage/argument error (Click default)
+    3: Authentication error
+    4: Network error
+    5: Configuration error
+
+CORRECTED: All exceptions imported from gmail_assistant.core.exceptions
 """
+from __future__ import annotations
 
+import functools
 import sys
-import argparse
-import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, TypeVar
 
-# Import command modules
-from . import fetch
-from . import delete
-from . import analyze
-from . import config
-from . import auth
+import click
 
-logger = logging.getLogger(__name__)
+from gmail_assistant import __version__
+from gmail_assistant.core.config import AppConfig
+# CORRECTED: Import ALL exceptions from the single authoritative source
+from gmail_assistant.core.exceptions import (
+    ConfigError,
+    AuthError,
+    NetworkError,
+    GmailAssistantError,
+)
+
+F = TypeVar("F", bound=Callable[..., None])
 
 
-def create_parser() -> argparse.ArgumentParser:
-    """
-    Create the main argument parser with all subcommands.
+def handle_errors(func: F) -> F:
+    """Decorator to map exceptions to exit codes."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ConfigError as e:
+            click.echo(f"Configuration error: {e}", err=True)
+            sys.exit(5)
+        except AuthError as e:
+            click.echo(f"Authentication error: {e}", err=True)
+            sys.exit(3)
+        except NetworkError as e:
+            click.echo(f"Network error: {e}", err=True)
+            sys.exit(4)
+        except click.ClickException:
+            raise  # Let Click handle its own exceptions
+        except GmailAssistantError as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+        except Exception as e:
+            click.echo(f"Unexpected error: {e}", err=True)
+            sys.exit(1)
+    return wrapper  # type: ignore
 
-    Returns:
-        Configured ArgumentParser instance
-    """
-    parser = argparse.ArgumentParser(
-        prog="gmail-fetcher",
-        description="Gmail Fetcher Suite - Professional email backup and management",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-    gmail-fetcher fetch --query "is:unread" --max 1000
-    gmail-fetcher delete unread --dry-run
-    gmail-fetcher analyze --yesterday
-    gmail-fetcher config show
-    gmail-fetcher auth test
 
-For more information on a command:
-    gmail-fetcher <command> --help
-        """
+@click.group()
+@click.version_option(version=__version__, prog_name="gmail-assistant")
+@click.option(
+    "--config", "-c",
+    type=click.Path(exists=True, path_type=Path),
+    help="Path to configuration file.",
+)
+@click.option(
+    "--allow-repo-credentials",
+    is_flag=True,
+    help="Allow credentials inside git repository (security risk).",
+)
+@click.pass_context
+def main(ctx: click.Context, config: Path | None, allow_repo_credentials: bool) -> None:
+    """Gmail Assistant - Backup, analyze, and manage your Gmail."""
+    ctx.ensure_object(dict)
+    ctx.obj["config_path"] = config
+    ctx.obj["allow_repo_credentials"] = allow_repo_credentials
+
+
+@main.command()
+@click.option("--query", "-q", default="", help="Gmail search query.")
+@click.option("--max-emails", "-m", type=int, help="Maximum emails to fetch.")
+@click.option("--output-dir", "-o", type=click.Path(path_type=Path), help="Output directory.")
+@click.option("--format", "output_format", type=click.Choice(["json", "mbox", "eml"]), default="json")
+@click.pass_context
+@handle_errors
+def fetch(
+    ctx: click.Context,
+    query: str,
+    max_emails: int | None,
+    output_dir: Path | None,
+    output_format: str,
+) -> None:
+    """Fetch emails from Gmail."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
     )
 
-    # Global options
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Enable verbose output'
-    )
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Enable debug logging'
-    )
-    parser.add_argument(
-        '--credentials',
-        default='credentials.json',
-        help='Path to OAuth credentials file (default: credentials.json)'
-    )
-    parser.add_argument(
-        '--version',
-        action='version',
-        version='Gmail Fetcher 2.0.0'
-    )
+    # Use CLI options if provided, otherwise use config defaults
+    effective_max = max_emails if max_emails is not None else cfg.max_emails
+    effective_output = output_dir if output_dir is not None else cfg.output_dir
 
-    # Create subparsers
-    subparsers = parser.add_subparsers(
-        dest='command',
-        title='commands',
-        description='Available commands',
-        help='Use <command> --help for more information'
-    )
-
-    # Register command modules
-    fetch.setup_parser(subparsers)
-    delete.setup_parser(subparsers)
-    analyze.setup_parser(subparsers)
-    config.setup_parser(subparsers)
-    auth.setup_parser(subparsers)
-
-    return parser
+    click.echo(f"Fetching emails (max: {effective_max}, format: {output_format})")
+    click.echo(f"Query: {query or '(all)'}")
+    click.echo(f"Output: {effective_output}")
+    # NOTE: Functional implementation deferred to v2.1.0 (see §1.5)
+    click.echo("[INFO] Functional fetch implementation is deferred to v2.1.0")
 
 
-def setup_logging(verbose: bool = False, debug: bool = False) -> None:
-    """
-    Configure logging based on CLI options.
-
-    Args:
-        verbose: Enable verbose output
-        debug: Enable debug level logging
-    """
-    if debug:
-        level = logging.DEBUG
-        log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    elif verbose:
-        level = logging.INFO
-        log_format = '%(levelname)s: %(message)s'
-    else:
-        level = logging.WARNING
-        log_format = '%(message)s'
-
-    logging.basicConfig(
-        level=level,
-        format=log_format,
-        handlers=[logging.StreamHandler()]
+@main.command()
+@click.option("--query", "-q", required=True, help="Gmail search query for emails to delete.")
+@click.option("--dry-run", is_flag=True, help="Show what would be deleted without deleting.")
+@click.option("--confirm", is_flag=True, help="Skip confirmation prompt.")
+@click.pass_context
+@handle_errors
+def delete(
+    ctx: click.Context,
+    query: str,
+    dry_run: bool,
+    confirm: bool,
+) -> None:
+    """Delete emails matching query."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
     )
 
+    click.echo(f"Delete query: {query}")
+    click.echo(f"Dry run: {dry_run}")
+    # NOTE: Functional implementation deferred to v2.1.0 (see §1.5)
+    click.echo("[INFO] Functional delete implementation is deferred to v2.1.0")
 
-def main(args: Optional[List[str]] = None) -> int:
-    """
-    Main entry point for the CLI.
 
-    Args:
-        args: Command line arguments (uses sys.argv if None)
-
-    Returns:
-        Exit code (0 for success, non-zero for errors)
-    """
-    parser = create_parser()
-
-    # Parse arguments
-    if args is None:
-        args = sys.argv[1:]
-
-    parsed_args = parser.parse_args(args)
-
-    # Show help if no command specified
-    if parsed_args.command is None:
-        parser.print_help()
-        return 1
-
-    # Setup logging
-    setup_logging(
-        verbose=getattr(parsed_args, 'verbose', False),
-        debug=getattr(parsed_args, 'debug', False)
+@main.command()
+@click.option("--input-dir", "-i", type=click.Path(exists=True, path_type=Path), help="Directory with fetched emails.")
+@click.option("--report", "-r", type=click.Choice(["summary", "detailed", "json"]), default="summary")
+@click.pass_context
+@handle_errors
+def analyze(
+    ctx: click.Context,
+    input_dir: Path | None,
+    report: str,
+) -> None:
+    """Analyze fetched emails."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
     )
 
-    # Route to appropriate command handler
+    source = input_dir or cfg.output_dir
+    click.echo(f"Analyzing emails in: {source}")
+    click.echo(f"Report type: {report}")
+    # NOTE: Functional implementation deferred to v2.1.0 (see §1.5)
+    click.echo("[INFO] Functional analyze implementation is deferred to v2.1.0")
+
+
+@main.command()
+@click.pass_context
+@handle_errors
+def auth(ctx: click.Context) -> None:
+    """Authenticate with Gmail API."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+    )
+
+    click.echo(f"Credentials: {cfg.credentials_path}")
+    click.echo(f"Token: {cfg.token_path}")
+    click.echo("Starting OAuth flow...")
+    # NOTE: Functional implementation deferred to v2.1.0 (see §1.5)
+    click.echo("[INFO] Functional auth implementation is deferred to v2.1.0")
+
+
+@main.command("config")
+@click.option("--show", is_flag=True, help="Show current configuration.")
+@click.option("--validate", is_flag=True, help="Validate configuration file.")
+@click.option("--init", is_flag=True, help="Create default configuration.")
+@click.pass_context
+@handle_errors
+def config_cmd(
+    ctx: click.Context,
+    show: bool,
+    validate: bool,
+    init: bool,
+) -> None:
+    """Manage configuration."""
+    if init:
+        default_dir = AppConfig.default_dir()
+        default_dir.mkdir(parents=True, exist_ok=True)
+        config_file = default_dir / "config.json"
+
+        if config_file.exists():
+            click.echo(f"Config already exists: {config_file}")
+            sys.exit(5)
+
+        import json
+        cfg = AppConfig.load()  # Get defaults
+        config_data = {
+            "credentials_path": str(cfg.credentials_path),
+            "token_path": str(cfg.token_path),
+            "output_dir": str(cfg.output_dir),
+            "max_emails": cfg.max_emails,
+            "rate_limit_per_second": cfg.rate_limit_per_second,
+            "log_level": cfg.log_level,
+        }
+        config_file.write_text(json.dumps(config_data, indent=2))
+        click.echo(f"Created: {config_file}")
+        return
+
     try:
-        if parsed_args.command == 'fetch':
-            return fetch.handle(parsed_args)
-        elif parsed_args.command == 'delete':
-            return delete.handle(parsed_args)
-        elif parsed_args.command == 'analyze':
-            return analyze.handle(parsed_args)
-        elif parsed_args.command == 'config':
-            return config.handle(parsed_args)
-        elif parsed_args.command == 'auth':
-            return auth.handle(parsed_args)
-        else:
-            logger.error(f"Unknown command: {parsed_args.command}")
-            return 1
+        cfg = AppConfig.load(
+            ctx.obj["config_path"],
+            allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+        )
+    except ConfigError as e:
+        if validate:
+            click.echo(f"Configuration invalid: {e}", err=True)
+            sys.exit(5)
+        raise
 
-    except KeyboardInterrupt:
-        print("\nOperation cancelled by user")
-        return 130
+    if validate:
+        click.echo("Configuration valid.")
+        return
 
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        if getattr(parsed_args, 'debug', False):
-            import traceback
-            traceback.print_exc()
-        return 1
+    if show:
+        click.echo(f"credentials_path: {cfg.credentials_path}")
+        click.echo(f"token_path: {cfg.token_path}")
+        click.echo(f"output_dir: {cfg.output_dir}")
+        click.echo(f"max_emails: {cfg.max_emails}")
+        click.echo(f"rate_limit_per_second: {cfg.rate_limit_per_second}")
+        click.echo(f"log_level: {cfg.log_level}")
+        return
+
+    # Default: show help
+    click.echo(ctx.get_help())
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
