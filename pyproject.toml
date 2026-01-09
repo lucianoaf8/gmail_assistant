@@ -135,11 +135,6 @@ omit = [
     "src/gmail_assistant/cli/commands/delete.py",
     "src/gmail_assistant/cli/commands/fetch.py",
     "src/gmail_assistant/cli/commands/__init__.py",
-    # Large legacy processors (v2.1.0 refactoring)
-    "src/gmail_assistant/utils/audit_logger.py",
-    "src/gmail_assistant/utils/comprehensive_email_processor.py",
-    "src/gmail_assistant/utils/gmail_organizer.py",
-    "src/gmail_assistant/utils/ultimate_email_processor.py",
 ]
 
 [tool.coverage.report]

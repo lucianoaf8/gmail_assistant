@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-01-09
+
+### Changed
+- Reorganized `scripts/` - moved 8 standalone scripts into categorized subdirectories (`operations/`, `utilities/`, `setup/`, `analysis/`, `validation/`)
+- Reorganized `archive/` into purpose-based structure (`legacy/`, `planning/`, `reports/`)
+- Moved permanent reference docs to `docs/reference/`
+- Moved testing documentation to `docs/testing/`
+
+### Removed
+- Empty `src/plugins/` directory tree (leftover from previous cleanup)
+
 ## [2.0.0] - 2026-01-09
 
 ### Added
