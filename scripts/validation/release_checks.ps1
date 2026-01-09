@@ -51,7 +51,7 @@ print('All imports OK')
     Write-Host "[OK] Import resolution passed" -ForegroundColor Green
 
     # CLI check
-    & "$repoRoot/$venvPath/Scripts/gmail-fetcher" --version
+    & "$repoRoot/$venvPath/Scripts/gmail-assistant" --version
     if ($LASTEXITCODE -ne 0) { throw "CLI --version failed" }
     Write-Host "[OK] CLI works" -ForegroundColor Green
 

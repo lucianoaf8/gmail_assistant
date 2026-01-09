@@ -1,0 +1,221 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run linting
+        run: |
+          ruff check src/ tests/
+
+      - name: Run type checking
+        run: |
+          mypy src/gmail_assistant
+
+      - name: Run tests with coverage gate
+        run: |
+          pytest tests/unit/ -v --cov=src/gmail_assistant --cov-report=xml --cov-fail-under=70 -p no:playwright
+
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+
+  baseline-check:
+    name: Baseline Measurements
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Run baseline measurements
+        shell: pwsh
+        run: |
+          ./scripts/audit/baseline.ps1 -OutputDir "docs/audit"
+
+      - name: Upload baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-measurements
+          path: docs/audit/*.json
+
+  build-validation:
+    name: Build Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Verify wheel
+        run: |
+          WHEEL_COUNT=$(ls -1 dist/*.whl 2>/dev/null | wc -l)
+          if [ "$WHEEL_COUNT" -ne 1 ]; then
+            echo "ERROR: Expected 1 wheel, found $WHEEL_COUNT"
+            ls -la dist/
+            exit 1
+          fi
+          WHEEL_PATH=$(ls -1 dist/*.whl)
+          echo "Wheel: $WHEEL_PATH"
+
+      - name: Test wheel installation (isolated)
+        run: |
+          python -m venv /tmp/test-venv
+          /tmp/test-venv/bin/pip install dist/*.whl
+          cd /tmp  # Run from outside repo
+          /tmp/test-venv/bin/python -c "import gmail_assistant; print(f'Version: {gmail_assistant.__version__}')"
+          /tmp/test-venv/bin/gmail-assistant --version
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel
+          path: dist/*.whl
+
+  import-policy:
+    name: Import Policy Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check import policy
+        run: |
+          python scripts/validation/check_import_policy.py
+
+  exception-taxonomy:
+    name: Exception Taxonomy Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Verify exception taxonomy
+        run: |
+          python -c "
+          from gmail_assistant.core.exceptions import GmailAssistantError, ConfigError, AuthError, NetworkError
+          assert issubclass(ConfigError, GmailAssistantError)
+          assert issubclass(AuthError, GmailAssistantError)
+          assert issubclass(NetworkError, GmailAssistantError)
+
+          # Verify no duplicate ConfigError
+          from gmail_assistant.core import config, exceptions
+          if hasattr(config, 'ConfigError'):
+              assert config.ConfigError is exceptions.ConfigError, 'Duplicate ConfigError detected!'
+          print('Exception taxonomy valid')
+          "
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for tracked secrets
+        run: |
+          if git ls-files | grep -E '(credentials|token)\.json$'; then
+            echo "ERROR: Credentials tracked in git"
+            exit 1
+          fi
+          if git ls-files | grep -E '\.log$'; then
+            echo "ERROR: Log files tracked in git"
+            exit 1
+          fi
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  schema-validation:
+    name: Config Schema Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install jsonschema
+
+      - name: Validate schema is valid JSON Schema
+        run: |
+          python -c "
+          import json
+          from jsonschema import Draft202012Validator
+
+          with open('config/schema/config.schema.json') as f:
+              schema = json.load(f)
+
+          Draft202012Validator.check_schema(schema)
+          print('Schema is valid JSON Schema')
+          "
+
+      - name: Validate template against schema
+        run: |
+          python -c "
+          import json
+          from jsonschema import validate, Draft202012Validator
+
+          with open('config/schema/config.schema.json') as f:
+              schema = json.load(f)
+          with open('config/default.json.template') as f:
+              config = json.load(f)
+
+          validate(config, schema)
+          print('Template validates against schema')
+          "

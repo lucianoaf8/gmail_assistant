@@ -1,10 +1,14 @@
-# Gmail Fetcher Suite
+# Gmail Assistant
 
 **A comprehensive Gmail management and backup solution with advanced email processing, AI-powered content analysis, and automated cleanup capabilities.**
 
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Gmail API](https://img.shields.io/badge/Gmail%20API-v1-red.svg)](https://developers.google.com/gmail/api)
+[![CI](https://github.com/user/gmail-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/user/gmail-assistant/actions)
+
+> **v2.0.0 Breaking Changes**: This version introduces a new package structure and CLI.
+> See [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for migration guide.
 
 ## 🌟 Overview
 
@@ -22,7 +26,7 @@ Gmail Fetcher Suite is a powerful collection of tools designed to help you backu
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8 or higher
+- Python 3.10 or higher
 - Gmail account with API access
 - Google Cloud Console project (free)
 
@@ -34,13 +38,16 @@ Gmail Fetcher Suite is a powerful collection of tools designed to help you backu
    cd gmail_assistant
    ```
 
-2. **Install dependencies**
+2. **Install the package**
    ```bash
-   # Core dependencies
-   pip install -r requirements.txt
-   
-   # Advanced processing (optional)
-   pip install -r requirements_advanced.txt
+   # Standard installation
+   pip install -e .
+
+   # With development dependencies
+   pip install -e ".[dev]"
+
+   # With optional analysis features
+   pip install -e ".[analysis,ui,advanced-parsing]"
    ```
 
 3. **Set up Gmail API**
@@ -96,8 +103,8 @@ gmail_assistant/
 The primary email backup tool with comprehensive search and organization capabilities.
 
 ```bash
-# Download unread emails
-python src/gmail_assistant.py --query "is:unread" --max 1000
+# Download unread emails (new CLI)
+gmail-assistant fetch --query "is:unread" --max-emails 1000
 
 # Download by date range with organization
 python src/gmail_assistant.py --query "after:2025/02/28 before:2025/04/01" --organize sender --format both
