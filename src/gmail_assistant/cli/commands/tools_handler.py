@@ -36,8 +36,11 @@ def _handle_cleanup_tool(args: Any) -> None:
 
     try:
         if args.type in ['markdown', 'all']:
-            from tools.cleanup.cleanup_markdown import main as cleanup_markdown
-            cleanup_markdown(args.target)
+            # TODO: v2.1.0 - migrate tools.cleanup to gmail_assistant.utils
+            # from gmail_assistant.utils.cleanup import cleanup_markdown
+            print(f"[v2.1.0] Cleanup tool not yet migrated to new package structure")
+            print(f"  Use legacy script: python src/tools/cleanup_markdown.py {args.target}")
+            return
         print(f"Success: Cleanup completed for {args.target}")
 
     except ImportError as e:

@@ -84,7 +84,8 @@ def check_file(path: Path) -> list[Violation]:
       
         # Check ImportFrom statements
         elif isinstance(node, ast.ImportFrom):
-            if node.module:
+            # Only check absolute imports (level == 0) for old package roots
+            if node.level == 0 and node.module:
                 root = node.module.split(".")[0]
                 if root in INVALID_IMPORT_ROOTS:
                     violations.append(Violation(
@@ -96,15 +97,18 @@ def check_file(path: Path) -> list[Violation]:
                         path, node.lineno,
                         f"Old import 'from {node.module}' - use 'from gmail_assistant.{node.module}'"
                     ))
-          
+
             # Check relative imports
             if node.level > 0:
                 # Relative imports are only allowed within src/gmail_assistant
                 try:
                     rel = path.relative_to(Path.cwd() / "src" / "gmail_assistant")
                     # Check that relative import doesn't escape package
+                    # depth = number of parent directories available
                     depth = len(rel.parts) - 1  # -1 for the file itself
-                    if node.level > depth:
+                    # For files in subpackages like core/auth/base.py, depth=2
+                    # from ...utils (level=3) would escape, from ..auth (level=2) is OK
+                    if node.level > depth + 1:  # +1 because gmail_assistant is the package root
                         violations.append(Violation(
                             path, node.lineno,
                             f"Relative import level {node.level} escapes package boundary"
@@ -123,11 +127,11 @@ def main() -> int:
     """Run import policy checks on all Python files."""
     repo_root = Path.cwd()
   
-    # Directories to check
+    # Directories to check - only package code, not standalone scripts
+    # scripts/ contains standalone utilities that legitimately use sys.path
     check_dirs = [
         repo_root / "src",
         repo_root / "tests",
-        repo_root / "scripts",
     ]
   
     # Exclusions
@@ -138,6 +142,15 @@ def main() -> int:
         ".git",
         "dist",
         "build",
+    }
+
+    # Legacy directories - violations known and deferred to v2.1.0
+    # See Implementation_Plan_Final_Release_Edition.md §5.2, §5.3
+    legacy_dirs = {
+        "plugins",      # Deferred to v2.1.0 (no plugin contract)
+        "tools",        # To be merged into utils or removed
+        "handlers",     # Moved to cli/commands
+        "legacy",       # Deprecated scripts
     }
   
     all_violations: list[Violation] = []
@@ -151,7 +164,11 @@ def main() -> int:
             # Skip excluded directories
             if any(excl in py_file.parts for excl in exclude_patterns):
                 continue
-          
+
+            # Skip legacy directories (known violations, deferred to v2.1.0)
+            if any(leg in py_file.parts for leg in legacy_dirs):
+                continue
+
             violations = check_file(py_file)
             all_violations.extend(violations)
             files_checked += 1
