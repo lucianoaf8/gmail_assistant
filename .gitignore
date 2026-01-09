@@ -1,0 +1,85 @@
+# ===================
+# Project
+# ===================
+*.zip
+/archive
+*_cache*
+*/claude-docs
+
+# ===================
+# Security - CRITICAL
+# ===================
+# OAuth credentials (NEVER commit these)
+credentials.json
+**/credentials.json
+token.json
+**/token.json
+token.pickle
+**/token.pickle
+*.pickle
+config/security/
+
+# Keep template files (safe to commit)
+!credentials.json.template
+!token.json.template
+
+# ===================
+# Python
+# ===================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ===================
+# Virtual Environment
+# ===================
+venv/
+.venv/
+env/
+.env
+
+# ===================
+# User Data (large/personal)
+# ===================
+backups/
+data/
+logs/
+incremental_backup/
+trash/
+
+# ===================
+# Temporary/Debug Files
+# ===================
+debug_*.py
+test_*.eml
+nul
+
+# ===================
+# IDE/Editor
+# ===================
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# ===================
+# OS Files
+# ===================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===================
+# Logs
+# ===================
+*.log

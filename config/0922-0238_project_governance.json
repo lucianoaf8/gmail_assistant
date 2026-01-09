@@ -1,0 +1,180 @@
+{
+  "project_governance": {
+    "version": "1.0",
+    "created": "2025-09-22T02:38:00Z",
+    "description": "Comprehensive governance rules for gmail_assistant project development",
+
+    "critical_rules": {
+      "resource_discovery": {
+        "description": "Always check for existing resources before creating new files or functions",
+        "enforcement": "mandatory",
+        "tools_to_use": ["Glob", "Grep", "Read"],
+        "search_directories": ["src/", "tests/", "docs/", "scripts/", "config/", "examples/"],
+        "actions": [
+          "Search for similar functionality",
+          "Check existing patterns",
+          "Extend or modify existing code rather than duplicate"
+        ]
+      },
+
+      "file_organization": {
+        "description": "No files in root directory - organize in appropriate folders",
+        "enforcement": "mandatory",
+        "prohibited_locations": ["/"],
+        "required_structure": {
+          "source_code": "src/",
+          "tests": "tests/",
+          "documentation": "docs/",
+          "configuration": "config/",
+          "utilities": "scripts/",
+          "examples": "examples/",
+          "data": "data/",
+          "logs": "logs/",
+          "backups": "backups/"
+        },
+        "subdirectory_organization": {
+          "src": ["core/", "parsers/", "analysis/", "deletion/", "tools/", "utils/"],
+          "tests": ["docs/", "__pycache__/", ".pytest_cache/", "htmlcov/"],
+          "docs": "flat structure with timestamped files"
+        }
+      },
+
+      "test_placement": {
+        "description": "ALL test-related files must be in tests/ folder",
+        "enforcement": "mandatory",
+        "file_types": ["unit_tests", "integration_tests", "test_data", "test_utilities", "test_documentation"],
+        "naming_patterns": ["test_*.py", "*_test.py"],
+        "exceptions": "none",
+        "test_documentation_location": "tests/docs/"
+      },
+
+      "documentation_naming": {
+        "description": "All documentation files must use timestamped naming format",
+        "enforcement": "mandatory",
+        "format": "<mmdd-hhmm_name.extension>",
+        "applies_to": ["*.md", "*.txt", "*.json", "*.yaml", "*.rst", "*.doc*"],
+        "examples": {
+          "correct": [
+            "0922-0238_implementation_plan.md",
+            "0922-1430_api_design.json",
+            "0922-0945_test_results.txt",
+            "0922-1205_requirements_analysis.yaml"
+          ],
+          "incorrect": [
+            "implementation_plan.md",
+            "api_design.json",
+            "test_results.txt",
+            "requirements.yaml"
+          ]
+        },
+        "exceptions": {
+          "files": ["README.md", "CLAUDE.md", "LICENSE", "CHANGELOG.md"],
+          "reason": "Standard project files with conventional names"
+        }
+      }
+    },
+
+    "validation_workflow": {
+      "pre_creation_checklist": [
+        {
+          "step": 1,
+          "action": "Search for existing similar functionality",
+          "tools": ["Glob", "Grep"],
+          "patterns": ["**/*{keyword}*", "similar function names", "related modules"]
+        },
+        {
+          "step": 2,
+          "action": "Identify correct directory based on file purpose",
+          "decision_tree": {
+            "source_code": "src/",
+            "test_files": "tests/",
+            "documentation": "docs/",
+            "configuration": "config/",
+            "utilities": "scripts/",
+            "examples": "examples/"
+          }
+        },
+        {
+          "step": 3,
+          "action": "Apply correct naming convention",
+          "conditions": {
+            "if_documentation": "use <mmdd-hhmm_name.extension>",
+            "if_source_code": "use descriptive_module_name.py",
+            "if_test": "use test_module_name.py"
+          }
+        },
+        {
+          "step": 4,
+          "action": "Verify no root directory placement",
+          "check": "file_path does not start with project_root/"
+        },
+        {
+          "step": 5,
+          "action": "Confirm adherence to project structure",
+          "validation": "file location matches intended purpose and follows established patterns"
+        }
+      ]
+    },
+
+    "directory_purposes": {
+      "src/": {
+        "purpose": "All source code organized by feature/domain",
+        "subdirectories": {
+          "core/": "Core Gmail API functionality and main fetcher logic",
+          "parsers/": "Email parsing and format conversion utilities",
+          "analysis/": "Email analysis and classification tools",
+          "deletion/": "Email deletion and cleanup functionality",
+          "tools/": "CLI tools and user-facing scripts",
+          "utils/": "Shared utilities and helper functions"
+        }
+      },
+      "tests/": {
+        "purpose": "All test-related files without exception",
+        "includes": ["unit tests", "integration tests", "test data", "test utilities", "coverage reports", "test documentation"]
+      },
+      "docs/": {
+        "purpose": "Project documentation with timestamped naming",
+        "includes": ["implementation plans", "API documentation", "user guides", "technical reports"]
+      },
+      "config/": {
+        "purpose": "Configuration files and settings",
+        "includes": ["application config", "environment settings", "governance rules"]
+      },
+      "scripts/": {
+        "purpose": "Utility scripts and automation tools",
+        "includes": ["deployment scripts", "maintenance utilities", "data migration tools"]
+      },
+      "examples/": {
+        "purpose": "Example usage and demonstration files",
+        "includes": ["sample code", "tutorial files", "demo scripts"]
+      },
+      "data/": {
+        "purpose": "Application data and processing inputs",
+        "includes": ["sample data", "test datasets", "processing inputs"]
+      },
+      "logs/": {
+        "purpose": "Application logs and runtime outputs",
+        "includes": ["execution logs", "error logs", "debugging outputs"]
+      },
+      "backups/": {
+        "purpose": "Gmail backup storage and archive management",
+        "includes": ["email backups", "archive folders", "processed emails"]
+      }
+    },
+
+    "enforcement_guidelines": {
+      "violation_response": {
+        "discovery_violation": "Stop and search for existing resources before proceeding",
+        "organization_violation": "Refuse to create file and suggest correct location",
+        "naming_violation": "Apply correct timestamped naming format",
+        "test_placement_violation": "Move all test files to tests/ directory"
+      },
+
+      "compliance_verification": {
+        "before_file_creation": "Run validation checklist",
+        "after_file_creation": "Verify file is in correct location with proper naming",
+        "during_development": "Continuously check for adherence to structure"
+      }
+    }
+  }
+}

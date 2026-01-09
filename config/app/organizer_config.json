@@ -1,0 +1,127 @@
+{
+  "work_patterns": {
+    "keywords": [
+      "urgent", "asap", "deadline", "meeting", "call", "review", "approval",
+      "action required", "please respond", "need feedback", "by eod",
+      "follow up", "status update", "project", "client", "proposal",
+      "schedule", "reschedule", "interview", "presentation", "report",
+      "budget", "contract", "agreement", "deliverable", "milestone"
+    ],
+    "domains": [
+      "company.com", "work.com", "corp.com", "org.com", "enterprise.com",
+      "office.com", "business.com", "firm.com", "agency.com"
+    ],
+    "senders": [
+      "boss@", "manager@", "hr@", "client@", "customer@", "team@",
+      "support@", "admin@", "exec@", "director@", "lead@"
+    ]
+  },
+
+  "urgent_patterns": {
+    "keywords": [
+      "emergency", "urgent", "important", "critical", "immediate",
+      "hospital", "accident", "police", "doctor", "medical",
+      "911", "help", "crisis", "serious", "family emergency"
+    ],
+    "personal_domains": [
+      "gmail.com", "yahoo.com", "hotmail.com", "outlook.com",
+      "icloud.com", "aol.com", "protonmail.com"
+    ]
+  },
+
+  "financial_alert_patterns": {
+    "keywords": [
+      "fraud alert", "suspicious activity", "security alert", "unauthorized",
+      "payment due", "overdue", "past due", "collection", "delinquent",
+      "account locked", "account suspended", "verify account", "identity theft",
+      "unusual activity", "login attempt", "password reset", "security breach",
+      "compromised", "blocked transaction", "declined payment"
+    ],
+    "domains": [
+      "bank.com", "chase.com", "wellsfargo.com", "bankofamerica.com",
+      "citi.com", "usbank.com", "capitalone.com", "discover.com",
+      "amex.com", "americanexpress.com", "paypal.com", "venmo.com",
+      "zelle.com", "cashapp.com", "stripe.com", "square.com",
+      "creditkarma.com", "mint.com", "nerdwallet.com"
+    ]
+  },
+
+  "legal_gov_patterns": {
+    "keywords": [
+      "court", "legal", "lawsuit", "subpoena", "jury duty", "dmv",
+      "irs", "tax", "government", "federal", "state", "city hall",
+      "license", "permit", "registration", "violation", "citation",
+      "summons", "warrant", "legal notice", "compliance", "regulation",
+      "audit", "investigation", "enforcement", "penalty", "fine"
+    ],
+    "domains": [
+      ".gov", ".org", "irs.gov", "dmv.", "court.", "state.",
+      "city.", "county.", "federal", "courthouse", "sheriff",
+      "police.", "attorney", "lawyer", "legal"
+    ]
+  },
+
+  "tax_patterns": {
+    "keywords": [
+      "tax", "w-2", "w2", "1099", "tax document", "tax form",
+      "tax return", "refund", "irs", "tax preparation", "tax season",
+      "deduction", "withholding", "tax liability", "tax credit",
+      "schedule", "form", "filing", "turbotax", "h&r block"
+    ],
+    "file_types": [
+      ".pdf", "tax document", "tax form", "w-2", "w2", "1099"
+    ]
+  },
+
+  "delete_patterns": {
+    "promotional": [
+      "sale", "discount", "offer", "deal", "coupon", "promo",
+      "limited time", "shop now", "buy now", "unsubscribe",
+      "% off", "free shipping", "clearance", "special offer",
+      "flash sale", "black friday", "cyber monday", "holiday sale"
+    ],
+    "social_media": [
+      "facebook", "twitter", "instagram", "linkedin", "tiktok",
+      "notification", "comment", "like", "follow", "connection",
+      "friend request", "tag", "mention", "post", "story",
+      "snap", "snapchat", "pinterest", "reddit", "youtube"
+    ],
+    "newsletters": [
+      "newsletter", "weekly", "daily", "digest", "roundup",
+      "update", "briefing", "summary", "bulletin", "recap",
+      "highlights", "news", "trends", "insights", "analysis"
+    ],
+    "confirmations": [
+      "confirmation", "receipt", "order", "shipping", "delivered",
+      "tracking", "invoice", "payment received", "subscription",
+      "renewal", "booking", "reservation", "appointment"
+    ],
+    "travel": [
+      "flight", "hotel", "booking", "reservation", "itinerary",
+      "boarding pass", "check-in", "airline", "airport",
+      "rental car", "uber", "lyft", "airbnb"
+    ],
+    "shopping": [
+      "amazon", "ebay", "etsy", "walmart", "target", "costco",
+      "shipped", "delivered", "return", "refund", "review",
+      "wishlist", "cart", "checkout", "purchase"
+    ],
+    "entertainment": [
+      "netflix", "spotify", "hulu", "disney", "apple music",
+      "prime video", "youtube premium", "gaming", "tickets",
+      "event", "concert", "movie", "show"
+    ],
+    "health_fitness": [
+      "fitbit", "apple health", "strava", "myfitnesspal",
+      "workout", "steps", "calories", "activity", "wellness"
+    ]
+  },
+
+  "confidence_thresholds": {
+    "work_email": 3,
+    "urgent_personal": 4,
+    "financial_alert": 4,
+    "legal_gov": 3,
+    "tax_document": 4
+  }
+}

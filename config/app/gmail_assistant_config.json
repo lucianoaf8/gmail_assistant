@@ -1,0 +1,30 @@
+{
+  "common_queries": {
+    "march_2025": "after:2025/02/28 before:2025/04/01",
+    "unread_only": "is:unread",
+    "newsletters": "from:(theresanaiforthat.com OR mindstream.news OR futurepedia.io)",
+    "ai_content": "subject:(AI OR artificial intelligence OR machine learning OR ML OR LLM)",
+    "service_notifications": "from:(namecheap.com OR pythonanywhere.com OR zoho.com OR apollocover.com)",
+    "last_6_months": "newer_than:6m",
+    "last_year": "newer_than:1y",
+    "large_emails": "larger:10M",
+    "with_attachments": "has:attachment"
+  },
+  "default_settings": {
+    "max_emails": 500,
+    "output_format": "both",
+    "organize_by": "date",
+    "output_directory": "gmail_backup"
+  },
+  "cleanup_suggestions": {
+    "auto_delete_queries": [
+      "category:promotions older_than:3m",
+      "from:noreply older_than:6m",
+      "subject:newsletter older_than:6m"
+    ],
+    "auto_archive_queries": [
+      "category:updates older_than:1m",
+      "from:(github.com OR stackoverflow.com) older_than:3m"
+    ]
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "analysis_config": {
+    "name": "Gmail Daily Analysis Pipeline",
+    "version": "1.0.0",
+    "description": "Comprehensive email analysis following documented methodology",
+    "created": "2025-09-22",
+    "author": "Claude Code Implementation"
+  },
+  
+  "quality_thresholds": {
+    "min_completeness": 95.0,
+    "max_null_rate": 5.0,
+    "max_duplicate_rate": 0.1,
+    "min_date_coverage": 0.95,
+    "min_classification_confidence": 0.8
+  },
+  
+  "quality_gates": {
+    "block_processing": [
+      "duplicate_gmail_ids",
+      "invalid_date_format",
+      "critical_missing_data"
+    ],
+    "warning_conditions": [
+      "high_null_rate",
+      "classification_low_confidence",
+      "temporal_anomalies"
+    ],
+    "info_notifications": [
+      "minor_inconsistencies",
+      "performance_degradation"
+    ]
+  },
+  
+  "classification_config": {
+    "confidence_threshold": 0.7,
+    "enable_custom_categories": true,
+    "fallback_category": "Other",
+    "case_sensitive": false,
+    "use_content_analysis": true,
+    "use_sender_patterns": true
+  },
+  
+  "classification_rules": {
+    "Financial": {
+      "priority": 1,
+      "keywords": [
+        "payment", "invoice", "bill", "receipt", "balance", "card", "bank",
+        "transaction", "charge", "refund", "statement", "due", "overdue",
+        "account", "credit", "debit", "finance", "money", "cost", "price",
+        "subscription", "renewal", "billing", "paypal", "stripe", "affirm"
+      ],
+      "sender_patterns": [
+        "billing@", "finance@", "payments@", "noreply@.*bank", "@affirm",
+        "statement@", "receipts@", "invoices@"
+      ],
+      "confidence_threshold": 0.7
+    },
+    "Notifications": {
+      "priority": 2,
+      "keywords": [
+        "notification", "alert", "reminder", "backup", "report", "status",
+        "update", "confirm", "verification", "security", "warning", "error",
+        "maintenance", "system", "server", "service", "monitoring"
+      ],
+      "sender_patterns": [
+        "noreply@", "no-reply@", "notifications@", "alerts@", 
+        "backupstatus@", "system@", "service@"
+      ],
+      "confidence_threshold": 0.7
+    },
+    "Transportation": {
+      "priority": 3,
+      "keywords": [
+        "ride", "trip", "uber", "lyft", "bird", "scooter", "taxi", "journey",
+        "pickup", "dropoff", "driver", "vehicle", "transportation", "travel"
+      ],
+      "sender_patterns": [
+        "@uber.com", "@lyft.com", "@bird.co", "noreply@bird.co"
+      ],
+      "confidence_threshold": 0.8
+    },
+    "Marketing/News": {
+      "priority": 4,
+      "keywords": [
+        "newsletter", "unsubscribe", "marketing", "offer", "deal", "promotion",
+        "sale", "discount", "coupon", "news", "update", "announcement",
+        "campaign", "launch", "featured", "exclusive", "limited"
+      ],
+      "sender_patterns": [
+        "marketing@", "newsletter@", "promotions@", "news@", 
+        "@mail.beehiiv.com", "@mindstream.news", "@therundown.ai"
+      ],
+      "confidence_threshold": 0.7
+    },
+    "Social": {
+      "priority": 5,
+      "keywords": [
+        "social", "friend", "follow", "like", "comment", "mention", "tag",
+        "share", "post", "message", "connection", "network", "community"
+      ],
+      "sender_patterns": [
+        "@facebook.com", "@twitter.com", "@linkedin.com", "@instagram.com"
+      ],
+      "confidence_threshold": 0.8
+    },
+    "Work/Business": {
+      "priority": 6,
+      "keywords": [
+        "meeting", "project", "work", "team", "deadline", "task", "calendar",
+        "conference", "presentation", "document", "report", "business",
+        "corporate", "office", "colleague", "manager", "client"
+      ],
+      "sender_patterns": [
+        "calendar@", "teams@", "@company.com", "@workplace"
+      ],
+      "confidence_threshold": 0.7
+    }
+  },
+  
+  "custom_categories": {
+    "AI_Newsletters": {
+      "priority": 2,
+      "keywords": [
+        "artificial intelligence", "AI", "machine learning", "neural",
+        "chatgpt", "openai", "claude", "anthropic", "llm", "gpt"
+      ],
+      "sender_patterns": [
+        "@therundown.ai", "@mindstream.news", "@theresanaiforthat.com",
+        "futureblueprint@", "@product-guy.com"
+      ],
+      "confidence_threshold": 0.8
+    },
+    "Backup_Reports": {
+      "priority": 2,
+      "keywords": [
+        "backup", "backed up", "backup report", "backup status",
+        "idrive", "backup summary", "backup notification"
+      ],
+      "sender_patterns": [
+        "@backupstatus.idrive.com", "backup@", "idrive@"
+      ],
+      "confidence_threshold": 0.9
+    },
+    "Educational": {
+      "priority": 7,
+      "keywords": [
+        "course", "lesson", "education", "learning", "tutorial",
+        "class", "study", "academic", "university", "estacio"
+      ],
+      "sender_patterns": [
+        "@estacio.br", "@university", "@edu", "education@"
+      ],
+      "confidence_threshold": 0.8
+    }
+  },
+  
+  "automation_detection": {
+    "indicators": [
+      "noreply", "no-reply", "notification", "alert", "service",
+      "support", "help", "admin", "system", "donotreply",
+      "automated", "robot", "bot", "mailer-daemon", "auto"
+    ],
+    "domain_patterns": [
+      "amazonaws.com", "sendgrid.", "mailgun.", "mailchimp.",
+      "constantcontact.com", "mailjet.com", "beehiiv.com"
+    ],
+    "confidence_threshold": 0.8
+  },
+  
+  "temporal_analysis": {
+    "peak_detection_threshold": 2.0,
+    "rolling_window_days": 7,
+    "seasonal_analysis_enabled": true,
+    "time_zone": "UTC",
+    "business_hours": {
+      "start": 9,
+      "end": 17,
+      "timezone": "UTC"
+    }
+  },
+  
+  "sender_analysis": {
+    "top_senders_count": 50,
+    "domain_classification_enabled": true,
+    "diversity_metrics_enabled": true,
+    "min_emails_for_pattern": 5
+  },
+  
+  "content_analysis": {
+    "length_buckets": [0, 500, 2000, 5000, 10000, 20000],
+    "bucket_labels": ["Very Short", "Short", "Medium", "Long", "Very Long", "Extremely Long"],
+    "url_analysis_enabled": true,
+    "signature_detection_enabled": true,
+    "language_detection_enabled": false,
+    "readability_analysis_enabled": false
+  },
+  
+  "output_config": {
+    "formats": {
+      "json": true,
+      "csv": false,
+      "html_dashboard": false,
+      "excel": false
+    },
+    "compression": false,
+    "include_raw_data": false,
+    "decimal_places": 3
+  },
+  
+  "logging_config": {
+    "log_level": "INFO",
+    "log_file": "logs/daily_analysis.log",
+    "max_log_size_mb": 10,
+    "backup_count": 5,
+    "console_output": true,
+    "detailed_timing": false
+  },
+  
+  "performance_config": {
+    "batch_size": 1000,
+    "parallel_processing": false,
+    "memory_limit_gb": 8,
+    "cache_enabled": true
+  },
+  
+  "alert_thresholds": {
+    "volume_spike_multiplier": 3.0,
+    "new_sender_threshold": 50,
+    "quality_degradation_threshold": 0.9,
+    "classification_confidence_min": 0.8,
+    "processing_time_max_minutes": 30
+  },
+  
+  "data_retention": {
+    "raw_analysis_days": 90,
+    "aggregated_data_days": 365,
+    "archive_after_days": 730,
+    "cleanup_enabled": true
+  },
+  
+  "integration": {
+    "dashboard_webhook": null,
+    "slack_webhook": null,
+    "email_alerts": {
+      "enabled": false,
+      "smtp_server": null,
+      "recipients": []
+    },
+    "api_endpoints": {
+      "results_api": null,
+      "health_check": null
+    }
+  },
+  
+  "scheduling": {
+    "execution_time": "06:00",
+    "timezone": "UTC",
+    "retry_attempts": 3,
+    "retry_delay_minutes": 15,
+    "skip_weekends": false,
+    "skip_holidays": false
+  }
+}

@@ -1,0 +1,38 @@
+# Gmail Fetcher - Consolidated Requirements
+# =========================================
+
+# === CORE: Gmail API (Required) ===
+google-api-python-client>=2.140.0
+google-auth>=2.27.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+
+# === CORE: HTML Processing (Required) ===
+html2text>=2024.2.26
+beautifulsoup4>=4.12.3
+markdownify>=0.13.0
+lxml>=5.0.0
+
+# === CORE: Security & Reliability (Required) ===
+keyring>=25.0.0
+tenacity>=8.2.0
+requests>=2.32.0
+urllib3>=2.2.0
+
+# === CONTENT: Advanced Extraction (Optional) ===
+readability-lxml>=0.8.1
+trafilatura>=1.9.0
+
+# === ASYNC: Performance Improvements (Optional) ===
+aiohttp>=3.9.5
+asyncio-throttle>=1.0.2
+psutil>=5.9.8
+
+# === ANALYSIS: Data Processing (Optional) ===
+pandas>=2.1.0
+numpy>=1.26.0
+pyarrow>=15.0.0
+
+# === UI: Progress Display (Optional) ===
+rich>=13.7.0
+tqdm>=4.66.0
