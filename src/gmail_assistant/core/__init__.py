@@ -1,6 +1,6 @@
 """
-Gmail Fetcher Core Module
-========================
+Gmail Assistant Core Module
+===========================
 
 Core functionality for Gmail API operations, configuration, and utilities.
 
@@ -10,8 +10,24 @@ Sub-packages:
 - processing: Email content processing
 - ai: AI-powered email processing
 
+Key exports:
+- AppConfig: Configuration loader
+- GmailAssistantError: Base exception
+- ConfigError, AuthError, NetworkError, APIError: Domain exceptions
+
 Lazy imports are used to avoid ImportError when dependencies are not installed.
 """
+
+# Direct imports for core functionality (always available)
+from gmail_assistant.core.config import AppConfig
+from gmail_assistant.core.exceptions import (
+    GmailAssistantError,
+    ConfigError,
+    AuthError,
+    NetworkError,
+    APIError,
+)
+
 
 # Use lazy imports to avoid import errors when dependencies are not installed
 def __getattr__(name):
@@ -87,6 +103,13 @@ def __getattr__(name):
 
 
 __all__ = [
+    # Core - Configuration and Exceptions
+    "AppConfig",
+    "GmailAssistantError",
+    "ConfigError",
+    "AuthError",
+    "NetworkError",
+    "APIError",
     # Auth
     'ReadOnlyGmailAuth',
     'GmailModifyAuth',

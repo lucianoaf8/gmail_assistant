@@ -1,21 +1,40 @@
 """
 Configuration loader with secure defaults and strict validation.
 
-Fixed in v4:
-- Default output_dir is home-based, not CWD
-- Repo-safety uses is_relative_to (Python 3.10+)
-- Repo root determined from config file or project, not credential path
-- Handles git-not-installed explicitly
+Resolution Order (highest to lowest priority):
+1. CLI arguments (--config, --credentials-path, etc.)
+2. Environment variable: gmail_assistant_CONFIG
+3. Project config: ./gmail-assistant.json (current directory)
+4. User config: ~/.gmail-assistant/config.json
+5. Built-in defaults
+
+Security Features:
+- Credentials default to ~/.gmail-assistant/ (outside any repo)
+- Repo-local credentials require explicit --allow-repo-credentials flag
+- Paths are validated and expanded (~, relative paths)
+- Unknown keys are rejected
+- Type validation on all fields
+
+CORRECTED: ConfigError is imported from exceptions.py (single source of truth)
+CORRECTED: Behavior documented when git is unavailable
 """
 from __future__ import annotations
 
 import json
+import logging
 import os
 import subprocess
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
+
+# CORRECTED: Import ConfigError from exceptions (single authoritative source)
+from gmail_assistant.core.exceptions import ConfigError
+
+__all__ = ["AppConfig", "ConfigError"]
+
+logger = logging.getLogger(__name__)
 
 # Schema enforcement
 _ALLOWED_KEYS = frozenset({
@@ -30,10 +49,6 @@ _ALLOWED_KEYS = frozenset({
 _LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
 
 
-class ConfigError(Exception):
-    """Configuration validation error."""
-
-
 @dataclass(frozen=True, slots=True)
 class AppConfig:
     """Validated, immutable application configuration."""
@@ -42,8 +57,12 @@ class AppConfig:
     token_path: Path
     output_dir: Path
     max_emails: int = 1000
-    rate_limit_per_second: float = 8.0
+    rate_limit_per_second: float = 10.0
     log_level: str = "INFO"
+
+    # Class-level constants
+    ENV_VAR: ClassVar[str] = "gmail_assistant_CONFIG"
+    PROJECT_CONFIG_NAME: ClassVar[str] = "gmail-assistant.json"
 
     def __post_init__(self) -> None:
         if not 1 <= self.max_emails <= 50000:
@@ -57,8 +76,8 @@ class AppConfig:
 
     @classmethod
     def default_dir(cls) -> Path:
-        """Return the default config directory (~/.gmail-fetcher/)."""
-        return Path.home() / ".gmail-fetcher"
+        """Return the default config directory (~/.gmail-assistant/)."""
+        return Path.home() / ".gmail-assistant"
 
     @classmethod
     def load(
@@ -89,6 +108,7 @@ class AppConfig:
 
     @classmethod
     def _resolve_config_path(cls, cli_config: Path | None) -> Path | None:
+        """Resolve config path from various sources."""
         # Priority 1: CLI argument
         if cli_config is not None:
             resolved = cli_config.resolve()
@@ -97,14 +117,19 @@ class AppConfig:
             return resolved
 
         # Priority 2: Environment variable
-        env_config = os.environ.get("gmail_assistant_CONFIG")
+        env_config = os.environ.get(cls.ENV_VAR)
         if env_config:
             resolved = Path(env_config).resolve()
             if not resolved.exists():
-                raise ConfigError(f"gmail_assistant_CONFIG not found: {resolved}")
+                raise ConfigError(f"{cls.ENV_VAR} not found: {resolved}")
             return resolved
 
-        # Priority 3: User home config
+        # Priority 3: Project config (current directory)
+        project_config = Path.cwd() / cls.PROJECT_CONFIG_NAME
+        if project_config.exists():
+            return project_config.resolve()
+
+        # Priority 4: User home config
         user_config = cls.default_dir() / "config.json"
         if user_config.exists():
             return user_config.resolve()
@@ -168,7 +193,14 @@ class AppConfig:
 
     @staticmethod
     def _find_repo_root(search_from: Path) -> Path | None:
-        """Find git repo root, or None if not in a repo or git not installed."""
+        """
+        Find git repo root, or None if not in a repo or git not installed.
+
+        CORRECTED: Documents behavior when git is unavailable.
+        If git is not installed or not in PATH, returns None
+        and repo-safety checks are skipped (credentials allowed anywhere).
+        A warning is logged in this case.
+        """
         try:
             result = subprocess.run(
                 ["git", "rev-parse", "--show-toplevel"],
@@ -179,8 +211,14 @@ class AppConfig:
             )
             if result.returncode == 0:
                 return Path(result.stdout.strip()).resolve()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            # git not installed or timed out
+        except FileNotFoundError:
+            # Git not installed - log warning
+            logger.warning(
+                "git not found in PATH; repo-safety checks disabled. "
+                "Credentials may be placed anywhere without warning."
+            )
+        except subprocess.TimeoutExpired:
+            # Timed out - ignore
             pass
         return None
 

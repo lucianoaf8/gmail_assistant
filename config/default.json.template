@@ -1,0 +1,8 @@
+{
+  "credentials_path": "~/.gmail-assistant/credentials.json",
+  "token_path": "~/.gmail-assistant/token.json",
+  "output_dir": "~/.gmail-assistant/backups",
+  "max_emails": 1000,
+  "rate_limit_per_second": 10.0,
+  "log_level": "INFO"
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/user/gmail-assistant/config.schema.json",
+  "title": "Gmail Assistant Configuration",
+  "description": "Configuration schema for Gmail Assistant v2.0.0",
+  "type": "object",
+  "properties": {
+    "credentials_path": {
+      "type": "string",
+      "description": "Path to Google OAuth credentials JSON file. Relative paths resolved from config file location. Supports ~ expansion.",
+      "minLength": 1,
+      "examples": ["~/.gmail-assistant/credentials.json", "./credentials.json"]
+    },
+    "token_path": {
+      "type": "string",
+      "description": "Path to store OAuth token after authentication. Relative paths resolved from config file location. Supports ~ expansion.",
+      "minLength": 1,
+      "examples": ["~/.gmail-assistant/token.json", "./token.json"]
+    },
+    "output_dir": {
+      "type": "string",
+      "description": "Directory for email backups and exports. Relative paths resolved from config file location. Supports ~ expansion.",
+      "minLength": 1,
+      "examples": ["~/.gmail-assistant/backups", "./gmail_backup"]
+    },
+    "max_emails": {
+      "type": "integer",
+      "description": "Maximum number of emails to fetch per operation.",
+      "minimum": 1,
+      "maximum": 100000,
+      "default": 1000
+    },
+    "rate_limit_per_second": {
+      "type": "number",
+      "description": "Maximum API requests per second.",
+      "exclusiveMinimum": 0,
+      "maximum": 100,
+      "default": 10.0
+    },
+    "log_level": {
+      "type": "string",
+      "description": "Logging verbosity level.",
+      "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+      "default": "INFO"
+    }
+  },
+  "additionalProperties": false
+}
