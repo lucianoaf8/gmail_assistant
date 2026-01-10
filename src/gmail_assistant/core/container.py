@@ -40,6 +40,7 @@ from .protocols import (
     EmailFetcherProtocol,
     EmailDeleterProtocol,
     EmailParserProtocol,
+    EmailRepositoryProtocol,  # M-9: Repository pattern
     CacheProtocol,
     RateLimiterProtocol,
     ValidatorProtocol,
@@ -346,6 +347,7 @@ def create_default_container() -> ServiceContainer:
     - RateLimiter (singleton)
     - InputValidator (transient)
     - ErrorHandler (singleton)
+    - EmailRepository (singleton) - M-9: Repository pattern
 
     Returns:
         Configured ServiceContainer.
@@ -358,6 +360,7 @@ def create_default_container() -> ServiceContainer:
     from ..utils.rate_limiter import GmailRateLimiter
     from ..utils.input_validator import InputValidator
     from ..utils.error_handler import ErrorHandler
+    from .processing.database import EmailDatabaseImporter
 
     container = ServiceContainer()
 
@@ -369,6 +372,12 @@ def create_default_container() -> ServiceContainer:
     )
     container.register_type(InputValidator, InputValidator, ServiceLifetime.TRANSIENT)
     container.register(ErrorHandler, ErrorHandler())
+
+    # M-9: Register email repository for persistence operations
+    container.register_factory(
+        EmailRepositoryProtocol,
+        lambda: EmailDatabaseImporter()
+    )
 
     logger.info("Created default container with core utilities")
     return container

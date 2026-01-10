@@ -2,69 +2,78 @@
 """
 Gmail API Integration for AI Newsletter Cleaner
 Handles actual Gmail operations via Google API
+
+Security: Uses SecureCredentialManager for OS keyring storage (H-1 fix)
 """
 
 import os
-import json
 import logging
 from datetime import datetime
 from typing import List, Dict, Optional
+
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from googleapiclient.errors import HttpError
+
 from ..ai.newsletter_cleaner import EmailData, AINewsletterDetector
+from ..auth.credential_manager import SecureCredentialManager
 from ..constants import SCOPES_MODIFY
+from ..exceptions import AuthError, APIError, NetworkError
+from .batch_api import GmailBatchClient, BatchResult, BatchAPIError
 
 logger = logging.getLogger(__name__)
 
+
 class GmailAPIClient:
-    """Gmail API client for actual email operations"""
+    """Gmail API client for actual email operations with secure credential storage"""
 
     SCOPES = SCOPES_MODIFY
-    
-    def __init__(self, credentials_path: str = 'credentials.json', token_path: str = 'token.json'):
+
+    def __init__(self, credentials_path: str = 'credentials.json'):
+        """
+        Initialize Gmail API client with secure credential management.
+
+        Args:
+            credentials_path: Path to OAuth client credentials file
+        """
         self.credentials_path = credentials_path
-        self.token_path = token_path
+        # Use SecureCredentialManager for keyring-based storage (H-1 security fix)
+        self.credential_manager = SecureCredentialManager(credentials_path)
         self.service = None
-        self.authenticate()
+        self.batch_client = None  # C-1: Batch API client
+        self._authenticate()
+        self._migrate_legacy_tokens()
 
-    def authenticate(self):
-        """Authenticate with Gmail API using secure JSON token storage."""
-        creds = None
+    def _authenticate(self):
+        """Authenticate with Gmail API using secure keyring storage."""
+        try:
+            if self.credential_manager.authenticate():
+                self.service = self.credential_manager.get_service()
+                # C-1: Initialize batch client for efficient bulk operations
+                if self.service:
+                    self.batch_client = GmailBatchClient(self.service)
+                logger.info("Gmail API authentication successful via SecureCredentialManager")
+                print("Gmail API authentication successful")
+            else:
+                logger.error("Gmail API authentication failed")
+                raise AuthError("Failed to authenticate with Gmail API")
+        except AuthError:
+            raise
+        except (OSError, IOError) as e:
+            logger.error(f"Credential file error: {e}")
+            raise AuthError(f"Credential file error: {e}") from e
+        except HttpError as e:
+            logger.error(f"Google API auth error: {e}")
+            raise AuthError(f"Google API auth error: {e}") from e
 
-        # Load existing token from JSON (secure deserialization)
-        if os.path.exists(self.token_path):
-            try:
-                creds = Credentials.from_authorized_user_file(self.token_path, self.SCOPES)
-                logger.info("Loaded credentials from JSON token file")
-            except (json.JSONDecodeError, ValueError) as e:
-                logger.warning(f"Invalid token file, will re-authenticate: {e}")
-                creds = None
-
-        # Refresh or get new credentials
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                try:
-                    creds.refresh(Request())
-                    logger.info("Refreshed expired credentials")
-                except Exception as e:
-                    logger.warning(f"Failed to refresh credentials: {e}")
-                    creds = None
-
-            if not creds:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    self.credentials_path, self.SCOPES)
-                creds = flow.run_local_server(port=0)
-                logger.info("Completed OAuth flow for new credentials")
-
-            # Save credentials as JSON (secure serialization)
-            with open(self.token_path, 'w', encoding='utf-8') as token:
-                token.write(creds.to_json())
-            logger.info(f"Saved credentials to {self.token_path}")
-
-        self.service = build('gmail', 'v1', credentials=creds)
-        print("Gmail API authentication successful")
+    def _migrate_legacy_tokens(self):
+        """One-time migration notice for legacy plaintext tokens."""
+        legacy_token_paths = ['token.json', 'config/token.json', 'config/security/token.json']
+        for legacy_path in legacy_token_paths:
+            if os.path.exists(legacy_path):
+                logger.warning(f"Found legacy token file: {legacy_path}")
+                logger.info("Credentials are now stored securely in OS keyring")
+                logger.info(f"You may safely delete the legacy token file: {legacy_path}")
+                print(f"Note: Legacy token file found at {legacy_path} - credentials now use secure keyring storage")
     
     def fetch_unread_emails(self, max_results: int = 2938) -> List[EmailData]:
         """Fetch unread emails from Gmail"""
@@ -92,26 +101,65 @@ class GmailAPIClient:
                 print(f"  Loaded {min(i + batch_size, len(messages))}/{len(messages)} emails...")
             
             return emails
-            
-        except Exception as e:
-            print(f"❌ Error fetching emails: {str(e)}")
+
+        except HttpError as e:
+            logger.error(f"Gmail API error fetching emails: {e}")
+            print(f"❌ Gmail API error: {str(e)}")
+            return []
+        except (OSError, IOError, ConnectionError) as e:
+            logger.error(f"Network/IO error fetching emails: {e}")
+            print(f"❌ Network error: {str(e)}")
             return []
     
     def _fetch_email_batch(self, message_ids: List[Dict]) -> List[EmailData]:
-        """Fetch a batch of emails efficiently"""
+        """Fetch a batch of emails using Batch API (C-1 fix)."""
+        if not self.batch_client:
+            logger.warning("Batch client not initialized, falling back to sequential")
+            return self._fetch_email_batch_sequential(message_ids)
+
+        try:
+            # Extract IDs from dicts
+            ids = [msg['id'] for msg in message_ids]
+
+            # Use batch API for 80-90% performance improvement
+            emails = self.batch_client.batch_get_messages(
+                ids,
+                format='metadata',
+                metadata_headers=['From', 'Subject', 'Date']
+            )
+
+            # Convert Email objects to EmailData for backward compatibility
+            return [
+                EmailData(
+                    id=email.gmail_id,
+                    subject=email.subject,
+                    sender=email.sender,
+                    date=email.date.isoformat() if email.date else '',
+                    thread_id=email.thread_id,
+                    labels=email.labels,
+                    body_snippet=email.snippet
+                )
+                for email in emails
+            ]
+        except (BatchAPIError, HttpError) as e:
+            logger.warning(f"Batch API failed, using sequential: {e}")
+            return self._fetch_email_batch_sequential(message_ids)
+
+    def _fetch_email_batch_sequential(self, message_ids: List[Dict]) -> List[EmailData]:
+        """Fetch emails sequentially (fallback for batch API failure)."""
         emails = []
-        
+
         for msg_id in message_ids:
             try:
                 message = self.service.users().messages().get(
-                    userId='me', 
+                    userId='me',
                     id=msg_id['id'],
                     format='metadata',
                     metadataHeaders=['From', 'Subject', 'Date']
                 ).execute()
-                
+
                 headers = {h['name']: h['value'] for h in message['payload']['headers']}
-                
+
                 emails.append(EmailData(
                     id=message['id'],
                     subject=headers.get('Subject', ''),
@@ -121,59 +169,105 @@ class GmailAPIClient:
                     labels=message.get('labelIds', []),
                     body_snippet=message.get('snippet', '')
                 ))
-                
-            except Exception as e:
-                print(f"⚠️  Warning: Failed to fetch email {msg_id['id']}: {str(e)}")
+
+            except HttpError as e:
+                logger.warning(f"API error fetching email {msg_id['id']}: {e}")
+                print(f"⚠️  Warning: API error for email {msg_id['id']}: {str(e)}")
                 continue
-        
+            except KeyError as e:
+                logger.warning(f"Missing data in email {msg_id['id']}: {e}")
+                continue
+
         return emails
     
     def delete_emails(self, email_ids: List[str]) -> Dict[str, int]:
-        """Delete emails by ID"""
+        """Delete emails by ID using batch API (C-1 fix)."""
+        print(f"🗑️  Deleting {len(email_ids)} emails...")
+
+        # Use batch API if available
+        if self.batch_client:
+            try:
+                def progress_callback(current: int, total: int):
+                    if current % 50 == 0 or current == total:
+                        print(f"  Deleted {current}/{total} emails...")
+
+                result = self.batch_client.batch_delete_messages(
+                    email_ids,
+                    progress_callback=progress_callback
+                )
+                return {'deleted': result.successful, 'failed': result.failed}
+            except (BatchAPIError, HttpError) as e:
+                logger.warning(f"Batch delete failed, using sequential: {e}")
+
+        # Fallback to sequential deletion
+        return self._delete_emails_sequential(email_ids)
+
+    def _delete_emails_sequential(self, email_ids: List[str]) -> Dict[str, int]:
+        """Delete emails sequentially (fallback)."""
         deleted_count = 0
         failed_count = 0
-        
-        print(f"🗑️  Deleting {len(email_ids)} emails...")
-        
+
         for i, email_id in enumerate(email_ids):
             try:
                 self.service.users().messages().delete(
-                    userId='me', 
+                    userId='me',
                     id=email_id
                 ).execute()
                 deleted_count += 1
-                
+
                 if (i + 1) % 50 == 0:
                     print(f"  Deleted {i + 1}/{len(email_ids)} emails...")
-                    
-            except Exception as e:
+
+            except HttpError as e:
+                logger.warning(f"API error deleting email {email_id}: {e}")
                 print(f"⚠️  Failed to delete email {email_id}: {str(e)}")
                 failed_count += 1
-        
+
         return {'deleted': deleted_count, 'failed': failed_count}
     
     def trash_emails(self, email_ids: List[str]) -> Dict[str, int]:
-        """Move emails to trash instead of permanent deletion"""
+        """Move emails to trash using batch API (C-1 fix)."""
+        print(f"🗑️  Moving {len(email_ids)} emails to trash...")
+
+        # Use batch API if available
+        if self.batch_client:
+            try:
+                def progress_callback(current: int, total: int):
+                    if current % 50 == 0 or current == total:
+                        print(f"  Trashed {current}/{total} emails...")
+
+                result = self.batch_client.batch_trash_messages(
+                    email_ids,
+                    progress_callback=progress_callback
+                )
+                return {'trashed': result.successful, 'failed': result.failed}
+            except (BatchAPIError, HttpError) as e:
+                logger.warning(f"Batch trash failed, using sequential: {e}")
+
+        # Fallback to sequential
+        return self._trash_emails_sequential(email_ids)
+
+    def _trash_emails_sequential(self, email_ids: List[str]) -> Dict[str, int]:
+        """Trash emails sequentially (fallback)."""
         trashed_count = 0
         failed_count = 0
-        
-        print(f"🗑️  Moving {len(email_ids)} emails to trash...")
-        
+
         for i, email_id in enumerate(email_ids):
             try:
                 self.service.users().messages().trash(
-                    userId='me', 
+                    userId='me',
                     id=email_id
                 ).execute()
                 trashed_count += 1
-                
+
                 if (i + 1) % 50 == 0:
                     print(f"  Trashed {i + 1}/{len(email_ids)} emails...")
-                    
-            except Exception as e:
+
+            except HttpError as e:
+                logger.warning(f"API error trashing email {email_id}: {e}")
                 print(f"⚠️  Failed to trash email {email_id}: {str(e)}")
                 failed_count += 1
-        
+
         return {'trashed': trashed_count, 'failed': failed_count}
 
 def main():
@@ -286,9 +380,13 @@ def main():
             print(f"🔄 Use --delete or --trash to perform actual operation")
         
         print(f"📝 Detailed log saved to: {log_file}")
-        
-    except Exception as e:
-        print(f"❌ Error: {str(e)}")
+
+    except AuthError as e:
+        print(f"❌ Authentication error: {str(e)}")
+    except HttpError as e:
+        print(f"❌ Gmail API error: {str(e)}")
+    except (OSError, IOError) as e:
+        print(f"❌ File/IO error: {str(e)}")
 
 if __name__ == "__main__":
     main()

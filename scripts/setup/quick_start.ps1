@@ -1,8 +1,49 @@
 # Gmail Fetcher - Quick Setup and Run (PowerShell)
 # Usage: .\quick_start.ps1
+# Security: Implements input sanitization (M-6 fix)
 
 Write-Host "Gmail Fetcher - Quick Setup and Run" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
+
+# Security: Input sanitization functions (M-6 fix)
+function Sanitize-GmailQuery {
+    param([string]$Query)
+
+    # Remove potentially dangerous PowerShell/shell characters
+    $dangerous = @('`', '$', '(', ')', '{', '}', ';', '|', '&', '<', '>')
+
+    foreach ($char in $dangerous) {
+        $Query = $Query.Replace($char, '')
+    }
+
+    # Remove any remaining control characters
+    $Query = $Query -replace '[\x00-\x1f\x7f]', ''
+
+    # Limit length to prevent buffer issues
+    if ($Query.Length -gt 500) {
+        $Query = $Query.Substring(0, 500)
+    }
+
+    return $Query.Trim()
+}
+
+function Validate-Integer {
+    param(
+        [string]$Input,
+        [int]$Default = 100,
+        [int]$Min = 1,
+        [int]$Max = 10000
+    )
+
+    try {
+        $value = [int]$Input
+        if ($value -lt $Min) { return $Min }
+        if ($value -gt $Max) { return $Max }
+        return $value
+    } catch {
+        return $Default
+    }
+}
 
 # Check if Python is installed
 try {
@@ -98,9 +139,17 @@ switch ($choice) {
         $description = "Last 6 months"
     }
     "5" {
-        $query = Read-Host "Enter Gmail search query"
+        # Security: Sanitize user input (M-6 fix)
+        $rawQuery = Read-Host "Enter Gmail search query"
+        $query = Sanitize-GmailQuery -Query $rawQuery
+
+        if ($query -ne $rawQuery) {
+            Write-Host "Note: Query was sanitized for safety" -ForegroundColor Yellow
+        }
+
         $maxInput = Read-Host "Enter max emails (default 100)"
-        $max = if ($maxInput) { [int]$maxInput } else { 100 }
+        $max = Validate-Integer -Input $maxInput -Default 100 -Min 1 -Max 10000
+
         $output = "custom_search"
         $description = "Custom search"
     }

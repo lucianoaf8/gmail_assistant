@@ -42,7 +42,12 @@ EmailData = TypeVar('EmailData', bound=Dict[str, Any])
 
 @dataclass
 class EmailMetadata:
-    """Metadata for a single email message."""
+    """
+    Metadata for a single email message.
+
+    DEPRECATED (H-1): Use Email from gmail_assistant.core.schemas instead.
+    This class is kept for backward compatibility.
+    """
     id: str
     thread_id: str
     subject: str
@@ -52,6 +57,14 @@ class EmailMetadata:
     labels: List[str]
     snippet: str = ""
     size_estimate: int = 0
+
+    def __post_init__(self):
+        import warnings
+        warnings.warn(
+            "EmailMetadata is deprecated. Use Email from core.schemas instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
 
 @dataclass
@@ -627,6 +640,93 @@ class CacheProtocol(Protocol[T]):
 
     def clear(self) -> None:
         """Clear entire cache."""
+        ...
+
+
+# =============================================================================
+# Repository Protocols (M-9)
+# =============================================================================
+
+@runtime_checkable
+class EmailRepositoryProtocol(Protocol):
+    """
+    Protocol for email storage/persistence operations (M-9 fix).
+
+    Implements the Repository pattern for email storage abstraction.
+    Allows swapping between SQLite, file-based, or cloud storage backends.
+    """
+
+    def save(self, email: Dict[str, Any]) -> bool:
+        """
+        Save an email to the repository.
+
+        Args:
+            email: Email data dictionary with id, subject, sender, etc.
+
+        Returns:
+            True if saved successfully.
+        """
+        ...
+
+    def get(self, email_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get an email by ID.
+
+        Args:
+            email_id: The email ID (Gmail message ID or internal ID)
+
+        Returns:
+            Email data dictionary or None if not found.
+        """
+        ...
+
+    def find(self, query: str, limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Find emails matching a query.
+
+        Args:
+            query: Search query (format depends on backend)
+            limit: Maximum results to return
+
+        Returns:
+            List of matching email dictionaries.
+        """
+        ...
+
+    def delete(self, email_id: str) -> bool:
+        """
+        Delete an email by ID.
+
+        Args:
+            email_id: The email ID to delete
+
+        Returns:
+            True if deleted successfully.
+        """
+        ...
+
+    def count(self, query: Optional[str] = None) -> int:
+        """
+        Count emails, optionally filtered by query.
+
+        Args:
+            query: Optional filter query
+
+        Returns:
+            Number of matching emails.
+        """
+        ...
+
+    def exists(self, email_id: str) -> bool:
+        """
+        Check if an email exists.
+
+        Args:
+            email_id: The email ID to check
+
+        Returns:
+            True if email exists in repository.
+        """
         ...
 
 

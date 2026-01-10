@@ -1,6 +1,8 @@
 """
 Advanced rate limiting with exponential backoff for Gmail API.
 Implements proper quota management and request throttling.
+
+H-2 fix: Uses centralized RateLimitError from exceptions.py
 """
 
 import time
@@ -12,12 +14,9 @@ from functools import wraps
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
 from googleapiclient.errors import HttpError
 
+from gmail_assistant.core.exceptions import RateLimitError
+
 logger = logging.getLogger(__name__)
-
-
-class RateLimitError(Exception):
-    """Custom exception for rate limit errors."""
-    pass
 
 
 class GmailRateLimiter:

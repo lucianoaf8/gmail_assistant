@@ -1,11 +1,31 @@
 """
 Centralized constants for Gmail Assistant.
 Contains all shared configuration values, OAuth scopes, and path definitions.
+
+Security: Supports environment variable overrides for paths (L-1 fix)
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
+
+
+def _get_env_path(env_var: str, default: Path) -> Path:
+    """
+    Get path from environment variable or use default (L-1 security fix).
+
+    Args:
+        env_var: Environment variable name
+        default: Default path if env var not set
+
+    Returns:
+        Path from environment or default
+    """
+    env_value = os.environ.get(env_var)
+    if env_value:
+        return Path(env_value)
+    return default
 
 
 # =============================================================================
@@ -41,28 +61,48 @@ DEFAULT_SCOPES: List[str] = SCOPES_READONLY
 
 
 # =============================================================================
-# Default Paths
+# Default Paths (with environment variable override support - L-1 fix)
 # =============================================================================
 
 # Project root directory
 PROJECT_ROOT: Path = Path(__file__).parent.parent.parent
 
-# Configuration paths
-CONFIG_DIR: Path = PROJECT_ROOT / 'config'
+# Configuration paths with env override (L-1 fix)
+CONFIG_DIR: Path = _get_env_path(
+    'GMAIL_ASSISTANT_CONFIG_DIR',
+    PROJECT_ROOT / 'config'
+)
 DEFAULT_CONFIG_PATH: Path = CONFIG_DIR / 'gmail_assistant_config.json'
 AI_CONFIG_PATH: Path = CONFIG_DIR / 'config.json'
 
-# Data paths
-DATA_DIR: Path = PROJECT_ROOT / 'data'
+# Data paths with env override (L-1 fix)
+DATA_DIR: Path = _get_env_path(
+    'GMAIL_ASSISTANT_DATA_DIR',
+    PROJECT_ROOT / 'data'
+)
 DEFAULT_DB_PATH: Path = DATA_DIR / 'databases' / 'emails_final.db'
-BACKUP_DIR: Path = PROJECT_ROOT / 'backups'
+
+# Backup directory with env override (L-1 fix)
+BACKUP_DIR: Path = _get_env_path(
+    'GMAIL_ASSISTANT_BACKUP_DIR',
+    PROJECT_ROOT / 'backups'
+)
+
+# Credentials directory with env override (L-1 fix)
+CREDENTIALS_DIR: Path = _get_env_path(
+    'GMAIL_ASSISTANT_CREDENTIALS_DIR',
+    CONFIG_DIR / 'security'
+)
 
 # Credentials paths
-DEFAULT_CREDENTIALS_PATH: str = 'credentials.json'
-DEFAULT_TOKEN_PATH: str = 'token.json'
+DEFAULT_CREDENTIALS_PATH: str = str(CREDENTIALS_DIR / 'credentials.json')
+DEFAULT_TOKEN_PATH: str = 'token.json'  # Deprecated: now uses keyring
 
-# Cache paths
-CACHE_DIR: Path = Path.home() / '.gmail_assistant_cache'
+# Cache paths with env override (L-1 fix)
+CACHE_DIR: Path = _get_env_path(
+    'GMAIL_ASSISTANT_CACHE_DIR',
+    Path.home() / '.gmail_assistant_cache'
+)
 
 
 # =============================================================================

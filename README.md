@@ -10,6 +10,10 @@
 > **v2.0.0 Breaking Changes**: This version introduces a new package structure and CLI.
 > See [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for migration guide.
 
+> **⚠️ v2.0.0 CLI Note**: The CLI commands (`fetch`, `delete`, `analyze`, `auth`) are currently stub implementations.
+> Functional implementations are planned for v2.1.0. For immediate functionality, use direct module imports.
+> See [Implementation Status](#implementation-status) for details.
+
 ## 🌟 Overview
 
 Gmail Fetcher Suite is a powerful collection of tools designed to help you backup, analyze, and manage your Gmail emails efficiently. Whether you need to create archives, clean up AI newsletters, convert emails to readable formats, or analyze email content, this suite provides comprehensive solutions.
@@ -70,47 +74,84 @@ Gmail Fetcher Suite is a powerful collection of tools designed to help you backu
 
 ```
 gmail_assistant/
-├── src/                          # Core source code
-│   ├── gmail_assistant.py         # Main Gmail backup tool
-│   ├── advanced_email_parser.py # Multi-strategy content parsing
-│   ├── gmail_ai_newsletter_cleaner.py # AI newsletter detection
-│   ├── gmail_api_client.py      # Gmail API integration
-│   └── gmail_eml_to_markdown_cleaner.py # EML to Markdown converter
-├── scripts/                      # Automation and utility scripts
-│   ├── quick_start.bat          # Windows batch setup
-│   ├── quick_start.ps1          # PowerShell setup  
-│   ├── move_backup_years.ps1    # Backup folder merger
-│   └── dedupe_merge.ps1         # Email deduplication
-├── config/                       # Configuration files
-│   ├── config.json              # AI detection patterns
-│   └── gmail_assistant_config.json # Main fetcher settings
-├── examples/                     # Example usage and samples
-│   ├── samples.py               # Pre-built backup scenarios
-│   └── example_usage.py         # AI cleaner demo
-├── docs/                        # Documentation
-│   ├── usage_deletion.md        # AI newsletter deletion guide
-│   └── README2.md               # Additional documentation
-├── requirements.txt             # Core dependencies
-├── requirements_advanced.txt    # Advanced processing dependencies
-└── README.md                    # This file
+├── src/gmail_assistant/           # Main package (src-layout)
+│   ├── cli/                       # Click-based CLI
+│   │   ├── main.py                # Entry point (gmail-assistant command)
+│   │   └── commands/              # Subcommand implementations
+│   ├── core/                      # Core functionality
+│   │   ├── fetch/                 # Email fetching
+│   │   │   ├── gmail_assistant.py # GmailFetcher class
+│   │   │   └── gmail_api_client.py # Gmail API client
+│   │   ├── ai/                    # AI-related features
+│   │   │   └── newsletter_cleaner.py # Newsletter detection
+│   │   ├── auth/                  # Authentication
+│   │   ├── processing/            # Email processing
+│   │   ├── config.py              # Configuration management
+│   │   ├── constants.py           # API scopes and constants
+│   │   └── exceptions.py          # Exception hierarchy
+│   ├── parsers/                   # Format converters
+│   │   ├── advanced_email_parser.py # HTML to Markdown
+│   │   └── gmail_eml_to_markdown_cleaner.py # EML converter
+│   ├── analysis/                  # Email analysis tools
+│   ├── deletion/                  # Email deletion features
+│   └── utils/                     # Shared utilities
+├── scripts/                       # Automation scripts
+│   ├── setup/                     # Setup and configuration
+│   │   ├── quick_start.bat        # Windows batch setup
+│   │   └── quick_start.ps1        # PowerShell setup
+│   └── backup/                    # Backup management
+│       ├── move_backup_years.ps1  # Backup folder merger
+│       └── dedupe_merge.ps1       # Email deduplication
+├── examples/                      # Example usage
+│   ├── samples.py                 # Pre-built backup scenarios
+│   └── example_usage.py           # AI cleaner demo
+├── config/                        # Configuration files
+├── tests/                         # Test suite
+├── docs/                          # Documentation
+├── pyproject.toml                 # Package configuration
+└── README.md                      # This file
 ```
+
+## Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Package structure | ✅ Complete | `src/gmail_assistant/` layout |
+| CLI framework | ✅ Complete | Click-based with subcommands |
+| CLI `fetch` command | ⚠️ Stub | Functional implementation v2.1.0 |
+| CLI `delete` command | ⚠️ Stub | Functional implementation v2.1.0 |
+| CLI `analyze` command | ⚠️ Stub | Functional implementation v2.1.0 |
+| CLI `auth` command | ⚠️ Stub | Functional implementation v2.1.0 |
+| Core `GmailFetcher` class | ✅ Complete | Direct usage available |
+| Parsers | ✅ Complete | Direct module usage available |
 
 ## 🛠️ Tools & Components
 
 ### Core Tools
 
-#### 1. Gmail Fetcher (`gmail_assistant.py`)
+#### 1. Gmail Fetcher
 The primary email backup tool with comprehensive search and organization capabilities.
 
+**CLI Usage** (v2.1.0 - currently stub):
 ```bash
-# Download unread emails (new CLI)
+# Download unread emails
 gmail-assistant fetch --query "is:unread" --max-emails 1000
 
-# Download by date range with organization
-python src/gmail_assistant.py --query "after:2025/02/28 before:2025/04/01" --organize sender --format both
+# Download with format and output options
+gmail-assistant fetch --query "after:2025/02/28" --format json --output-dir ./backups
+```
 
-# Download AI newsletters specifically
-python src/gmail_assistant.py --query "from:(deeplearning.ai OR theresanaiforthat.com)" --output ai_newsletters
+**Direct Module Usage** (immediately functional):
+```python
+from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+
+fetcher = GmailFetcher('credentials.json')
+fetcher.authenticate()
+profile = fetcher.get_profile()
+print(f"Connected as: {profile['email']}")
+
+# Search and download emails
+message_ids = fetcher.search_messages(query="is:unread", max_results=100)
 ```
 
 **Features:**
@@ -120,12 +161,12 @@ python src/gmail_assistant.py --query "from:(deeplearning.ai OR theresanaifortha
 - Advanced Gmail search query support
 - Rate limiting and error handling
 
-#### 2. Advanced Email Parser (`advanced_email_parser.py`)
+#### 2. Advanced Email Parser
 Intelligent email content extraction with multiple parsing strategies.
 
 ```bash
 # Parse HTML email with multiple strategies
-python src/advanced_email_parser.py email_file.html
+python -m gmail_assistant.parsers.advanced_email_parser email_file.html
 ```
 
 **Features:**
@@ -135,15 +176,15 @@ python src/advanced_email_parser.py email_file.html
 - Quality scoring and automatic best-result selection
 - Configurable content cleaning rules
 
-#### 3. AI Newsletter Cleaner (`gmail_ai_newsletter_cleaner.py`)
+#### 3. AI Newsletter Cleaner
 Automated AI newsletter detection and management system.
 
 ```bash
 # Analyze emails for AI newsletters (dry run)
-python src/gmail_ai_newsletter_cleaner.py email_data.json
+python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json
 
 # Actually delete identified AI newsletters
-python src/gmail_ai_newsletter_cleaner.py email_data.json --delete
+python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json --delete
 ```
 
 **Features:**
@@ -153,15 +194,15 @@ python src/gmail_ai_newsletter_cleaner.py email_data.json --delete
 - Support for JSON/CSV email data
 - Customizable detection rules
 
-#### 4. Gmail API Client (`gmail_api_client.py`)
+#### 4. Gmail API Client
 Direct Gmail operations for real-time email management.
 
 ```bash
 # Fetch and analyze unread emails
-python src/gmail_api_client.py --credentials credentials.json --max-emails 1000
+python -m gmail_assistant.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000
 
 # Actually delete AI newsletters from Gmail
-python src/gmail_api_client.py --delete --max-emails 500
+python -m gmail_assistant.core.fetch.gmail_api_client --delete --max-emails 500
 ```
 
 **Features:**
@@ -171,12 +212,12 @@ python src/gmail_api_client.py --delete --max-emails 500
 - Comprehensive error handling
 - Progress tracking and logging
 
-#### 5. EML to Markdown Cleaner (`gmail_eml_to_markdown_cleaner.py`)
+#### 5. EML to Markdown Cleaner
 Professional email format converter with metadata preservation.
 
 ```bash
 # Convert EML files to clean Markdown
-python src/gmail_eml_to_markdown_cleaner.py --base backup_folder --year 2025
+python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
 ```
 
 **Features:**
@@ -402,7 +443,7 @@ This week in AI: breakthrough in transformer models...
 ## 🛡️ Security & Privacy
 
 ### Data Handling
-- **Read-only Gmail access**: Scripts only request read permissions
+- **Configurable Gmail access**: Default authentication uses read-only scope (`gmail.readonly`). Delete operations require modify scope (`gmail.modify`).
 - **Local storage**: All data stored locally on your machine
 - **No data transmission**: No email content sent to external services
 - **Credential security**: Keep `credentials.json` and `token.json` private
@@ -448,16 +489,33 @@ This week in AI: breakthrough in transformer models...
 
 ### Development Setup
 ```bash
-# Install development dependencies
-pip install -r requirements_advanced.txt
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Or install all optional dependencies
+pip install -e ".[all,dev]"
 
 # Run tests
-python -m pytest tests/
+pytest tests/
 
-# Code formatting
-black src/
-flake8 src/
+# Run tests with coverage
+pytest tests/ --cov=gmail_assistant --cov-report=html
+
+# Code linting (using ruff)
+ruff check src/
+
+# Type checking
+mypy src/gmail_assistant
+
+# All quality checks
+ruff check src/ && mypy src/gmail_assistant && pytest tests/
 ```
+
+### Code Quality Standards
+This project uses:
+- **Ruff** for linting (configured in `pyproject.toml`)
+- **MyPy** for type checking (strict mode)
+- **Pytest** for testing with coverage requirements
 
 ### Adding New Features
 1. Follow existing code patterns and naming conventions

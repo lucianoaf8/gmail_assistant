@@ -1,6 +1,9 @@
 """
 Base authentication module for Gmail Fetcher.
 Provides common authentication patterns and utilities to eliminate code duplication.
+
+Security: Implements rate limiting on authentication attempts (L-2 fix)
+H-2 fix: Uses centralized AuthError from exceptions.py
 """
 
 import logging
@@ -9,14 +12,14 @@ from typing import Optional, Dict, Any, List
 from pathlib import Path
 
 from .credential_manager import SecureCredentialManager
+from .rate_limiter import get_auth_rate_limiter
 from ...utils.error_handler import ErrorHandler, ErrorContext, ErrorCategory
+from ..exceptions import AuthError
 
 logger = logging.getLogger(__name__)
 
-
-class AuthenticationError(Exception):
-    """Custom exception for authentication errors."""
-    pass
+# H-2: Backward compatibility alias
+AuthenticationError = AuthError
 
 
 class AuthenticationBase(ABC):
@@ -65,11 +68,22 @@ class AuthenticationBase(ABC):
 
     def authenticate(self) -> bool:
         """
-        Authenticate with Gmail API.
+        Authenticate with Gmail API with rate limiting (L-2 security fix).
 
         Returns:
             True if authentication successful, False otherwise
         """
+        # Get rate limiter (L-2 fix)
+        rate_limiter = get_auth_rate_limiter()
+
+        # Check rate limit before attempting authentication
+        if not rate_limiter.check_rate_limit(self.credentials_file):
+            remaining = rate_limiter.get_lockout_remaining(self.credentials_file)
+            self._handle_auth_failure(
+                f"Authentication rate limited. Try again in {remaining} seconds."
+            )
+            return False
+
         try:
             self.logger.info("Starting Gmail API authentication")
 
@@ -88,13 +102,25 @@ class AuthenticationBase(ABC):
                 # Get user information
                 self._user_info = self._fetch_user_info()
 
+                # Record successful attempt (L-2 fix)
+                rate_limiter.record_attempt(self.credentials_file, success=True)
+
                 self.logger.info(f"Authentication successful for {self._user_info.get('email', 'unknown user')}")
                 return True
             else:
-                self._handle_auth_failure("Credential manager authentication failed")
+                # Record failed attempt (L-2 fix)
+                rate_limiter.record_attempt(self.credentials_file, success=False)
+                remaining = rate_limiter.get_remaining_attempts(self.credentials_file)
+                self._handle_auth_failure(
+                    f"Credential manager authentication failed. "
+                    f"{remaining} attempts remaining."
+                )
                 return False
 
         except Exception as e:
+            # Record failed attempt (L-2 fix)
+            rate_limiter.record_attempt(self.credentials_file, success=False)
+
             context = ErrorContext(
                 operation="authenticate",
                 additional_data={"credentials_file": self.credentials_file}

@@ -2,11 +2,12 @@
 """
 Gmail AI Newsletter Cleaner
 Identifies and deletes AI newsletter emails with dry-run support and logging.
+
+Security: Implements ReDoS protection with regex timeout (M-2 fix)
 """
 
 import json
 import csv
-import re
 import os
 import argparse
 from datetime import datetime
@@ -14,12 +15,34 @@ from typing import List, Dict, Set, Optional
 from dataclasses import dataclass
 from pathlib import Path
 
-# Import centralized constants
+# Use regex module for timeout support (M-2 security fix)
+try:
+    import regex
+    HAS_REGEX_TIMEOUT = True
+except ImportError:
+    import re as regex
+    HAS_REGEX_TIMEOUT = False
+
+# Import centralized constants and schemas
 from ..constants import AI_CONFIG_PATH
+from ..schemas import Email, EmailDataCompat
+from ...utils.secure_logger import SecureLogger
+
+logger = SecureLogger(__name__)
+
+# ReDoS protection constants (M-2 fix)
+REGEX_TIMEOUT = 0.1  # 100ms timeout per pattern match
+MAX_INPUT_LENGTH = 500  # Truncate input to prevent ReDoS
+
 
 @dataclass
 class EmailData:
-    """Structure for email data"""
+    """
+    Structure for email data.
+
+    DEPRECATED (H-1): Use Email from gmail_assistant.core.schemas instead.
+    This class is kept for backward compatibility.
+    """
     id: str
     subject: str
     sender: str
@@ -28,12 +51,85 @@ class EmailData:
     thread_id: str = None
     body_snippet: str = ""
 
+    def __post_init__(self):
+        import warnings
+        warnings.warn(
+            "EmailData is deprecated. Use Email from core.schemas instead.",
+            DeprecationWarning,
+            stacklevel=3
+        )
+
+    def to_email(self) -> Email:
+        """Convert to canonical Email model."""
+        from datetime import datetime
+        return Email(
+            gmail_id=self.id,
+            thread_id=self.thread_id or "",
+            subject=self.subject,
+            sender=self.sender,
+            date=self.date or datetime.now().isoformat(),
+            labels=self.labels or [],
+            snippet=self.body_snippet
+        )
+
 class AINewsletterDetector:
     """Detects AI newsletters using multiple pattern matching strategies"""
 
     def __init__(self, config_path: str = None):
         self.config_path = config_path or str(AI_CONFIG_PATH)
         self.load_config()
+        self._compile_patterns()
+
+    def _compile_patterns(self):
+        """Pre-compile regex patterns for efficiency (M-2 fix)"""
+        self._compiled_newsletter_patterns = []
+        self._compiled_unsubscribe_patterns = []
+
+        for pattern in self.newsletter_patterns:
+            try:
+                compiled = regex.compile(pattern, flags=regex.IGNORECASE)
+                self._compiled_newsletter_patterns.append(compiled)
+            except regex.error as e:
+                logger.warning(f"Invalid newsletter pattern '{pattern}': {e}")
+
+        for pattern in self.unsubscribe_patterns:
+            try:
+                compiled = regex.compile(pattern, flags=regex.IGNORECASE)
+                self._compiled_unsubscribe_patterns.append(compiled)
+            except regex.error as e:
+                logger.warning(f"Invalid unsubscribe pattern '{pattern}': {e}")
+
+    def _safe_regex_search(self, pattern, text: str) -> bool:
+        """
+        Perform regex search with timeout and input truncation (M-2 fix).
+
+        Args:
+            pattern: Compiled regex pattern or pattern string
+            text: Text to search (will be truncated if too long)
+
+        Returns:
+            True if pattern matches, False otherwise
+        """
+        # Truncate input to prevent ReDoS
+        truncated_text = text[:MAX_INPUT_LENGTH]
+
+        try:
+            if HAS_REGEX_TIMEOUT:
+                # Use regex module with timeout
+                match = pattern.search(truncated_text, timeout=REGEX_TIMEOUT)
+            else:
+                # Fallback to standard re without timeout
+                match = pattern.search(truncated_text)
+            return match is not None
+        except regex.error as e:
+            logger.warning(f"Regex error: {e}")
+            return False
+        except TimeoutError:
+            logger.warning(f"Regex timeout on input length {len(text)}")
+            return False
+        except Exception as e:
+            logger.warning(f"Unexpected regex error: {e}")
+            return False
         
     def load_config(self):
         """Load configuration from JSON file with fallback to defaults"""
@@ -106,61 +202,69 @@ class AINewsletterDetector:
 
     def is_ai_newsletter(self, email: EmailData) -> Dict[str, any]:
         """
-        Determine if email is an AI newsletter
-        Returns dict with decision and reasoning
+        Determine if email is an AI newsletter.
+        Returns dict with decision and reasoning.
+
+        Security: Uses ReDoS-protected regex matching (M-2 fix)
         """
         reasons = []
         confidence = 0
-        
-        subject_lower = email.subject.lower()
-        sender_lower = email.sender.lower()
-        body_lower = email.body_snippet.lower()
-        
-        # Check AI keywords in subject
+
+        # Truncate and lowercase inputs for safety (M-2 fix)
+        subject_lower = email.subject[:MAX_INPUT_LENGTH].lower()
+        sender_lower = email.sender[:MAX_INPUT_LENGTH].lower()
+        body_lower = email.body_snippet[:MAX_INPUT_LENGTH].lower()
+
+        # Check AI keywords in subject (no regex needed)
         ai_in_subject = any(keyword in subject_lower for keyword in self.ai_keywords)
         if ai_in_subject:
             reasons.append("AI keywords in subject")
             confidence += self.confidence_weights.get('ai_keywords_subject', 3)
-            
-        # Check AI keywords in sender
+
+        # Check AI keywords in sender (no regex needed)
         ai_in_sender = any(keyword in sender_lower for keyword in self.ai_keywords)
         if ai_in_sender:
             reasons.append("AI keywords in sender")
             confidence += self.confidence_weights.get('ai_keywords_sender', 2)
-            
-        # Check known AI newsletter domains
+
+        # Check known AI newsletter domains (no regex needed)
         domain_match = any(domain in sender_lower for domain in self.ai_newsletter_domains)
         if domain_match:
             reasons.append("Known AI newsletter domain")
             confidence += self.confidence_weights.get('known_domain', 4)
-            
-        # Check newsletter patterns
-        newsletter_pattern_match = any(re.search(pattern, subject_lower + " " + sender_lower) 
-                                     for pattern in self.newsletter_patterns)
+
+        # Check newsletter patterns with timeout protection (M-2 fix)
+        search_text = f"{subject_lower} {sender_lower}"
+        newsletter_pattern_match = any(
+            self._safe_regex_search(pattern, search_text)
+            for pattern in self._compiled_newsletter_patterns
+        )
         if newsletter_pattern_match:
             reasons.append("Newsletter pattern match")
             confidence += self.confidence_weights.get('newsletter_pattern', 2)
-            
-        # Check for unsubscribe indicators
-        unsubscribe_match = any(re.search(pattern, body_lower) 
-                              for pattern in self.unsubscribe_patterns)
+
+        # Check for unsubscribe indicators with timeout protection (M-2 fix)
+        unsubscribe_match = any(
+            self._safe_regex_search(pattern, body_lower)
+            for pattern in self._compiled_unsubscribe_patterns
+        )
         if unsubscribe_match:
             reasons.append("Contains unsubscribe link")
             confidence += self.confidence_weights.get('unsubscribe_link', 1)
-            
-        # Check if from automation/no-reply
-        automated_sender = any(indicator in sender_lower for indicator in 
+
+        # Check if from automation/no-reply (no regex needed)
+        automated_sender = any(indicator in sender_lower for indicator in
                              ['no-reply', 'noreply', 'automated', 'newsletter', 'digest'])
         if automated_sender:
             reasons.append("Automated sender")
             confidence += self.confidence_weights.get('automated_sender', 1)
-            
+
         # Decision using configurable thresholds
         min_confidence = self.decision_threshold.get('minimum_confidence', 4)
         min_reasons = self.decision_threshold.get('minimum_reasons', 2)
-        
+
         is_newsletter = confidence >= min_confidence or (confidence >= min_confidence - 1 and len(reasons) >= min_reasons)
-        
+
         return {
             'is_ai_newsletter': is_newsletter,
             'confidence': confidence,
@@ -374,6 +478,10 @@ def main():
     except Exception as e:
         print(f"❌ Error: {str(e)}")
         return
+
+# Alias for backward compatibility
+AINewsletterCleaner = GmailCleaner
+
 
 if __name__ == "__main__":
     main()

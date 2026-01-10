@@ -564,3 +564,278 @@ def get_error_handler() -> ErrorHandler:
 def handle_error(exception: Exception, context: Optional[ErrorContext] = None) -> StandardError:
     """Handle error using global error handler."""
     return get_error_handler().handle_error(exception, context)
+
+
+# =============================================================================
+# Circuit Breaker Integration
+# =============================================================================
+
+from .circuit_breaker import CircuitBreaker, CircuitBreakerError
+
+
+class IntegratedErrorHandler(ErrorHandler):
+    """
+    Error handler with circuit breaker integration.
+
+    Combines error classification, logging, recovery handling, and circuit
+    breaker patterns for robust API error management.
+
+    Usage:
+        handler = IntegratedErrorHandler()
+
+        @handler.with_circuit_breaker
+        def call_gmail_api():
+            # API call here
+            pass
+
+        # Or handle errors manually
+        try:
+            result = risky_operation()
+        except Exception as e:
+            error = handler.handle_api_error(e, context)
+    """
+
+    def __init__(
+        self,
+        log_dir: Optional[Path] = None,
+        failure_threshold: int = 5,
+        recovery_timeout: float = 60.0
+    ):
+        """
+        Initialize integrated error handler.
+
+        Args:
+            log_dir: Directory for error logs
+            failure_threshold: Failures before circuit opens
+            recovery_timeout: Seconds before attempting recovery
+        """
+        super().__init__(log_dir)
+
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=failure_threshold,
+            recovery_timeout=recovery_timeout
+        )
+
+        # Register default recovery handlers
+        self._register_default_handlers()
+
+        # Track API-specific error patterns
+        self._rate_limit_backoff = 1.0
+        self._consecutive_failures = 0
+        self._max_backoff = 300.0  # 5 minutes max
+
+    def _register_default_handlers(self) -> None:
+        """Register default recovery handlers."""
+        self.register_recovery_handler(
+            ErrorCategory.RATE_LIMIT,
+            self._handle_rate_limit_recovery
+        )
+        self.register_recovery_handler(
+            ErrorCategory.NETWORK,
+            self._handle_network_recovery
+        )
+        self.register_recovery_handler(
+            ErrorCategory.API_QUOTA,
+            self._handle_quota_recovery
+        )
+
+    def handle_api_error(
+        self,
+        exception: Exception,
+        context: Optional[ErrorContext] = None
+    ) -> StandardError:
+        """
+        Handle API error with circuit breaker integration.
+
+        Records failure in circuit breaker and handles error through
+        standard error handling pipeline.
+
+        Args:
+            exception: The exception to handle
+            context: Optional context information
+
+        Returns:
+            StandardError object
+        """
+        import time
+
+        # Record failure in circuit breaker
+        self.circuit_breaker._record_failure()
+        self._consecutive_failures += 1
+
+        # Log circuit breaker state change
+        if self.circuit_breaker.is_open:
+            self.error_logger.warning(
+                f"Circuit breaker opened after {self._consecutive_failures} failures"
+            )
+
+        # Handle through standard pipeline
+        return self.handle_error(exception, context)
+
+    def record_success(self) -> None:
+        """Record successful API call."""
+        self.circuit_breaker._record_success()
+        self._consecutive_failures = 0
+        self._rate_limit_backoff = 1.0  # Reset backoff
+
+    def check_circuit(self) -> None:
+        """
+        Check if circuit allows requests.
+
+        Raises:
+            CircuitBreakerError: If circuit is open
+        """
+        if self.circuit_breaker.is_open:
+            stats = self.circuit_breaker.get_stats()
+            raise CircuitBreakerError(
+                f"Circuit breaker open. Retry after {stats['recovery_timeout']}s"
+            )
+
+    def _handle_rate_limit_recovery(self, error: StandardError) -> bool:
+        """
+        Recovery handler for rate limit errors.
+
+        Implements exponential backoff with jitter.
+        """
+        import time
+        import random
+
+        # Extract retry-after if available
+        wait_time = self._extract_retry_after(error)
+
+        if wait_time is None:
+            # Exponential backoff with jitter
+            wait_time = min(
+                self._rate_limit_backoff * (1 + random.random() * 0.1),
+                self._max_backoff
+            )
+            self._rate_limit_backoff *= 2  # Double for next time
+
+        self.error_logger.info(
+            f"Rate limit recovery: waiting {wait_time:.1f}s"
+        )
+        time.sleep(wait_time)
+        return True
+
+    def _handle_network_recovery(self, error: StandardError) -> bool:
+        """
+        Recovery handler for network errors.
+
+        Checks circuit breaker state before allowing recovery.
+        """
+        import time
+
+        # If circuit is open, don't attempt recovery yet
+        if self.circuit_breaker.is_open:
+            self.error_logger.info(
+                "Network recovery blocked - circuit breaker open"
+            )
+            return False
+
+        # Brief wait before retry
+        time.sleep(min(2 ** self._consecutive_failures, 30))
+        return True
+
+    def _handle_quota_recovery(self, error: StandardError) -> bool:
+        """
+        Recovery handler for API quota errors.
+
+        Quota errors typically require longer wait or user intervention.
+        """
+        self.error_logger.warning(
+            "API quota exceeded - automatic recovery not possible. "
+            "Wait 24 hours or reduce request frequency."
+        )
+        return False  # Cannot auto-recover from quota errors
+
+    def _extract_retry_after(self, error: StandardError) -> Optional[float]:
+        """Extract Retry-After header from error response."""
+        if error.original_exception and hasattr(error.original_exception, 'resp'):
+            resp = error.original_exception.resp
+            retry_after = resp.get('retry-after')
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except (ValueError, TypeError):
+                    pass
+        return None
+
+    def with_circuit_breaker(self, func: Callable) -> Callable:
+        """
+        Decorator to wrap function with circuit breaker and error handling.
+
+        Usage:
+            @handler.with_circuit_breaker
+            def call_gmail_api():
+                return service.users().messages().list().execute()
+        """
+        from functools import wraps
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Check circuit before executing
+            self.check_circuit()
+
+            try:
+                result = func(*args, **kwargs)
+                self.record_success()
+                return result
+            except Exception as e:
+                context = ErrorContext(
+                    operation=func.__name__,
+                    additional_data={'args_count': len(args)}
+                )
+                self.handle_api_error(e, context)
+                raise
+
+        return wrapper
+
+    def get_health_status(self) -> Dict[str, Any]:
+        """
+        Get comprehensive health status.
+
+        Returns:
+            Dictionary with error stats and circuit breaker state
+        """
+        error_stats = self.get_error_stats()
+        circuit_stats = self.circuit_breaker.get_stats()
+
+        return {
+            'errors': error_stats,
+            'circuit_breaker': circuit_stats,
+            'consecutive_failures': self._consecutive_failures,
+            'current_backoff': self._rate_limit_backoff,
+            'healthy': (
+                not self.circuit_breaker.is_open and
+                self._consecutive_failures < 3
+            )
+        }
+
+    def reset(self) -> None:
+        """Reset error handler and circuit breaker state."""
+        self.clear_stats()
+        self.circuit_breaker.reset()
+        self._rate_limit_backoff = 1.0
+        self._consecutive_failures = 0
+        self.error_logger.info("Integrated error handler reset")
+
+
+# Global integrated error handler
+_integrated_handler: Optional[IntegratedErrorHandler] = None
+
+
+def get_integrated_handler() -> IntegratedErrorHandler:
+    """Get global integrated error handler instance."""
+    global _integrated_handler
+    if _integrated_handler is None:
+        _integrated_handler = IntegratedErrorHandler()
+    return _integrated_handler
+
+
+def with_api_protection(func: Callable) -> Callable:
+    """
+    Decorator for API calls with full protection.
+
+    Combines circuit breaker, error handling, and retry logic.
+    """
+    return get_integrated_handler().with_circuit_breaker(func)

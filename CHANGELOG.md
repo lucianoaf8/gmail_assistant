@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-01-09
+
+### Added
+
+#### Data Model Foundation (Phase 1)
+- **Unified Email Schema** (`core/schemas.py`): Canonical Pydantic model replacing duplicate `EmailMetadata`/`EmailData` structures
+- **Config Schema Validation** (`core/config_schemas.py`): Pydantic validation for all JSON config files with `load_validated_config()` utility
+- **Idempotent Database Writes** (`core/processing/database_extensions.py`): Upsert operations using `gmail_id` as unique key with soft delete support
+
+#### Reliability Infrastructure (Phase 2)
+- **Gmail Batch API** (`core/fetch/batch_api.py`): Batch operations for 80-90% latency reduction (100 messages per API call)
+- **Checkpoint Persistence** (`core/fetch/checkpoint.py`): Sync state persistence for resume capability after interruptions
+- **Dead Letter Queue** (`core/fetch/dead_letter_queue.py`): SQLite-backed DLQ with exponential backoff retry scheduling
+
+#### Advanced Features (Phase 3)
+- **Database Normalization Migration** (`scripts/migration/002_normalize_schema.py`): Migration script for `email_participants`, `email_labels`, and `sync_state` tables
+- **Gmail History API Sync** (`core/fetch/history_sync.py`): True incremental sync fetching only changes since last `historyId`
+- **Integrated Error Handler** (`utils/error_handler.py`): `IntegratedErrorHandler` class combining error classification with circuit breaker
+
+#### Optimization & Observability (Phase 4)
+- **Parquet Export** (`export/parquet_exporter.py`): Columnar export for analytics with partitioning and compression support
+- **Metrics Collection** (`utils/metrics.py`): Thread-safe metrics with counters, gauges, histograms, and `@timed` decorator
+- **Backup Manifest** (`utils/manifest.py`): SHA-256 checksums for backup integrity verification
+
+### Changed
+- Extended `utils/error_handler.py` with `IntegratedErrorHandler` class and circuit breaker integration
+- Added backward compatibility aliases (`EmailMetadataCompat`, `EmailDataCompat`) in `core/schemas.py` with deprecation warnings
+
+### Technical Details
+- Batch API: `GmailBatchClient` with `batch_get_messages()`, `batch_delete_messages()`, `batch_modify_labels()`
+- Checkpoint: `SyncCheckpoint` dataclass with `SyncState` enum for tracking sync progress
+- DLQ: `FailureType` enum with 10 failure categories, 5 retry attempts with exponential backoff
+- History Sync: `HistorySyncClient` with `sync_from_history()` and `perform_incremental_sync()`
+- Parquet: Optional PyArrow dependency, partitioned by `year_month` with snappy compression
+- Metrics: `get_metrics()`, `inc_counter()`, `set_gauge()`, `timer()` convenience functions
+
 ## [2.0.1] - 2026-01-09
 
 ### Changed

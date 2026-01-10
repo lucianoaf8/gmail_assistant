@@ -52,6 +52,27 @@ advanced-parsing = [
     "beautifulsoup4>=4.12.3",
     "markdownify>=0.13.0",
     "lxml>=5.0.0",
+    "python-frontmatter>=1.0.0",
+]
+content-extraction = [
+    "readability-lxml>=0.8.1",
+    "trafilatura>=1.9.0",
+]
+async = [
+    "aiohttp>=3.9.5",
+    "asyncio-throttle>=1.0.2",
+    "psutil>=5.9.8",
+]
+security = [
+    "keyring>=25.0.0",
+    "regex>=2024.5.0",  # ReDoS protection with timeout (M-2 fix)
+]
+network = [
+    "requests>=2.32.0",
+    "urllib3>=2.2.0",
+]
+all = [
+    "gmail-assistant[analysis,ui,advanced-parsing,content-extraction,async,security,network]",
 ]
 dev = [
     "pytest>=8.0.0",
@@ -91,6 +112,7 @@ include = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+cache_dir = "tests/.pytest_cache"
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -114,6 +136,7 @@ filterwarnings = [
 [tool.coverage.run]
 source = ["src/gmail_assistant"]
 branch = true
+data_file = "tests/.coverage"
 omit = [
     "*/__pycache__/*",
     "*/tests/*",
@@ -145,6 +168,9 @@ exclude_lines = [
     "@overload",
 ]
 fail_under = 70
+
+[tool.coverage.html]
+directory = "tests/htmlcov"
 
 [tool.ruff]
 target-version = "py310"

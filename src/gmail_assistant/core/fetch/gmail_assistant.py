@@ -98,15 +98,63 @@ class GmailFetcher:
             self.logger.error(f"Error searching messages: {error}")
             return []
     
+    def _validate_api_response(self, response: Optional[Dict],
+                                required_fields: List[str],
+                                context: str = "") -> Dict:
+        """
+        Validate API response has expected structure (M-3 security fix).
+
+        Args:
+            response: API response dictionary
+            required_fields: List of required field names
+            context: Context string for error messages
+
+        Returns:
+            Validated response
+
+        Raises:
+            ValueError: If response is invalid
+        """
+        if response is None:
+            raise ValueError(f"API returned null response {context}")
+
+        if not isinstance(response, dict):
+            raise ValueError(f"API returned non-dict response: {type(response)} {context}")
+
+        missing_fields = [f for f in required_fields if f not in response]
+        if missing_fields:
+            raise ValueError(f"API response missing required fields: {missing_fields} {context}")
+
+        return response
+
     def get_message_details(self, message_id: str) -> Optional[Dict]:
-        """Get full message details"""
+        """Get full message details with validation (M-3 security fix)"""
         try:
             message = self.service.users().messages().get(
-                userId='me', 
+                userId='me',
                 id=message_id,
                 format='full'
             ).execute()
-            return message
+
+            # Validate response structure (M-3 fix)
+            try:
+                validated = self._validate_api_response(
+                    message,
+                    required_fields=['id', 'threadId', 'payload'],
+                    context=f"for message {message_id}"
+                )
+
+                # Validate payload has headers
+                if 'headers' not in validated.get('payload', {}):
+                    self.logger.warning(f"Message {message_id} missing payload headers")
+                    validated['payload']['headers'] = []
+
+                return validated
+
+            except ValueError as e:
+                self.logger.error(f"Invalid API response for message {message_id}: {e}")
+                return None
+
         except HttpError as error:
             self.logger.error(f"Error getting message {message_id}: {error}")
             return None

@@ -3,8 +3,11 @@ Centralized exception definitions.
 
 CORRECTED: This is the SINGLE SOURCE OF TRUTH for all domain exceptions.
 All modules must import exceptions from here, not define their own.
+
+H-2 fix: Complete exception hierarchy with all domain-specific exceptions.
 """
 from __future__ import annotations
+from typing import List, Optional
 
 __all__ = [
     "GmailAssistantError",
@@ -12,6 +15,14 @@ __all__ = [
     "AuthError",
     "NetworkError",
     "APIError",
+    "BatchAPIError",
+    "ValidationError",
+    "ParseError",
+    "RateLimitError",
+    "ServiceNotFoundError",
+    "CircularDependencyError",
+    "ExportError",
+    "CircuitBreakerError",
 ]
 
 
@@ -38,3 +49,57 @@ class NetworkError(GmailAssistantError):
 class APIError(GmailAssistantError):
     """Gmail API errors. Maps to exit code 1 (general)."""
     pass
+
+
+class BatchAPIError(APIError):
+    """
+    Batch API operation errors (H-2 fix).
+
+    Tracks failed message IDs for retry handling.
+    """
+
+    def __init__(self, message: str, failed_ids: Optional[List[str]] = None):
+        self.message = message
+        self.failed_ids = failed_ids or []
+        super().__init__(message)
+
+
+class ValidationError(GmailAssistantError):
+    """Input validation errors. Maps to exit code 2."""
+    pass
+
+
+class ParseError(GmailAssistantError):
+    """Email/content parsing errors."""
+    pass
+
+
+class RateLimitError(APIError):
+    """API rate limit exceeded errors."""
+
+    def __init__(self, message: str, retry_after: Optional[int] = None):
+        self.retry_after = retry_after
+        super().__init__(message)
+
+
+class ServiceNotFoundError(GmailAssistantError):
+    """Dependency injection service not found."""
+    pass
+
+
+class CircularDependencyError(GmailAssistantError):
+    """Circular dependency detected in DI container."""
+    pass
+
+
+class ExportError(GmailAssistantError):
+    """Data export operation errors."""
+    pass
+
+
+class CircuitBreakerError(GmailAssistantError):
+    """Circuit breaker open - service unavailable."""
+
+    def __init__(self, message: str, failure_count: int = 0):
+        self.failure_count = failure_count
+        super().__init__(message)

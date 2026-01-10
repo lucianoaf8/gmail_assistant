@@ -1,6 +1,8 @@
 """
 Comprehensive input validation framework for Gmail Fetcher.
 Provides secure validation for all user inputs and API parameters.
+
+H-2 fix: Uses centralized ValidationError from exceptions.py
 """
 
 import re
@@ -10,12 +12,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlparse
 
+from gmail_assistant.core.exceptions import ValidationError
+
 logger = logging.getLogger(__name__)
-
-
-class ValidationError(Exception):
-    """Custom exception for validation errors."""
-    pass
 
 
 class InputValidator:
@@ -99,14 +98,16 @@ class InputValidator:
 
     @staticmethod
     def validate_file_path(path: Union[str, Path], must_exist: bool = False,
-                          create_dirs: bool = False) -> Path:
+                          create_dirs: bool = False,
+                          allowed_base: Optional[Path] = None) -> Path:
         """
-        Validate and sanitize file path.
+        Validate and sanitize file path with enhanced security (M-1 fix).
 
         Args:
             path: File path to validate
             must_exist: Whether the path must exist
             create_dirs: Whether to create parent directories
+            allowed_base: If set, path must be under this directory
 
         Returns:
             Validated Path object
@@ -118,38 +119,84 @@ class InputValidator:
             raise ValidationError("Path must be a string or Path object")
 
         path = Path(path)
-
-        # Check for path traversal attempts
         path_str = str(path)
-        if '..' in path_str or path_str.startswith('/') or ':' in path_str[1:]:
-            # Allow Windows drive letters but not other colons
-            if not (len(path_str) > 1 and path_str[1] == ':' and path_str[0].isalpha()):
-                raise ValidationError("Path contains potentially dangerous characters")
+
+        # URL-decode path to catch encoded traversal attempts (%2e%2e = ..)
+        try:
+            from urllib.parse import unquote
+            decoded_path = unquote(path_str)
+            if decoded_path != path_str:
+                logger.warning(f"Path contains URL encoding: {path_str}")
+                path_str = decoded_path
+                path = Path(decoded_path)
+        except Exception:
+            pass
+
+        # Resolve to absolute path (follows symlinks)
+        try:
+            resolved = path.resolve(strict=False)
+        except (OSError, RuntimeError) as e:
+            raise ValidationError(f"Cannot resolve path: {e}")
+
+        # Check for traversal AFTER resolution (catches symlink attacks)
+        if '..' in path.parts:
+            raise ValidationError("Path contains traversal component '..'")
+
+        # Validate against allowed base directory (M-1 enhancement)
+        if allowed_base is not None:
+            allowed_resolved = allowed_base.resolve()
+            if not str(resolved).startswith(str(allowed_resolved)):
+                raise ValidationError(
+                    f"Path traversal detected: {resolved} is not under {allowed_resolved}"
+                )
+
+        # Windows-specific checks
+        if os.name == 'nt':
+            # Allow single drive letter at start
+            if len(path_str) > 1 and path_str[1] == ':':
+                if not path_str[0].isalpha():
+                    raise ValidationError("Invalid Windows drive letter")
+            # Check for alternate data streams (file.txt:hidden)
+            if ':' in path_str[2:]:
+                raise ValidationError("Path contains Windows alternate data stream")
+        else:
+            # Unix: reject absolute paths without allowed_base
+            if path_str.startswith('/') and allowed_base is None:
+                logger.warning("Absolute path without allowed_base validation")
 
         # Check path length
-        if len(path_str) > 260:  # Windows MAX_PATH limitation
+        if len(str(resolved)) > 260:  # Windows MAX_PATH
             raise ValidationError("Path too long (max 260 characters)")
 
-        # Validate filename components
+        # Validate filename components - check for reserved Windows names
+        invalid_names = {'CON', 'PRN', 'AUX', 'NUL'} | {f'COM{i}' for i in range(10)} | {f'LPT{i}' for i in range(10)}
+        for part in resolved.parts:
+            name_upper = part.upper().split('.')[0]
+            if name_upper in invalid_names:
+                raise ValidationError(f"Path contains reserved Windows name: {part}")
+
+        # Validate filename characters (relaxed for legitimate paths)
         for part in path.parts:
-            if not InputValidator.SAFE_FILENAME_PATTERN.match(part):
-                # Allow drive letters on Windows
-                if not (len(part) == 2 and part[1] == ':' and part[0].isalpha()):
-                    raise ValidationError(f"Path component contains invalid characters: {part}")
+            # Skip drive letters
+            if len(part) == 2 and part[1] == ':' and part[0].isalpha():
+                continue
+            # Check for control characters
+            if any(ord(c) < 32 for c in part):
+                raise ValidationError(f"Path component contains control characters: {part}")
 
         # Check if path exists when required
-        if must_exist and not path.exists():
-            raise ValidationError(f"Path does not exist: {path}")
+        if must_exist and not resolved.exists():
+            raise ValidationError(f"Path does not exist: {resolved}")
 
         # Create parent directories if requested
-        if create_dirs and not path.parent.exists():
+        if create_dirs and not resolved.parent.exists():
             try:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info(f"Created directories: {path.parent}")
+                resolved.parent.mkdir(parents=True, exist_ok=True)
+                logger.info(f"Created directories: {resolved.parent}")
             except OSError as e:
                 raise ValidationError(f"Failed to create directories: {e}")
 
-        return path
+        return resolved
 
     @staticmethod
     def validate_email_address(email: str) -> str:
