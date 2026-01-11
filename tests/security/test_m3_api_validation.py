@@ -5,6 +5,13 @@ Validates Gmail API response validation.
 import pytest
 from pathlib import Path
 from unittest.mock import Mock
+from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+
+
+@pytest.fixture
+def gmail_fetcher():
+    """Create a GmailFetcher instance without full initialization."""
+    return GmailFetcher.__new__(GmailFetcher)
 
 
 class TestAPIResponseValidation:
@@ -19,28 +26,18 @@ class TestAPIResponseValidation:
         assert '_validate_api_response' in source, \
             "_validate_api_response method should exist"
 
-    def test_null_response_rejected(self):
+    def test_null_response_rejected(self, gmail_fetcher):
         """Verify null responses are rejected."""
-        try:
-            from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-        except ImportError:
-            pytest.skip("GmailFetcher not available")
-
-        fetcher = GmailFetcher.__new__(GmailFetcher)
+        fetcher = gmail_fetcher
 
         with pytest.raises(ValueError) as exc_info:
             fetcher._validate_api_response(None, ['id'], "test")
 
         assert "null" in str(exc_info.value).lower()
 
-    def test_non_dict_response_rejected(self):
+    def test_non_dict_response_rejected(self, gmail_fetcher):
         """Verify non-dict responses are rejected."""
-        try:
-            from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-        except ImportError:
-            pytest.skip("GmailFetcher not available")
-
-        fetcher = GmailFetcher.__new__(GmailFetcher)
+        fetcher = gmail_fetcher
 
         invalid_responses = [
             "string response",
@@ -55,14 +52,9 @@ class TestAPIResponseValidation:
             assert "non-dict" in str(exc_info.value).lower() or \
                    "dict" in str(exc_info.value).lower()
 
-    def test_missing_fields_rejected(self):
+    def test_missing_fields_rejected(self, gmail_fetcher):
         """Verify responses missing required fields are rejected."""
-        try:
-            from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-        except ImportError:
-            pytest.skip("GmailFetcher not available")
-
-        fetcher = GmailFetcher.__new__(GmailFetcher)
+        fetcher = gmail_fetcher
 
         incomplete_response = {
             'id': '123',
@@ -78,14 +70,9 @@ class TestAPIResponseValidation:
 
         assert "missing" in str(exc_info.value).lower()
 
-    def test_valid_response_accepted(self):
+    def test_valid_response_accepted(self, gmail_fetcher):
         """Verify valid responses pass validation."""
-        try:
-            from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-        except ImportError:
-            pytest.skip("GmailFetcher not available")
-
-        fetcher = GmailFetcher.__new__(GmailFetcher)
+        fetcher = gmail_fetcher
 
         valid_response = {
             'id': '123abc',

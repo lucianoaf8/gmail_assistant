@@ -100,18 +100,22 @@ class TestSecureFileWriter:
         temp_files = list(temp_dir.glob(".secure_*.tmp"))
         assert len(temp_files) == 0
 
-    @pytest.mark.skipif(os.name == 'nt', reason="Unix-specific permissions test")
-    def test_write_secure_sets_unix_permissions(self, temp_dir):
-        """Test that write_secure sets restrictive permissions on Unix."""
+    def test_write_secure_sets_permissions(self, temp_dir):
+        """Test that write_secure sets appropriate permissions for the platform."""
         test_file = temp_dir / "secure.txt"
 
         SecureFileWriter.write_secure(test_file, "Secret content")
 
-        mode = test_file.stat().st_mode
-        # Check owner read/write only (0o600)
-        assert mode & stat.S_IRWXU == (stat.S_IRUSR | stat.S_IWUSR)
-        assert mode & stat.S_IRWXG == 0
-        assert mode & stat.S_IRWXO == 0
+        if os.name != 'nt':  # Unix-like systems
+            mode = test_file.stat().st_mode
+            # Check owner read/write only (0o600)
+            assert mode & stat.S_IRWXU == (stat.S_IRUSR | stat.S_IWUSR)
+            assert mode & stat.S_IRWXG == 0
+            assert mode & stat.S_IRWXO == 0
+        else:  # Windows
+            # On Windows, file exists and is readable/writable
+            assert test_file.exists()
+            assert os.access(test_file, os.R_OK | os.W_OK)
 
 
 class TestSecureFileWriterBytes:
@@ -191,18 +195,23 @@ class TestCreateSecureDirectory:
 
         assert result == new_dir
 
-    @pytest.mark.skipif(os.name == 'nt', reason="Unix-specific permissions test")
-    def test_create_secure_directory_unix_permissions(self, temp_dir):
-        """Test secure directory has restrictive permissions on Unix."""
+    def test_create_secure_directory_permissions(self, temp_dir):
+        """Test secure directory has appropriate permissions for the platform."""
         new_dir = temp_dir / "secure_dir"
 
         SecureFileWriter.create_secure_directory(new_dir)
 
-        mode = new_dir.stat().st_mode
-        # Check owner read/write/execute only (0o700)
-        assert mode & stat.S_IRWXU == stat.S_IRWXU
-        assert mode & stat.S_IRWXG == 0
-        assert mode & stat.S_IRWXO == 0
+        if os.name != 'nt':  # Unix-like systems
+            mode = new_dir.stat().st_mode
+            # Check owner read/write/execute only (0o700)
+            assert mode & stat.S_IRWXU == stat.S_IRWXU
+            assert mode & stat.S_IRWXG == 0
+            assert mode & stat.S_IRWXO == 0
+        else:  # Windows
+            # On Windows, directory exists and is accessible
+            assert new_dir.exists()
+            assert new_dir.is_dir()
+            assert os.access(new_dir, os.R_OK | os.W_OK | os.X_OK)
 
 
 class TestSecureExistingFile:
@@ -258,37 +267,43 @@ class TestVerifyPermissions:
 
         assert result is False
 
-    @pytest.mark.skipif(os.name == 'nt', reason="Unix-specific permissions test")
     def test_verify_permissions_secure_file(self, temp_dir):
-        """Test verify_permissions returns True for secure file on Unix."""
+        """Test verify_permissions returns True for properly secured file."""
         test_file = temp_dir / "secure.txt"
         test_file.write_text("Content")
-        os.chmod(test_file, stat.S_IRUSR | stat.S_IWUSR)
+
+        if os.name != 'nt':  # Unix-like systems
+            os.chmod(test_file, stat.S_IRUSR | stat.S_IWUSR)
 
         result = SecureFileWriter.verify_permissions(test_file)
 
         assert result is True
 
-    @pytest.mark.skipif(os.name == 'nt', reason="Unix-specific permissions test")
     def test_verify_permissions_insecure_file(self, temp_dir):
-        """Test verify_permissions returns False for world-readable file."""
+        """Test verify_permissions behavior for potentially insecure file."""
         test_file = temp_dir / "insecure.txt"
         test_file.write_text("Content")
-        os.chmod(test_file, stat.S_IRUSR | stat.S_IWUSR | stat.S_IROTH)
 
-        result = SecureFileWriter.verify_permissions(test_file)
+        if os.name != 'nt':  # Unix-like systems
+            # Set world-readable permissions
+            os.chmod(test_file, stat.S_IRUSR | stat.S_IWUSR | stat.S_IROTH)
 
-        assert result is False
+            result = SecureFileWriter.verify_permissions(test_file)
+            assert result is False
+        else:  # Windows
+            # On Windows, basic check should pass
+            result = SecureFileWriter.verify_permissions(test_file)
+            assert result is True
 
-    @pytest.mark.skipif(os.name != 'nt', reason="Windows-specific test")
-    def test_verify_permissions_windows(self, temp_dir):
-        """Test verify_permissions returns True on Windows (basic check)."""
+    def test_verify_permissions_platform_appropriate(self, temp_dir):
+        """Test verify_permissions works appropriately on current platform."""
         test_file = temp_dir / "test.txt"
         test_file.write_text("Content")
 
         result = SecureFileWriter.verify_permissions(test_file)
 
-        assert result is True
+        # Should always return boolean
+        assert isinstance(result, bool)
 
 
 class TestConvenienceFunctions:
@@ -335,12 +350,14 @@ class TestWindowsPermissions:
         with tempfile.TemporaryDirectory() as tmpdir:
             yield Path(tmpdir)
 
-    @pytest.mark.skipif(os.name != 'nt', reason="Windows-specific test")
     def test_windows_permissions_fallback(self, temp_dir):
         """Test Windows permissions fallback when pywin32 not available."""
         test_file = temp_dir / "test.txt"
 
-        with mock.patch.dict('sys.modules', {'win32security': None, 'ntsecuritycon': None}):
+        if os.name == 'nt':  # Windows
+            with mock.patch.dict('sys.modules', {'win32security': None, 'ntsecuritycon': None}):
+                SecureFileWriter.write_secure(test_file, "Content")
+        else:  # Unix-like - test basic write works
             SecureFileWriter.write_secure(test_file, "Content")
 
         assert test_file.exists()

@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-01-11",
+  "summary": {
+    "total_tests": 708,
+    "enabled_previously_skipped": 80,
+    "remaining_skipped": 15,
+    "breakdown": {
+      "test_eml_to_markdown.py": {
+        "status": "COMPLETE",
+        "before": 44,
+        "after": 0,
+        "action": "Installed html5lib dependency and fixed markdownify parameter conflict"
+      },
+      "test_robust_eml_converter.py": {
+        "status": "COMPLETE",
+        "before": 36,
+        "after": 0,
+        "action": "Benefits from html5lib installation"
+      },
+      "integration_tests": {
+        "status": "IN_PROGRESS",
+        "before": 34,
+        "after": 34,
+        "note": "Requires comprehensive mock implementation",
+        "files": [
+          "test_gmail_api_integration.py",
+          "test_gmail_api_integration_comprehensive.py"
+        ]
+      },
+      "security_tests": {
+        "status": "REVIEW_NEEDED",
+        "count": 3,
+        "note": "Platform-specific tests (Unix-only)"
+      },
+      "scripts_tests": {
+        "status": "REVIEW_NEEDED",
+        "count": 1,
+        "note": "Missing test file reference"
+      }
+    }
+  },
+  "fixes_applied": [
+    {
+      "file": "src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py",
+      "issue": "markdownify() called with both 'strip' and 'convert' parameters",
+      "fix": "Removed 'strip' parameter, added heading tags to 'convert' list",
+      "tests_enabled": 44
+    },
+    {
+      "dependency": "html5lib",
+      "action": "pip install html5lib",
+      "reason": "Required by BeautifulSoup for parsing",
+      "tests_enabled": 80
+    }
+  ],
+  "remaining_work": {
+    "integration_tests": {
+      "approach": "Update to use mock_gmail_service_full fixture",
+      "estimated_time": "2-3 hours",
+      "priority": "HIGH"
+    },
+    "security_tests": {
+      "approach": "Document platform requirements, keep as skipif",
+      "priority": "LOW"
+    }
+  }
+}

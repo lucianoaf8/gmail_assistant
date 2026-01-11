@@ -1,0 +1,127 @@
+C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\lucia\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: tests\.pytest_cache
+metadata: {'Python': '3.13.9', 'Platform': 'Windows-11-10.0.26200-SP0', 'Packages': {'pytest': '8.3.4', 'pluggy': '1.6.0'}, 'Plugins': {'anyio': '4.12.1', 'asyncio': '1.3.0', 'base-url': '2.1.0', 'cov': '7.0.0', 'json-report': '1.5.0', 'metadata': '3.1.1', 'mock': '3.15.1', 'playwright': '0.7.2'}, 'Base URL': ''}
+rootdir: C:\_Lucx\Projects\gmail_assistant
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, base-url-2.1.0, cov-7.0.0, json-report-1.5.0, metadata-3.1.1, mock-3.15.1, playwright-0.7.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 64 items
+
+tests/integration/test_cli_workflows.py::TestCLIFetchWorkflow::test_fetch_workflow_end_to_end PASSED [  1%]
+tests/integration/test_cli_workflows.py::TestCLIFetchWorkflow::test_fetch_creates_files PASSED [  3%]
+tests/integration/test_cli_workflows.py::TestCLIAnalyzeWorkflow::test_analyze_workflow_with_sample_files PASSED [  4%]
+tests/integration/test_cli_workflows.py::TestCLIAnalyzeWorkflow::test_analyze_json_output PASSED [  6%]
+tests/integration/test_cli_workflows.py::TestCLIAnalyzeWorkflow::test_analyze_sender_analysis PASSED [  7%]
+tests/integration/test_cli_workflows.py::TestCLIDeleteWorkflow::test_delete_dry_run_workflow PASSED [  9%]
+tests/integration/test_cli_workflows.py::TestCLIDeleteWorkflow::test_delete_confirm_workflow PASSED [ 10%]
+tests/integration/test_cli_workflows.py::TestCLIAuthWorkflow::test_auth_status_check PASSED [ 12%]
+tests/integration/test_cli_workflows.py::TestCLIAuthWorkflow::test_auth_revoke_workflow PASSED [ 14%]
+tests/integration/test_cli_workflows.py::TestCLIConfigWorkflow::test_config_show_workflow PASSED [ 15%]
+tests/integration/test_cli_workflows.py::TestCLIConfigWorkflow::test_config_init_workflow PASSED [ 17%]
+tests/integration/test_cli_workflows.py::TestCLIErrorHandling::test_network_error_handling PASSED [ 18%]
+tests/integration/test_cli_workflows.py::TestCLIErrorHandling::test_auth_error_handling PASSED [ 20%]
+tests/integration/test_cli_workflows.py::TestCLIErrorHandling::test_config_error_handling PASSED [ 21%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_analysis_engine_imports PASSED [ 23%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_analysis_engine_methods PASSED [ 25%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_classification_categories PASSED [ 26%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_converter_methods PASSED [ 28%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_date_parsing PASSED [ 29%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_email_data_converter_imports PASSED [ 31%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_gmail_id_extraction PASSED [ 32%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_insights_generation PASSED [ 34%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_quality_assessment PASSED [ 35%]
+tests/integration/test_email_analysis_integration.py::TestEmailAnalysisIntegration::test_sample_email_classification PASSED [ 37%]
+tests/integration/test_gmail_api.py::TestGmailAuthentication::test_authenticate_with_credentials SKIPPED [ 39%]
+tests/integration/test_gmail_api.py::TestGmailAuthentication::test_get_user_profile SKIPPED [ 40%]
+tests/integration/test_gmail_api.py::TestGmailFetching::test_search_emails SKIPPED [ 42%]
+tests/integration/test_gmail_api.py::TestGmailFetching::test_fetch_email_by_id SKIPPED [ 43%]
+tests/integration/test_gmail_api.py::TestGmailFetching::test_download_emails_to_directory SKIPPED [ 45%]
+tests/integration/test_gmail_api.py::TestGmailDeletion::test_trash_email_dry_run SKIPPED [ 46%]
+tests/integration/test_gmail_api.py::TestGmailDeletion::test_delete_by_query_dry_run SKIPPED [ 48%]
+tests/integration/test_gmail_api.py::TestGmailAnalysis::test_analyze_email_content SKIPPED [ 50%]
+tests/integration/test_gmail_api.py::TestGmailAnalysis::test_classify_newsletters SKIPPED [ 51%]
+tests/integration/test_gmail_api.py::TestRateLimiting::test_rate_limiter_throttles_requests PASSED [ 53%]
+tests/integration/test_gmail_api.py::TestRateLimiting::test_quota_tracker_accumulates PASSED [ 54%]
+tests/integration/test_gmail_api.py::TestCachePersistence::test_cache_survives_restart PASSED [ 56%]
+tests/integration/test_gmail_api.py::TestCircuitBreakerRecovery::test_circuit_breaker_recovery_timing PASSED [ 57%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIAuthentication::test_authentication_flow_with_credentials PASSED [ 59%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIAuthentication::test_profile_retrieval PASSED [ 60%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIAuthentication::test_authentication_error_handling PASSED [ 62%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIAuthentication::test_credentials_file_validation PASSED [ 64%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIAuthentication::test_token_persistence PASSED [ 65%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPISearch::test_search_messages_basic_queries PASSED [ 67%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPISearch::test_search_messages_pagination PASSED [ 68%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPISearch::test_get_message_details_comprehensive PASSED [ 70%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPISearch::test_message_headers_extraction PASSED [ 71%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPISearch::test_message_body_extraction PASSED [ 73%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIDownload::test_download_emails_eml_format SKIPPED [ 75%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIDownload::test_download_emails_markdown_format SKIPPED [ 76%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIDownload::test_download_emails_both_formats SKIPPED [ 78%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIDownload::test_email_content_creation_methods SKIPPED [ 79%]
+tests/integration/test_gmail_api_integration.py::TestGmailAPIDownload::test_directory_organization_patterns SKIPPED [ 81%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailAPIAuthentication::test_authentication_flow_with_credentials SKIPPED [ 82%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailAPIAuthentication::test_gmail_service_profile_access SKIPPED [ 84%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailAPIAuthentication::test_gmail_labels_access SKIPPED [ 85%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailEmailSearch::test_search_messages_basic_query SKIPPED [ 87%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailEmailSearch::test_search_messages_with_date_filters SKIPPED [ 89%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailEmailSearch::test_search_messages_content_filters SKIPPED [ 90%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailEmailRetrieval::test_get_message_details_complete SKIPPED [ 92%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailEmailRetrieval::test_message_body_extraction SKIPPED [ 93%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailEmailRetrieval::test_email_download_workflow_complete SKIPPED [ 95%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailAPIErrorHandling::test_invalid_search_queries SKIPPED [ 96%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailAPIErrorHandling::test_message_not_found_handling SKIPPED [ 98%]
+tests/integration/test_gmail_api_integration_comprehensive.py::TestGmailAPIErrorHandling::test_rate_limiting_awareness SKIPPED [100%]
+
+============================== warnings summary ===============================
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:19
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:19: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    token = pp.Word(tchar).setName("token")
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:20
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:20: DeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    token68 = pp.Combine(pp.Word("-._~+/" + pp.nums + pp.alphas) + pp.Optional(pp.Word("=").leaveWhitespace())).setName(
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:20
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:20: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    token68 = pp.Combine(pp.Word("-._~+/" + pp.nums + pp.alphas) + pp.Optional(pp.Word("=").leaveWhitespace())).setName(
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:24
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:24: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    quoted_string = pp.dblQuotedString.copy().setName("quoted-string").setParseAction(unquote)
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:24
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:24: DeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    quoted_string = pp.dblQuotedString.copy().setName("quoted-string").setParseAction(unquote)
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:25
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:25: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    auth_param_name = token.copy().setName("auth-param-name").addParseAction(downcaseTokens)
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:25
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:25: DeprecationWarning: 'addParseAction' deprecated - use 'add_parse_action'
+    auth_param_name = token.copy().setName("auth-param-name").addParseAction(downcaseTokens)
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:27
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:27: DeprecationWarning: 'delimitedList' deprecated - use 'DelimitedList'
+    params = pp.Dict(pp.delimitedList(pp.Group(auth_param)))
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:33
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\httplib2\auth.py:33: DeprecationWarning: 'delimitedList' deprecated - use 'DelimitedList'
+    www_authenticate = pp.delimitedList(pp.Group(challenge))
+
+..\..\..\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\pydantic\_internal\_generate_schema.py:319
+  C:\Users\lucia\AppData\Local\Programs\Python\Python313\Lib\site-packages\pydantic\_internal\_generate_schema.py:319: PydanticDeprecatedSince20: `json_encoders` is deprecated. See https://docs.pydantic.dev/2.12/concepts/serialization/#custom-serializers for alternatives. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    warnings.warn(
+
+tests/integration/test_gmail_api.py::TestRateLimiting::test_quota_tracker_accumulates
+  C:\_Lucx\Projects\gmail_assistant\src\gmail_assistant\utils\rate_limiter.py:307: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\_Lucx\Projects\gmail_assistant\tests\test_results\test-results.xml -
+================= 38 passed, 26 skipped, 11 warnings in 4.68s =================

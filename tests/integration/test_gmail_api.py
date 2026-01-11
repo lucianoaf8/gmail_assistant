@@ -24,9 +24,9 @@ class TestGmailAuthentication:
 
         auth = ReadOnlyGmailAuth(str(mock_credentials_file))
 
-        # Mock the service building
-        with mock.patch('gmail_assistant.core.auth.base.build', return_value=mock_gmail_service_full):
-            with mock.patch('gmail_assistant.core.auth.base.InstalledAppFlow.from_client_secrets_file') as mock_flow:
+        # Mock the service building in credential_manager where it's imported
+        with mock.patch('gmail_assistant.core.auth.credential_manager.build', return_value=mock_gmail_service_full):
+            with mock.patch('gmail_assistant.core.auth.credential_manager.InstalledAppFlow.from_client_secrets_file') as mock_flow:
                 # Mock credentials
                 mock_creds = mock.MagicMock()
                 mock_creds.valid = True
@@ -36,7 +36,7 @@ class TestGmailAuthentication:
                 mock_flow.return_value.run_local_server.return_value = mock_creds
 
                 # Mock Credentials.from_authorized_user_file
-                with mock.patch('gmail_assistant.core.auth.base.Credentials') as mock_creds_class:
+                with mock.patch('gmail_assistant.core.auth.credential_manager.Credentials') as mock_creds_class:
                     mock_creds_class.from_authorized_user_file.return_value = mock_creds
 
                     result = auth.authenticate()

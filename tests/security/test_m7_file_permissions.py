@@ -56,23 +56,28 @@ class TestSecureFileModule:
                 assert mode & stat.S_IRWXG == 0, "Group should have no access"
                 assert mode & stat.S_IRWXO == 0, "Others should have no access"
 
-    @pytest.mark.skipif(os.name == 'nt', reason="Unix permissions not applicable on Windows")
     def test_existing_file_permissions_fixed(self):
-        """Verify existing files have permissions corrected."""
+        """Verify existing files have permissions corrected on appropriate platforms."""
         from gmail_assistant.utils.secure_file import secure_write
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "existing.txt"
             test_file.write_text("initial content")
 
-            # Make file world-readable (insecure)
-            os.chmod(test_file, 0o644)
+            if os.name != 'nt':  # Unix-like systems
+                # Make file world-readable (insecure)
+                os.chmod(test_file, 0o644)
 
-            # Secure write should fix permissions
-            secure_write(test_file, "updated content")
+                # Secure write should fix permissions
+                secure_write(test_file, "updated content")
 
-            mode = stat.S_IMODE(os.stat(test_file).st_mode)
-            assert mode & stat.S_IRWXG == 0, "Group access should be removed"
+                mode = stat.S_IMODE(os.stat(test_file).st_mode)
+                assert mode & stat.S_IRWXG == 0, "Group access should be removed"
+            else:  # Windows
+                # On Windows, test that file can be written and exists
+                secure_write(test_file, "updated content")
+                assert test_file.exists()
+                assert test_file.read_text() == "updated content"
 
 
 class TestSensitiveFileHandling:

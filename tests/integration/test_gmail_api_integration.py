@@ -189,8 +189,8 @@ class TestGmailAPISearch:
                 # Get a few message IDs to test with
                 message_ids = fetcher.search_messages("", max_results=3)
 
-                if not message_ids:
-                    pytest.skip("No messages found for testing")
+                # Mock fixture should always provide messages
+                assert len(message_ids) > 0, "Mock should provide message IDs"
 
                 for message_id in message_ids:
                     details = fetcher.get_message_details(message_id)
@@ -227,8 +227,8 @@ class TestGmailAPISearch:
             with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
                 message_ids = fetcher.search_messages("", max_results=2)
 
-                if not message_ids:
-                    pytest.skip("No messages found for testing")
+                # Mock fixture should always provide messages
+                assert len(message_ids) > 0, "Mock should provide message IDs"
 
                 for message_id in message_ids:
                     details = fetcher.get_message_details(message_id)
@@ -259,8 +259,8 @@ class TestGmailAPISearch:
             with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
                 message_ids = fetcher.search_messages("", max_results=2)
 
-                if not message_ids:
-                    pytest.skip("No messages found for testing")
+                # Mock fixture should always provide messages
+                assert len(message_ids) > 0, "Mock should provide message IDs"
 
                 for message_id in message_ids:
                     details = fetcher.get_message_details(message_id)

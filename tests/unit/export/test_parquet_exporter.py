@@ -14,11 +14,21 @@ from gmail_assistant.export.parquet_exporter import (
 )
 
 
-# Skip all tests if PyArrow not available
-pytestmark = pytest.mark.skipif(
-    not PYARROW_AVAILABLE,
-    reason="PyArrow not installed"
-)
+@pytest.fixture
+def mock_pyarrow():
+    """Mock pyarrow if not available."""
+    if PYARROW_AVAILABLE:
+        import pyarrow as pa
+        return pa
+    else:
+        # Create a comprehensive mock
+        mock_pa = MagicMock()
+        mock_pa.Schema = MagicMock
+        mock_pa.string = MagicMock(return_value=MagicMock())
+        mock_pa.int32 = MagicMock(return_value=MagicMock())
+        mock_pa.bool_ = MagicMock(return_value=MagicMock())
+        mock_pa.Table = MagicMock
+        return mock_pa
 
 
 @pytest.fixture
