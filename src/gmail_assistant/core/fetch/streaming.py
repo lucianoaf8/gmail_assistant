@@ -224,7 +224,7 @@ class StreamingGmailFetcher:
 
             # Extract headers and content
             headers = temp_fetcher.extract_headers(email_data['payload'].get('headers', []))
-            plain_text, html_body = temp_fetcher.get_message_body(email_data['payload'])
+            _plain_text, _html_body = temp_fetcher.get_message_body(email_data['payload'])
 
             # Generate filename
             date_str = headers.get('date', 'Unknown Date')

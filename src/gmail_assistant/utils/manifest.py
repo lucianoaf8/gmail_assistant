@@ -161,7 +161,7 @@ class ManifestManager:
 
     def create_manifest(
         self,
-        file_patterns: list[str] = None,
+        file_patterns: list[str] | None = None,
         metadata: dict[str, Any] | None = None,
         progress_callback: Callable[..., Any] | None = None
     ) -> BackupManifest:

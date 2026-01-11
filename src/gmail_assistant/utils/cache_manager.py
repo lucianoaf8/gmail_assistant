@@ -210,10 +210,7 @@ class IntelligentCache:
             return True
 
         memory_status = self.memory_tracker.check_memory()
-        if memory_status['status'] in ['warning', 'critical']:
-            return True
-
-        return False
+        return memory_status['status'] in ['warning', 'critical']
 
     def _load_from_disk(self, cache_key: str) -> Any:
         """Load value from disk cache using JSON for security."""
@@ -430,7 +427,7 @@ class IntelligentCache:
 
         # Force memory cleanup
         before_memory = self.memory_tracker.check_memory()['current_mb']
-        freed_bytes = self.memory_tracker.force_gc()
+        self.memory_tracker.force_gc()
         after_memory = self.memory_tracker.check_memory()['current_mb']
         stats['memory_freed_mb'] = max(0, before_memory - after_memory)
 
@@ -454,7 +451,7 @@ class IntelligentCache:
 
         current_disk_mb = self.get_stats()['disk_cache']['size_mb']
 
-        for key, entry in sorted_entries:
+        for key, _entry in sorted_entries:
             if current_disk_mb <= target_mb:
                 break
 

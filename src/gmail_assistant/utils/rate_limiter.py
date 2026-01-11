@@ -10,7 +10,7 @@ import random
 import threading
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, ClassVar
 
 from googleapiclient.errors import HttpError
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -267,7 +267,6 @@ def retry_on_rate_limit(max_attempts: int = 5,
         return False
 
     # Tenacity uses seconds directly, with optional jitter
-    jitter_range = (0.9, 1.1) if jitter else (1, 1)
 
     return retry(
         retry=retry_if_exception(should_retry_exception),
@@ -281,7 +280,7 @@ class QuotaTracker:
     """Track Gmail API quota usage."""
 
     # Gmail API quota costs (approximate)
-    QUOTA_COSTS = {
+    QUOTA_COSTS: ClassVar[dict[str, int]] = {
         'list_messages': 5,
         'get_message': 5,
         'delete_message': 10,

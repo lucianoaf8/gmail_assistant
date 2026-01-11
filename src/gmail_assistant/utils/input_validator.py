@@ -9,7 +9,8 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any
+from re import Pattern
+from typing import Any, ClassVar
 
 from gmail_assistant.core.exceptions import ValidationError
 
@@ -20,7 +21,7 @@ class InputValidator:
     """Comprehensive input validation framework."""
 
     # Gmail search query allowed patterns
-    GMAIL_SEARCH_OPERATORS = {
+    GMAIL_SEARCH_OPERATORS: ClassVar[set[str]] = {
         'from', 'to', 'subject', 'has', 'is', 'in', 'category',
         'before', 'after', 'older_than', 'newer_than', 'larger',
         'smaller', 'filename', 'cc', 'bcc', 'label', 'deliveredto',
@@ -28,13 +29,13 @@ class InputValidator:
     }
 
     # Safe filename characters (more restrictive than OS allows)
-    SAFE_FILENAME_PATTERN = re.compile(r'^[a-zA-Z0-9._\-\s()]+$')
+    SAFE_FILENAME_PATTERN: ClassVar[Pattern[str]] = re.compile(r'^[a-zA-Z0-9._\-\s()]+$')
 
     # Email validation pattern
-    EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    EMAIL_PATTERN: ClassVar[Pattern[str]] = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
     # Date format patterns for Gmail queries
-    DATE_PATTERNS = [
+    DATE_PATTERNS: ClassVar[list[Pattern[str]]] = [
         re.compile(r'^\d{4}/\d{1,2}/\d{1,2}$'),  # YYYY/MM/DD
         re.compile(r'^\d{1,2}/\d{1,2}/\d{4}$'),  # MM/DD/YYYY
         re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$'),  # YYYY-MM-DD
@@ -135,7 +136,7 @@ class InputValidator:
         try:
             resolved = path.resolve(strict=False)
         except (OSError, RuntimeError) as e:
-            raise ValidationError(f"Cannot resolve path: {e}")
+            raise ValidationError(f"Cannot resolve path: {e}") from e
 
         # Check for traversal AFTER resolution (catches symlink attacks)
         if '..' in path.parts:
@@ -152,9 +153,8 @@ class InputValidator:
         # Windows-specific checks
         if os.name == 'nt':
             # Allow single drive letter at start
-            if len(path_str) > 1 and path_str[1] == ':':
-                if not path_str[0].isalpha():
-                    raise ValidationError("Invalid Windows drive letter")
+            if len(path_str) > 1 and path_str[1] == ':' and not path_str[0].isalpha():
+                raise ValidationError("Invalid Windows drive letter")
             # Check for alternate data streams (file.txt:hidden)
             if ':' in path_str[2:]:
                 raise ValidationError("Path contains Windows alternate data stream")
@@ -193,7 +193,7 @@ class InputValidator:
                 resolved.parent.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Created directories: {resolved.parent}")
             except OSError as e:
-                raise ValidationError(f"Failed to create directories: {e}")
+                raise ValidationError(f"Failed to create directories: {e}") from e
 
         return resolved
 
@@ -249,8 +249,8 @@ class InputValidator:
                 value = int(value)
             elif not isinstance(value, int):
                 raise ValueError()
-        except (ValueError, TypeError):
-            raise ValidationError(f"Invalid integer value: {value}")
+        except (ValueError, TypeError) as e:
+            raise ValidationError(f"Invalid integer value: {value}") from e
 
         if min_val is not None and value < min_val:
             raise ValidationError(f"Value {value} below minimum {min_val}")

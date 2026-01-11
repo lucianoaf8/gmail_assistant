@@ -261,7 +261,7 @@ class EmailDatabaseExtensions:
                     continue
 
                 try:
-                    was_inserted, action = self.upsert_email(gmail_id, email)
+                    _was_inserted, action = self.upsert_email(gmail_id, email)
                     if action == 'inserted':
                         result.inserted += 1
                     elif action == 'updated':
@@ -401,10 +401,8 @@ class EmailDatabaseExtensions:
             ids = [int(id_str) for id_str in dup['ids'].split(',')]
             ids.sort()
 
-            if keep == 'first':
-                ids_to_remove = ids[1:]  # Keep first (smallest id)
-            else:
-                ids_to_remove = ids[:-1]  # Keep last (largest id)
+            # Keep first (smallest id) or last (largest id)
+            ids_to_remove = ids[1:] if keep == 'first' else ids[:-1]
 
             for id_to_remove in ids_to_remove:
                 conn.execute("DELETE FROM emails WHERE id = ?", (id_to_remove,))

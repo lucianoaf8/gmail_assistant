@@ -239,10 +239,10 @@ class EmailClassifier:
 
             # Get sender frequency data
             cursor.execute('''
-                SELECT sender, COUNT(*) as frequency, 
+                SELECT sender, COUNT(*) as frequency,
                        MIN(parsed_date) as first_email,
                        MAX(parsed_date) as last_email
-                FROM emails 
+                FROM emails
                 WHERE sender IS NOT NULL
                 GROUP BY sender
                 ORDER BY frequency DESC
@@ -298,8 +298,8 @@ class EmailClassifier:
         }
 
         sender_lower = sender.lower()
-        domain = self._extract_domain(sender)
-        prefix = self._extract_email_prefix(sender)
+        self._extract_domain(sender)
+        self._extract_email_prefix(sender)
 
         # Check sender patterns
         for category, patterns in self.sender_patterns.items():
@@ -540,7 +540,7 @@ class EmailClassifier:
             # Get batch of unclassified emails
             cursor.execute('''
                 SELECT id, sender, subject, plain_text_content, labels
-                FROM emails 
+                FROM emails
                 WHERE primary_category IS NULL
                 LIMIT ? OFFSET ?
             ''', (batch_size, offset))
@@ -568,7 +568,7 @@ class EmailClassifier:
 
                     # Update database
                     update_sql = '''
-                        UPDATE emails SET 
+                        UPDATE emails SET
                             primary_category = ?,
                             domain_category = ?,
                             priority_level = ?,
@@ -699,7 +699,7 @@ class EmailClassifier:
             cursor.execute('''
                 SELECT primary_category, COUNT(*) as count,
                        AVG(confidence_score) as avg_confidence
-                FROM emails 
+                FROM emails
                 WHERE primary_category IS NOT NULL
                 GROUP BY primary_category
                 ORDER BY count DESC
@@ -718,7 +718,7 @@ class EmailClassifier:
             cursor.execute('''
                 SELECT domain_category, COUNT(*) as count,
                        AVG(confidence_score) as avg_confidence
-                FROM emails 
+                FROM emails
                 WHERE domain_category IS NOT NULL AND domain_category != 'Other'
                 GROUP BY domain_category
                 ORDER BY count DESC
@@ -736,7 +736,7 @@ class EmailClassifier:
             # Top senders by category
             cursor.execute('''
                 SELECT primary_category, sender, COUNT(*) as count
-                FROM emails 
+                FROM emails
                 WHERE primary_category IS NOT NULL
                 GROUP BY primary_category, sender
                 HAVING count >= 3
@@ -757,15 +757,15 @@ class EmailClassifier:
 
             # Confidence analysis
             cursor.execute('''
-                SELECT 
-                    CASE 
+                SELECT
+                    CASE
                         WHEN confidence_score >= 0.8 THEN 'High (0.8+)'
                         WHEN confidence_score >= 0.6 THEN 'Medium (0.6-0.8)'
                         WHEN confidence_score >= 0.4 THEN 'Low (0.4-0.6)'
                         ELSE 'Very Low (<0.4)'
                     END as confidence_range,
                     COUNT(*) as count
-                FROM emails 
+                FROM emails
                 WHERE confidence_score IS NOT NULL
                 GROUP BY confidence_range
                 ORDER BY confidence_score DESC

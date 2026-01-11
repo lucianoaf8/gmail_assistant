@@ -18,7 +18,7 @@ import logging
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class ParquetExporter:
     """
 
     # Schema definition for email data
-    EMAIL_SCHEMA = [
+    EMAIL_SCHEMA: ClassVar[list[tuple[str, str]]] = [
         ('gmail_id', 'string'),
         ('thread_id', 'string'),
         ('subject', 'string'),
@@ -311,10 +311,7 @@ class ParquetExporter:
             return ''
         try:
             # Handle "Name <email@domain.com>" format
-            if '<' in sender:
-                email = sender.split('<')[1].split('>')[0]
-            else:
-                email = sender
+            email = sender.split('<')[1].split('>')[0] if '<' in sender else sender
             return email.split('@')[1].lower()
         except (IndexError, AttributeError):
             return ''
@@ -332,7 +329,7 @@ class ParquetExporter:
         """Parse comma-separated labels."""
         if not labels_str:
             return []
-        return [l.strip() for l in labels_str.split(',') if l.strip()]
+        return [label.strip() for label in labels_str.split(',') if label.strip()]
 
     def _check_attachments(self, labels_str: str) -> bool:
         """Check if email has attachments based on labels."""

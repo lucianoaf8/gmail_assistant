@@ -127,8 +127,8 @@ def convert_html_to_markdown(html: str) -> str:
             html,
             heading_style="ATX",
             bullets="*",
-            strip=["a"],  # keep links but avoid extra attrs; markdownify preserves href
-            convert=["b", "strong", "em", "i", "u", "br", "p", "ul", "ol", "li", "blockquote", "img", "table"],
+            # Convert all common HTML tags to markdown
+            convert=["a", "b", "strong", "em", "i", "u", "br", "p", "ul", "ol", "li", "blockquote", "img", "table", "h1", "h2", "h3", "h4", "h5", "h6"],
         )
     except ValidationError as e:
         logging.error(f"HTML validation failed: {e}")

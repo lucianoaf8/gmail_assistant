@@ -85,17 +85,17 @@ EmailAnalyzer = _DeprecatedEmailAnalyzer
 
 
 __all__ = [
+    'ContentAnalyzer',
     # Canonical implementation (recommended)
     'DailyEmailAnalyzer',
     'DataQualityAssessment',
-    'HierarchicalClassifier',
-    'TemporalAnalyzer',
-    'SenderAnalyzer',
-    'ContentAnalyzer',
-    'InsightsGenerator',
-    # Data converter
-    'EmailDataConverter',
     # Legacy aliases (deprecated)
     'EmailAnalysisEngine',  # DEPRECATED: use DailyEmailAnalyzer
     'EmailAnalyzer',        # DEPRECATED: use DailyEmailAnalyzer
+    # Data converter
+    'EmailDataConverter',
+    'HierarchicalClassifier',
+    'InsightsGenerator',
+    'SenderAnalyzer',
+    'TemporalAnalyzer',
 ]

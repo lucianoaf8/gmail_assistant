@@ -23,7 +23,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, ClassVar
 
 try:
     from googleapiclient.errors import HttpError
@@ -122,7 +122,7 @@ class HistorySyncClient:
         >>> print(f"New messages: {len(result.added_message_ids)}")
     """
 
-    HISTORY_TYPES = [
+    HISTORY_TYPES: ClassVar[list[str]] = [
         'messageAdded',
         'messageDeleted',
         'labelAdded',

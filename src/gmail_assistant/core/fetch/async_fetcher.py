@@ -111,16 +111,16 @@ class AsyncGmailFetcher:
             page_size = min(500, max_results - fetched_count)
 
             try:
-                # Prepare API call
-                def list_messages():
+                # Prepare API call - bind loop variables to avoid B023
+                def list_messages(ps=page_size, npt=next_page_token):
                     params = {
                         'userId': 'me',
                         'q': query,
-                        'maxResults': page_size,
+                        'maxResults': ps,
                         'fields': 'messages(id),nextPageToken'
                     }
-                    if next_page_token:
-                        params['pageToken'] = next_page_token
+                    if npt:
+                        params['pageToken'] = npt
 
                     return service.users().messages().list(**params).execute()
 

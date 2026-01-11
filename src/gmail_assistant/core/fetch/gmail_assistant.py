@@ -9,7 +9,6 @@ import binascii
 import datetime
 import logging
 import os
-import re
 import tempfile
 from pathlib import Path
 

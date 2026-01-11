@@ -31,6 +31,8 @@ def mock_credential_manager():
         "threads_total": 500
     }
     manager.reset_credentials.return_value = True
+    # validate_scopes must return tuple[bool, list[str]]
+    manager.validate_scopes.return_value = (True, [])
     return manager
 
 

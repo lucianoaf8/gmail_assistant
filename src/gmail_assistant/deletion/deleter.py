@@ -68,7 +68,7 @@ class GmailDeleter:
             self.console.print(f"Error getting email count: {error}", style="red")
             return 0
 
-    def list_emails(self, query: str = '', max_results: int = None) -> list[str]:
+    def list_emails(self, query: str = '', max_results: int | None = None) -> list[str]:
         """List email IDs matching query with pagination"""
         message_ids = []
 
@@ -202,7 +202,7 @@ class GmailDeleter:
 
         return {'deleted': deleted_count, 'failed': failed_count}
 
-    def delete_by_query(self, query: str, dry_run: bool = True, max_delete: int = None) -> dict[str, int]:
+    def delete_by_query(self, query: str, dry_run: bool = True, max_delete: int | None = None) -> dict[str, int]:
         """Delete emails matching a query with safety checks and beautiful display"""
 
         # Create query info panel
@@ -214,7 +214,7 @@ class GmailDeleter:
         self.console.print(query_panel)
 
         # Get email count first with spinner
-        with self.console.status("[bold green]Counting matching emails...") as status:
+        with self.console.status("[bold green]Counting matching emails..."):
             total_count = self.get_email_count(query)
 
         if total_count == 0:
@@ -253,7 +253,7 @@ class GmailDeleter:
             return {'deleted': 0, 'failed': 0}
 
         # Get message IDs with progress
-        with self.console.status("[bold green]Fetching email IDs for deletion...") as status:
+        with self.console.status("[bold green]Fetching email IDs for deletion..."):
             message_ids = self.list_emails(query, delete_count)
 
         if not message_ids:
@@ -284,7 +284,7 @@ class GmailDeleter:
         """Delete emails based on gmail_ids from parquet analysis with beautiful display"""
         try:
             # Load parquet data with status
-            with self.console.status("[bold green]Loading parquet analysis data...") as status:
+            with self.console.status("[bold green]Loading parquet analysis data..."):
                 df = pd.read_parquet(parquet_file)
                 gmail_ids = df['gmail_id'].dropna().tolist()
 
@@ -377,13 +377,13 @@ def main():
                 border_style="cyan"
             )
             console.print(preset_panel)
-            result = deleter.delete_by_query(query, args.dry_run, args.max_delete)
+            deleter.delete_by_query(query, args.dry_run, args.max_delete)
 
         elif args.query:
-            result = deleter.delete_by_query(args.query, args.dry_run, args.max_delete)
+            deleter.delete_by_query(args.query, args.dry_run, args.max_delete)
 
         elif args.parquet:
-            result = deleter.delete_from_parquet_data(args.parquet, args.dry_run)
+            deleter.delete_from_parquet_data(args.parquet, args.dry_run)
 
         else:
             # Interactive mode with beautiful menu
@@ -411,13 +411,13 @@ def main():
             }
 
             if choice in query_map:
-                result = deleter.delete_by_query(query_map[choice], args.dry_run, args.max_delete)
+                deleter.delete_by_query(query_map[choice], args.dry_run, args.max_delete)
             elif choice == '5':
                 custom_query = input("Enter Gmail search query: ").strip()
-                result = deleter.delete_by_query(custom_query, args.dry_run, args.max_delete)
+                deleter.delete_by_query(custom_query, args.dry_run, args.max_delete)
             elif choice == '6':
                 parquet_path = input("Enter path to parquet file: ").strip()
-                result = deleter.delete_from_parquet_data(parquet_path, args.dry_run)
+                deleter.delete_from_parquet_data(parquet_path, args.dry_run)
             else:
                 console.print("❌ Invalid choice", style="red")
                 return

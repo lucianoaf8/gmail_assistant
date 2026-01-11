@@ -6,6 +6,7 @@ Handles actual Gmail operations via Google API
 Security: Uses SecureCredentialManager for OS keyring storage (H-1 fix)
 """
 
+import json
 import logging
 import os
 from datetime import datetime

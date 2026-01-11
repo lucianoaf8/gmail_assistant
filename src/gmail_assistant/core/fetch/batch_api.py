@@ -142,10 +142,10 @@ class GmailBatchClient:
                 batch.execute()
             except HttpError as e:
                 logger.error(f"Batch request failed: {e}")
-                raise BatchAPIError(str(e), batch_ids)
+                raise BatchAPIError(str(e), batch_ids) from e
             except Exception as e:
                 logger.error(f"Unexpected batch error: {e}")
-                raise BatchAPIError(str(e), batch_ids)
+                raise BatchAPIError(str(e), batch_ids) from e
 
             # Process results
             for msg_id in batch_ids:

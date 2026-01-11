@@ -57,9 +57,8 @@ class AuthenticationBase(ABC):
     @property
     def service(self):
         """Get authenticated Gmail service."""
-        if not self.is_authenticated:
-            if not self.authenticate():
-                raise AuthenticationError("Failed to authenticate with Gmail API")
+        if not self.is_authenticated and not self.authenticate():
+            raise AuthenticationError("Failed to authenticate with Gmail API")
         return self._service
 
     @property
@@ -380,7 +379,6 @@ class AuthenticationFactory:
         # Determine auth type based on scopes
         readonly_scopes = {'https://www.googleapis.com/auth/gmail.readonly'}
         modify_scopes = {'https://www.googleapis.com/auth/gmail.modify'}
-        compose_scopes = {'https://www.googleapis.com/auth/gmail.compose'}
 
         scope_set = set(required_scopes)
 

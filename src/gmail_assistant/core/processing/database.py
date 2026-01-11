@@ -17,7 +17,7 @@ class EmailDatabaseImporter:
     def __init__(self, db_path: str = "emails.db", json_folder: str = "monthly_email_data"):
         """
         Initialize the EmailDatabaseImporter.
-        
+
         Args:
             db_path: Path to the SQLite database file
             json_folder: Folder containing monthly JSON files
@@ -53,12 +53,12 @@ class EmailDatabaseImporter:
             message_content TEXT,
             extraction_timestamp TEXT NOT NULL,
             import_timestamp TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            
+
             -- Constraints
             UNIQUE(file_path),  -- Prevent duplicate imports
             CHECK(length(year_month) = 7)  -- Format: YYYY-MM
         );
-        
+
         -- Table for tracking monthly import batches
         CREATE TABLE IF NOT EXISTS import_batches (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,10 +69,10 @@ class EmailDatabaseImporter:
             date_range_last TEXT,
             extraction_timestamp TEXT,
             import_timestamp TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            
+
             CHECK(email_count >= 0)
         );
-        
+
         -- Table for email metadata statistics
         CREATE TABLE IF NOT EXISTS email_stats (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +85,7 @@ class EmailDatabaseImporter:
             latest_email TEXT,
             months_covered INTEGER
         );
-        
+
         -- Performance indexes
         CREATE INDEX IF NOT EXISTS idx_emails_year_month ON emails(year_month);
         CREATE INDEX IF NOT EXISTS idx_emails_gmail_id ON emails(gmail_id);
@@ -94,31 +94,31 @@ class EmailDatabaseImporter:
         CREATE INDEX IF NOT EXISTS idx_emails_recipient ON emails(recipient);
         CREATE INDEX IF NOT EXISTS idx_emails_parsed_date ON emails(parsed_date);
         CREATE INDEX IF NOT EXISTS idx_emails_subject ON emails(subject);
-        
+
         -- Full-text search for message content (optional, if FTS is available)
         CREATE VIRTUAL TABLE IF NOT EXISTS emails_fts USING fts5(
-            subject, 
-            message_content, 
+            subject,
+            message_content,
             sender,
             content='emails',
             content_rowid='id'
         );
-        
+
         -- Triggers to maintain FTS index
         CREATE TRIGGER IF NOT EXISTS emails_fts_insert AFTER INSERT ON emails BEGIN
-            INSERT INTO emails_fts(rowid, subject, message_content, sender) 
+            INSERT INTO emails_fts(rowid, subject, message_content, sender)
             VALUES (new.id, new.subject, new.message_content, new.sender);
         END;
-        
+
         CREATE TRIGGER IF NOT EXISTS emails_fts_delete AFTER DELETE ON emails BEGIN
-            INSERT INTO emails_fts(emails_fts, rowid, subject, message_content, sender) 
+            INSERT INTO emails_fts(emails_fts, rowid, subject, message_content, sender)
             VALUES('delete', old.id, old.subject, old.message_content, old.sender);
         END;
-        
+
         CREATE TRIGGER IF NOT EXISTS emails_fts_update AFTER UPDATE ON emails BEGIN
-            INSERT INTO emails_fts(emails_fts, rowid, subject, message_content, sender) 
+            INSERT INTO emails_fts(emails_fts, rowid, subject, message_content, sender)
             VALUES('delete', old.id, old.subject, old.message_content, old.sender);
-            INSERT INTO emails_fts(rowid, subject, message_content, sender) 
+            INSERT INTO emails_fts(rowid, subject, message_content, sender)
             VALUES (new.id, new.subject, new.message_content, new.sender);
         END;
         """
@@ -157,10 +157,10 @@ class EmailDatabaseImporter:
     def import_monthly_json(self, json_file: Path) -> tuple[int, int]:
         """
         Import emails from a monthly JSON file.
-        
+
         Args:
             json_file: Path to the monthly JSON file
-            
+
         Returns:
             Tuple of (imported_count, skipped_count)
         """
@@ -257,7 +257,7 @@ class EmailDatabaseImporter:
     def import_all_monthly_files(self) -> dict[str, int]:
         """
         Import all monthly JSON files from the specified folder.
-        
+
         Returns:
             Dictionary with import statistics
         """
@@ -305,7 +305,7 @@ class EmailDatabaseImporter:
         try:
             # Calculate statistics
             stats_query = """
-            SELECT 
+            SELECT
                 COUNT(*) as total_emails,
                 COUNT(DISTINCT sender) as unique_senders,
                 COUNT(DISTINCT recipient) as unique_recipients,
@@ -322,7 +322,7 @@ class EmailDatabaseImporter:
             # Insert statistics
             self.conn.execute("""
                 INSERT INTO email_stats (
-                    total_emails, unique_senders, unique_recipients, 
+                    total_emails, unique_senders, unique_recipients,
                     unique_gmail_ids, earliest_email, latest_email, months_covered
                 ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
@@ -356,7 +356,7 @@ class EmailDatabaseImporter:
 
             # Date range
             date_range = self.conn.execute("""
-                SELECT MIN(parsed_date) as earliest, MAX(parsed_date) as latest 
+                SELECT MIN(parsed_date) as earliest, MAX(parsed_date) as latest
                 FROM emails WHERE parsed_date != ''
             """).fetchone()
             info['date_range'] = {
@@ -366,11 +366,11 @@ class EmailDatabaseImporter:
 
             # Top senders
             top_senders = self.conn.execute("""
-                SELECT sender, COUNT(*) as count 
-                FROM emails 
-                WHERE sender != '' 
-                GROUP BY sender 
-                ORDER BY count DESC 
+                SELECT sender, COUNT(*) as count
+                FROM emails
+                WHERE sender != ''
+                GROUP BY sender
+                ORDER BY count DESC
                 LIMIT 10
             """).fetchall()
             info['top_senders'] = [{'sender': row['sender'], 'count': row['count']}
@@ -378,9 +378,9 @@ class EmailDatabaseImporter:
 
             # Monthly distribution
             monthly_dist = self.conn.execute("""
-                SELECT year_month, COUNT(*) as count 
-                FROM emails 
-                GROUP BY year_month 
+                SELECT year_month, COUNT(*) as count
+                FROM emails
+                GROUP BY year_month
                 ORDER BY year_month
             """).fetchall()
             info['monthly_distribution'] = [{'month': row['year_month'], 'count': row['count']}
@@ -395,11 +395,11 @@ class EmailDatabaseImporter:
     def search_emails(self, query: str, limit: int = 50) -> list[dict]:
         """
         Search emails using full-text search.
-        
+
         Args:
             query: Search query
             limit: Maximum number of results
-            
+
         Returns:
             List of matching emails
         """
@@ -407,7 +407,7 @@ class EmailDatabaseImporter:
             # Use FTS if available, otherwise fall back to LIKE search
             fts_query = """
                 SELECT e.*, rank
-                FROM emails_fts 
+                FROM emails_fts
                 JOIN emails e ON emails_fts.rowid = e.id
                 WHERE emails_fts MATCH ?
                 ORDER BY rank
@@ -415,7 +415,7 @@ class EmailDatabaseImporter:
             """
 
             fallback_query = """
-                SELECT * FROM emails 
+                SELECT * FROM emails
                 WHERE subject LIKE ? OR message_content LIKE ? OR sender LIKE ?
                 ORDER BY parsed_date DESC
                 LIMIT ?

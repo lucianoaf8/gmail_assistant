@@ -113,8 +113,8 @@ class Email(BaseModel):
             # Last resort: try fromisoformat
             try:
                 return datetime.fromisoformat(clean_v.replace('Z', '+00:00'))
-            except ValueError:
-                raise ValueError(f"Unable to parse date: {v}")
+            except ValueError as e:
+                raise ValueError(f"Unable to parse date: {v}") from e
         return v
 
     @property
@@ -354,6 +354,6 @@ def create_email_from_dict(data: dict[str, Any]) -> Email:
 
     # Handle labels as comma-separated string
     if isinstance(normalized['labels'], str):
-        normalized['labels'] = [l.strip() for l in normalized['labels'].split(',') if l.strip()]
+        normalized['labels'] = [label.strip() for label in normalized['labels'].split(',') if label.strip()]
 
     return Email(**normalized)

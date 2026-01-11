@@ -13,11 +13,20 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 
-# Force UTF-8 encoding for Windows
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def test_rich_progress():
     """Test the Rich progress bar implementation"""
+    # Force UTF-8 encoding for Windows - scoped to function to avoid breaking pytest capture
+    original_stdout = sys.stdout
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        _run_rich_progress_tests()
+    finally:
+        sys.stdout = original_stdout
+
+
+def _run_rich_progress_tests():
+    """Internal function containing the actual test logic"""
     console = Console(force_terminal=True, legacy_windows=False)
 
     # Test 1: Beautiful header

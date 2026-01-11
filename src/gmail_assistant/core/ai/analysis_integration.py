@@ -22,7 +22,7 @@ from typing import Any
 class GmailAnalysisIntegration:
     """
     Integration orchestrator for Gmail Fetcher and Email Analysis
-    
+
     Provides seamless workflow integration including:
     - Automated analysis pipeline
     - Configuration management
@@ -33,7 +33,7 @@ class GmailAnalysisIntegration:
     def __init__(self, base_dir: str | None = None):
         """
         Initialize the integration system
-        
+
         Args:
             base_dir: Base directory for the Gmail Fetcher project
         """
@@ -84,14 +84,14 @@ class GmailAnalysisIntegration:
                                gmail_organize: str = "date") -> dict[str, Any]:
         """
         Run integrated Gmail fetch + analysis workflow
-        
+
         Args:
             gmail_query: Gmail search query
             max_emails: Maximum emails to fetch
             analysis_date: Date for analysis ('yesterday', 'YYYY-MM-DD', or None for all)
             gmail_format: Gmail fetcher output format
             gmail_organize: Gmail fetcher organization method
-            
+
         Returns:
             Dict with workflow results including Gmail fetch and analysis results
         """
@@ -177,13 +177,13 @@ class GmailAnalysisIntegration:
                           organize: str) -> dict[str, Any]:
         """
         Run Gmail Fetcher with specified parameters
-        
+
         Args:
             query: Gmail search query
             max_emails: Maximum emails to fetch
             format_type: Output format ('eml', 'markdown', 'both')
             organize: Organization method ('date', 'sender', 'none')
-            
+
         Returns:
             Dict with Gmail fetcher execution results
         """
@@ -237,7 +237,7 @@ class GmailAnalysisIntegration:
     def _find_latest_gmail_output(self) -> Path | None:
         """
         Find the most recent Gmail fetcher output file
-        
+
         Returns:
             Path to the latest parquet file or None if not found
         """
@@ -276,11 +276,11 @@ class GmailAnalysisIntegration:
                            analysis_date: str | None = None) -> dict[str, Any]:
         """
         Run email analysis on the specified input file
-        
+
         Args:
             input_file: Path to input parquet file
             analysis_date: Date filter for analysis
-            
+
         Returns:
             Dict with analysis execution results
         """
@@ -363,10 +363,10 @@ class GmailAnalysisIntegration:
     def _extract_email_count(self, gmail_output: str) -> int:
         """
         Extract number of emails fetched from Gmail fetcher output
-        
+
         Args:
             gmail_output: Standard output from Gmail fetcher
-            
+
         Returns:
             Number of emails fetched (0 if not found)
         """
@@ -395,11 +395,11 @@ class GmailAnalysisIntegration:
                                    analysis_result: dict[str, Any]) -> dict[str, Any]:
         """
         Generate integrated summary combining Gmail fetch and analysis results
-        
+
         Args:
             gmail_result: Gmail fetcher execution results
             analysis_result: Email analysis execution results
-            
+
         Returns:
             Dict with integrated summary
         """
@@ -487,11 +487,11 @@ class GmailAnalysisIntegration:
                            max_emails: int = 500) -> dict[str, Any]:
         """
         Run automated daily workflow optimized for cron execution
-        
+
         Args:
             gmail_query: Gmail search query (default: last 24 hours)
             max_emails: Maximum emails to fetch
-            
+
         Returns:
             Dict with automation results
         """
@@ -508,10 +508,10 @@ class GmailAnalysisIntegration:
     def create_automation_script(self, output_path: str | None = None) -> Path:
         """
         Create automation script for cron job execution
-        
+
         Args:
             output_path: Where to save the automation script
-            
+
         Returns:
             Path to created automation script
         """
@@ -529,28 +529,28 @@ from gmail_assistant.core.ai.analysis_integration import GmailAnalysisIntegratio
 def main():
     """Run daily automation workflow"""
     integration = GmailAnalysisIntegration("{self.base_dir}")
-    
+
     # Run daily workflow
     result = integration.run_daily_automation()
-    
+
     if result['success']:
         print("✅ Daily automation completed successfully")
-        
+
         # Print summary
         summary = result.get('summary', {{}})
         workflow_summary = summary.get('workflow_summary', {{}})
-        
+
         print(f"📧 Emails fetched: {{workflow_summary.get('emails_fetched', 0)}}")
         print(f"📊 Emails analyzed: {{workflow_summary.get('emails_analyzed', 0)}}")
         print(f"⏱️  Analysis time: {{workflow_summary.get('analysis_duration', 'Unknown')}}")
-        
+
         # Print key insights
         recommendations = summary.get('key_recommendations', [])
         if recommendations:
             print("\\n🎯 Key recommendations:")
             for i, rec in enumerate(recommendations[:3], 1):
                 print(f"  {{i}}. {{rec}}")
-        
+
         sys.exit(0)
     else:
         print(f"❌ Daily automation failed: {{result.get('error', 'Unknown error')}}")
@@ -574,7 +574,7 @@ if __name__ == "__main__":
     def generate_cron_template(self) -> str:
         """
         Generate cron job template for daily automation
-        
+
         Returns:
             Cron job configuration string
         """
@@ -587,7 +587,7 @@ if __name__ == "__main__":
 # Daily automation at 6:00 AM
 0 6 * * * cd {self.base_dir} && python {automation_script} >> {log_file} 2>&1
 
-# Alternative: Daily automation at 8:00 PM  
+# Alternative: Daily automation at 8:00 PM
 # 0 20 * * * cd {self.base_dir} && python {automation_script} >> {log_file} 2>&1
 
 # Weekly summary report on Sundays at 9:00 AM
@@ -603,12 +603,12 @@ def run_daily_workflow(gmail_query: str = "newer_than:1d",
                       base_dir: str | None = None) -> dict[str, Any]:
     """
     Convenience function to run daily Gmail + analysis workflow
-    
+
     Args:
         gmail_query: Gmail search query
         max_emails: Maximum emails to fetch
         base_dir: Base directory (uses current directory if None)
-        
+
     Returns:
         Dict with workflow results
     """
@@ -619,10 +619,10 @@ def run_daily_workflow(gmail_query: str = "newer_than:1d",
 def setup_daily_automation(base_dir: str | None = None) -> tuple[Path, str]:
     """
     Setup daily automation for Gmail + analysis workflow
-    
+
     Args:
         base_dir: Base directory (uses current directory if None)
-        
+
     Returns:
         Tuple of (automation_script_path, cron_template)
     """

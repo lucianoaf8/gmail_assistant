@@ -347,7 +347,7 @@ class EmailAnalysisEngine:
         daily_counts = np.sort(daily_counts)
 
         n = len(daily_counts)
-        cumsum = np.cumsum(daily_counts)
+        np.cumsum(daily_counts)
 
         # Gini coefficient calculation
         gini = (2 * np.sum((np.arange(1, n + 1)) * daily_counts)) / (n * np.sum(daily_counts)) - (n + 1) / n
@@ -405,7 +405,7 @@ class EmailAnalysisEngine:
             'automated_emails': int(automated_count),
             'personal_emails': int(total_count - automated_count),
             'top_automated_senders': (
-                df[df['is_automated'] == True]['sender']
+                df[df['is_automated']]['sender']
                 .value_counts().head(10).to_dict()
             ),
             'automation_by_category': (

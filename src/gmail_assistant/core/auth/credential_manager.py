@@ -163,9 +163,8 @@ class SecureCredentialManager:
         Returns:
             Gmail service object if authenticated, None otherwise
         """
-        if not self.service:
-            if not self.authenticate():
-                return None
+        if not self.service and not self.authenticate():
+            return None
         return self.service
 
     def reset_credentials(self) -> bool:

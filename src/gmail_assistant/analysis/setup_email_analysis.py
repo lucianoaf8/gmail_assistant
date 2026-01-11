@@ -232,23 +232,23 @@ from datetime import datetime, timedelta
 
 def main():
     """Run daily analysis with standard parameters"""
-    
+
     base_dir = Path(__file__).parent.parent
-    
+
     # Default parameters
     config_file = base_dir / 'config.json'
     analysis_script = base_dir / 'daily_email_analysis.py'
-    
+
     # Get input file from command line or use default
     if len(sys.argv) > 1:
         input_file = sys.argv[1]
     else:
         input_file = base_dir / 'data' / 'raw' / 'latest_emails.parquet'
-    
+
     # Output file with timestamp
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_file = base_dir / 'output' / 'daily' / f'analysis_{timestamp}.json'
-    
+
     # Run analysis
     cmd = [
         sys.executable, str(analysis_script),
@@ -257,10 +257,10 @@ def main():
         '--output', str(output_file),
         '--yesterday'
     ]
-    
+
     print(f"Running: {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True)
-    
+
     if result.returncode == 0:
         print("✅ Daily analysis completed successfully")
         print(f"Results saved to: {output_file}")
@@ -292,24 +292,24 @@ from datetime import datetime, timedelta
 
 def main():
     """Run batch analysis for date range"""
-    
+
     if len(sys.argv) < 3:
         print("Usage: python run_batch_analysis.py <input_file> <days_back>")
         sys.exit(1)
-    
+
     input_file = sys.argv[1]
     days_back = int(sys.argv[2])
-    
+
     base_dir = Path(__file__).parent.parent
     config_file = base_dir / 'config.json'
     analysis_script = base_dir / 'daily_email_analysis.py'
-    
+
     print(f"Running batch analysis for last {days_back} days...")
-    
+
     for i in range(days_back):
         date = (datetime.now() - timedelta(days=i+1)).strftime('%Y-%m-%d')
         output_file = base_dir / 'output' / 'daily' / f'analysis_{date}.json'
-        
+
         cmd = [
             sys.executable, str(analysis_script),
             '--config', str(config_file),
@@ -317,10 +317,10 @@ def main():
             '--output', str(output_file),
             '--date', date
         ]
-        
+
         print(f"Processing {date}...")
         result = subprocess.run(cmd, capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print(f"   ✅ {date} completed")
         else:
@@ -348,7 +348,7 @@ if __name__ == "__main__":
 # Daily analysis at 6:00 AM
 0 6 * * * cd {self.base_dir} && python scripts/run_daily_analysis.py >> logs/cron.log 2>&1
 
-# Weekly cleanup at 2:00 AM Sunday  
+# Weekly cleanup at 2:00 AM Sunday
 0 2 * * 0 cd {self.base_dir} && python scripts/cleanup_old_files.py >> logs/cleanup.log 2>&1
 
 # Monthly summary report at 9:00 AM on the 1st
@@ -393,7 +393,7 @@ Edit `config.json` to customize:
 ### 3. Output Interpretation
 Results are saved as JSON with these sections:
 - **metadata**: Analysis info and timing
-- **quality_metrics**: Data quality assessment  
+- **quality_metrics**: Data quality assessment
 - **classification_summary**: Category distribution
 - **temporal_analysis**: Time patterns and trends
 - **sender_analysis**: Sender patterns and automation
@@ -472,7 +472,7 @@ Adjust quality and alert thresholds in `config.json`:
   "recommendations": [
     {
       "priority": "High",
-      "category": "Financial Processing", 
+      "category": "Financial Processing",
       "recommendation": "Set up dedicated financial email processing",
       "impact": "High automation potential"
     }

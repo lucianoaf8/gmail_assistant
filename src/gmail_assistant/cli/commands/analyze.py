@@ -134,10 +134,7 @@ def _analyze_senders(emails: list) -> dict[str, Any]:
     for email in emails:
         sender = email.get('sender', email.get('from', 'unknown'))
         # Extract domain
-        if '@' in sender:
-            domain = sender.split('@')[-1].rstrip('>')
-        else:
-            domain = sender
+        sender.split('@')[-1].rstrip('>') if '@' in sender else sender
 
         senders[sender] = senders.get(sender, 0) + 1
 

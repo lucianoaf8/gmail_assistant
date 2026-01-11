@@ -65,16 +65,16 @@ The v2.0.0 release restructured the project with a new Click-based CLI and src-l
 |---------|--------|-------|
 | Package structure | ✅ Complete | `src/gmail_assistant/` layout |
 | CLI framework | ✅ Complete | Click-based with subcommands |
-| CLI `fetch` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `delete` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `analyze` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `auth` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `config` command | ✅ Partial | `--init`, `--show`, `--validate` work |
+| CLI `fetch` command | ✅ Complete | Email fetching with query support |
+| CLI `delete` command | ✅ Complete | Email deletion with dry-run mode |
+| CLI `analyze` command | ✅ Complete | Email analysis and reporting |
+| CLI `auth` command | ✅ Complete | OAuth 2.0 authentication |
+| CLI `config` command | ✅ Complete | `--init`, `--show`, `--validate` |
 | Core `GmailFetcher` class | ✅ Complete | Direct usage available |
 | Parsers | ✅ Complete | Direct module usage available |
 | Configuration | ✅ Complete | `~/.gmail-assistant/` defaults |
 
-For full functionality before v2.1.0, use direct module imports:
+Direct module imports are also available:
 ```python
 from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 from gmail_assistant.core.config import AppConfig
@@ -90,7 +90,6 @@ from gmail_assistant.core.config import AppConfig
   - `analyze`: Analyze fetched emails
   - `auth`: Authenticate with Gmail API
   - `config`: Manage configuration
-  - **Note**: CLI commands are stub implementations; functional logic deferred to v2.1.0
 
 - **`src/gmail_assistant/core/fetch/gmail_assistant.py`**: Core `GmailFetcher` class
   - Authentication with Google OAuth 2.0 via `ReadOnlyGmailAuth`
@@ -172,8 +171,6 @@ gmail-assistant auth
 
 ### Basic Operations (v2.0.0 CLI)
 
-**Note**: The following CLI commands are stub implementations in v2.0.0. Functional implementations are planned for v2.1.0.
-
 ```bash
 # Fetch unread emails
 gmail-assistant fetch --query "is:unread" --max-emails 1000
@@ -193,9 +190,7 @@ gmail-assistant config --init
 gmail-assistant config --validate
 ```
 
-### Direct Module Usage (Immediately Functional)
-
-For immediate functionality before v2.1.0 CLI completion:
+### Direct Module Usage
 
 ```python
 from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher

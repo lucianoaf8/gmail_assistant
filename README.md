@@ -10,10 +10,6 @@
 > **v2.0.0 Breaking Changes**: This version introduces a new package structure and CLI.
 > See [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for migration guide.
 
-> **⚠️ v2.0.0 CLI Note**: The CLI commands (`fetch`, `delete`, `analyze`, `auth`) are currently stub implementations.
-> Functional implementations are planned for v2.1.0. For immediate functionality, use direct module imports.
-> See [Implementation Status](#implementation-status) for details.
-
 ## 🌟 Overview
 
 Gmail Fetcher Suite is a powerful collection of tools designed to help you backup, analyze, and manage your Gmail emails efficiently. Whether you need to create archives, clean up AI newsletters, convert emails to readable formats, or analyze email content, this suite provides comprehensive solutions.
@@ -118,10 +114,11 @@ gmail_assistant/
 |---------|--------|-------|
 | Package structure | ✅ Complete | `src/gmail_assistant/` layout |
 | CLI framework | ✅ Complete | Click-based with subcommands |
-| CLI `fetch` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `delete` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `analyze` command | ⚠️ Stub | Functional implementation v2.1.0 |
-| CLI `auth` command | ⚠️ Stub | Functional implementation v2.1.0 |
+| CLI `fetch` command | ✅ Complete | Email fetching with query support |
+| CLI `delete` command | ✅ Complete | Email deletion with dry-run mode |
+| CLI `analyze` command | ✅ Complete | Email analysis and reporting |
+| CLI `auth` command | ✅ Complete | OAuth 2.0 authentication |
+| CLI `config` command | ✅ Complete | Configuration management |
 | Core `GmailFetcher` class | ✅ Complete | Direct usage available |
 | Parsers | ✅ Complete | Direct module usage available |
 
@@ -132,7 +129,7 @@ gmail_assistant/
 #### 1. Gmail Fetcher
 The primary email backup tool with comprehensive search and organization capabilities.
 
-**CLI Usage** (v2.1.0 - currently stub):
+**CLI Usage**:
 ```bash
 # Download unread emails
 gmail-assistant fetch --query "is:unread" --max-emails 1000
@@ -141,7 +138,7 @@ gmail-assistant fetch --query "is:unread" --max-emails 1000
 gmail-assistant fetch --query "after:2025/02/28" --format json --output-dir ./backups
 ```
 
-**Direct Module Usage** (immediately functional):
+**Direct Module Usage**:
 ```python
 from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 

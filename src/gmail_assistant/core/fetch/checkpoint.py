@@ -262,9 +262,8 @@ class CheckpointManager:
 
         for filepath in self.checkpoint_dir.glob("sync_*.json"):
             checkpoint = self.load_checkpoint(filepath.stem)
-            if checkpoint:
-                if state is None or checkpoint.state == state:
-                    checkpoints.append(checkpoint)
+            if checkpoint and (state is None or checkpoint.state == state):
+                checkpoints.append(checkpoint)
 
         return sorted(checkpoints, key=lambda c: c.updated_at, reverse=True)
 

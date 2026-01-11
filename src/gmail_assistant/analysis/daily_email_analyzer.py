@@ -32,10 +32,10 @@ class DataQualityAssessment:
     def assess_quality(self, df: pd.DataFrame) -> dict[str, Any]:
         """
         Multi-dimensional data quality assessment
-        
+
         Args:
             df: DataFrame with email data
-            
+
         Returns:
             Dict with quality metrics and validation results
         """
@@ -152,10 +152,10 @@ class HierarchicalClassifier:
     def classify_emails(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Apply hierarchical email classification with confidence scoring
-        
+
         Args:
             df: DataFrame with email data
-            
+
         Returns:
             DataFrame with added classification columns
         """
@@ -270,10 +270,10 @@ class TemporalAnalyzer:
     def analyze_temporal_patterns(self, df: pd.DataFrame) -> dict[str, Any]:
         """
         Comprehensive temporal analysis with peak detection
-        
+
         Args:
             df: DataFrame with classified email data
-            
+
         Returns:
             Dict with temporal analysis results
         """
@@ -386,7 +386,7 @@ class TemporalAnalyzer:
 
         daily_counts = np.sort(daily_counts)
         n = len(daily_counts)
-        cumsum = np.cumsum(daily_counts)
+        np.cumsum(daily_counts)
 
         # Gini coefficient calculation
         gini = (2 * np.sum((np.arange(1, n + 1)) * daily_counts)) / (n * np.sum(daily_counts)) - (n + 1) / n
@@ -404,10 +404,10 @@ class SenderAnalyzer:
     def analyze_senders(self, df: pd.DataFrame) -> dict[str, Any]:
         """
         Comprehensive sender analysis with automation detection
-        
+
         Args:
             df: DataFrame with classified email data
-            
+
         Returns:
             Dict with sender analysis results
         """
@@ -477,7 +477,7 @@ class SenderAnalyzer:
 
         # Top automated senders
         if 'sender' in df.columns:
-            automated_senders = df[automated_series == True]['sender'].value_counts().head(10)
+            automated_senders = df[automated_series]['sender'].value_counts().head(10)
             automation_analysis['top_automated_senders'] = automated_senders.to_dict()
 
         # Automation by category
@@ -578,10 +578,10 @@ class ContentAnalyzer:
     def analyze_content(self, df: pd.DataFrame) -> dict[str, Any]:
         """
         Comprehensive content analysis with pattern recognition
-        
+
         Args:
             df: DataFrame with classified email data
-            
+
         Returns:
             Dict with content analysis results
         """
@@ -602,7 +602,7 @@ class ContentAnalyzer:
         lengths = df['content_length']
 
         # Create length buckets - ensure bins and labels match
-        bins = self.length_buckets + [float('inf')]
+        bins = [*self.length_buckets, float('inf')]
         labels = self.bucket_labels
 
         # Ensure we have the right number of labels (one fewer than bins)
@@ -735,10 +735,10 @@ class InsightsGenerator:
     def generate_insights(self, analysis_results: dict[str, Any]) -> dict[str, Any]:
         """
         Generate actionable insights from comprehensive analysis results
-        
+
         Args:
             analysis_results: Complete analysis results from all engines
-            
+
         Returns:
             Dict with categorized insights and recommendations
         """
@@ -970,7 +970,7 @@ class InsightsGenerator:
 class DailyEmailAnalyzer:
     """
     Main orchestration class for comprehensive daily email analysis
-    
+
     This class coordinates all analysis engines to provide a complete
     daily email analysis following the documented methodology.
     """
@@ -978,7 +978,7 @@ class DailyEmailAnalyzer:
     def __init__(self, config_path: str):
         """
         Initialize the email analyzer with configuration
-        
+
         Args:
             config_path: Path to configuration JSON file
         """
@@ -1048,10 +1048,10 @@ class DailyEmailAnalyzer:
     def analyze_emails(self, df: pd.DataFrame) -> dict[str, Any]:
         """
         Run comprehensive email analysis pipeline
-        
+
         Args:
             df: DataFrame with email data
-            
+
         Returns:
             Dict with complete analysis results
         """
@@ -1150,12 +1150,12 @@ class DailyEmailAnalyzer:
     def analyze_date_range(self, df: pd.DataFrame, start_date: str, end_date: str) -> dict[str, Any]:
         """
         Analyze emails within a specific date range
-        
+
         Args:
             df: DataFrame with email data
             start_date: Start date in YYYY-MM-DD format
             end_date: End date in YYYY-MM-DD format
-            
+
         Returns:
             Dict with analysis results for the date range
         """
@@ -1194,10 +1194,10 @@ class DailyEmailAnalyzer:
     def generate_summary_report(self, analysis_results: dict[str, Any]) -> str:
         """
         Generate a human-readable summary report
-        
+
         Args:
             analysis_results: Complete analysis results
-            
+
         Returns:
             Formatted summary report as string
         """

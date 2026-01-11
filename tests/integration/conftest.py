@@ -125,31 +125,81 @@ def mock_gmail_service_full():
         "historyId": "123456"
     }
 
-    # Messages list mock
-    service.users().messages().list().execute.return_value = {
-        "messages": [{"id": f"msg{i}", "threadId": f"thread{i}"} for i in range(10)],
-        "resultSizeEstimate": 10
+    # Labels mock
+    service.users().labels().list().execute.return_value = {
+        "labels": [
+            {"id": "INBOX", "name": "INBOX", "type": "system"},
+            {"id": "SENT", "name": "SENT", "type": "system"},
+            {"id": "DRAFT", "name": "DRAFT", "type": "system"},
+            {"id": "TRASH", "name": "TRASH", "type": "system"},
+            {"id": "Label_1", "name": "Newsletter", "type": "user"},
+            {"id": "Label_2", "name": "Important", "type": "user"}
+        ]
     }
+
+    # Messages list mock - respects maxResults parameter
+    def mock_list_messages(**kwargs):
+        max_results = kwargs.get('maxResults', 100)
+        query = kwargs.get('q', '')
+        result = mock.MagicMock()
+
+        # Generate different message sets based on query
+        all_messages = [{"id": f"msg{i:05d}", "threadId": f"thread{i:05d}"} for i in range(100)]
+
+        # Filter messages based on query (simple simulation)
+        if 'from:' in query or 'subject:' in query or 'has:attachment' in query:
+            # Simulate fewer results for specific queries
+            all_messages = all_messages[:20]
+        elif query == '':
+            # Empty query returns all
+            pass
+
+        # Respect maxResults parameter
+        messages = all_messages[:min(max_results, len(all_messages))]
+        result.execute.return_value = {
+            "messages": messages,
+            "resultSizeEstimate": len(messages)
+        }
+        return result
+
+    service.users().messages().list = mock_list_messages
 
     # Messages get mock
     def mock_get_message(**kwargs):
-        msg_id = kwargs.get('id', 'msg001')
+        msg_id = kwargs.get('id', 'msg00001')
+        msg_format = kwargs.get('format', 'full')
         result = mock.MagicMock()
+
+        # Generate varied content based on message ID
+        msg_num = int(msg_id.replace('msg', ''))
+
         result.execute.return_value = {
             "id": msg_id,
             "threadId": f"thread_{msg_id}",
-            "labelIds": ["INBOX"],
-            "snippet": "Email preview...",
-            "sizeEstimate": 1024,
-            "internalDate": "1704124800000",
+            "labelIds": ["INBOX", "UNREAD"] if msg_num % 3 == 0 else ["INBOX"],
+            "snippet": f"Email preview for {msg_id}...",
+            "sizeEstimate": 1024 * (1 + msg_num % 10),
+            "internalDate": str(1704124800000 + msg_num * 86400000),
             "payload": {
                 "headers": [
-                    {"name": "From", "value": "sender@example.com"},
+                    {"name": "From", "value": f"sender{msg_num % 5}@example.com"},
                     {"name": "To", "value": "recipient@example.com"},
                     {"name": "Subject", "value": f"Test Subject {msg_id}"},
-                    {"name": "Date", "value": "Mon, 1 Jan 2024 12:00:00 -0500"},
+                    {"name": "Date", "value": f"Mon, {1 + msg_num % 28} Jan 2024 12:00:00 -0500"},
+                    {"name": "Message-ID", "value": f"<{msg_id}@mail.example.com>"},
+                    {"name": "Content-Type", "value": "multipart/alternative"},
                 ],
-                "body": {"data": "VGVzdCBib2R5IGNvbnRlbnQ="},  # Base64 "Test body content"
+                "mimeType": "multipart/alternative",
+                "parts": [
+                    {
+                        "mimeType": "text/plain",
+                        "body": {"data": "VGVzdCBib2R5IGNvbnRlbnQgZm9yIHRoaXMgZW1haWw="}  # Base64 encoded
+                    },
+                    {
+                        "mimeType": "text/html",
+                        "body": {"data": "PGh0bWw+PGJvZHk+PHA+VGVzdCBib2R5IGNvbnRlbnQgZm9yIHRoaXMgZW1haWw8L3A+PC9ib2R5PjwvaHRtbD4="}  # Base64 encoded
+                    }
+                ]
             }
         }
         return result
@@ -157,9 +207,45 @@ def mock_gmail_service_full():
     service.users().messages().get = mock_get_message
 
     # Messages trash mock
-    service.users().messages().trash().execute.return_value = {"id": "msg001"}
+    def mock_trash_message(**kwargs):
+        msg_id = kwargs.get('id', 'msg00001')
+        result = mock.MagicMock()
+        result.execute.return_value = {
+            "id": msg_id,
+            "threadId": f"thread_{msg_id}",
+            "labelIds": ["TRASH"]
+        }
+        return result
+
+    service.users().messages().trash = mock_trash_message
 
     # Messages delete mock
-    service.users().messages().delete().execute.return_value = {}
+    def mock_delete_message(**kwargs):
+        result = mock.MagicMock()
+        result.execute.return_value = {}
+        return result
+
+    service.users().messages().delete = mock_delete_message
 
     return service
+
+
+@pytest.fixture
+def mock_gmail_fetcher(mock_credentials_file, mock_gmail_service_full):
+    """Create a fully mocked GmailFetcher instance."""
+    from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+
+    fetcher = GmailFetcher(str(mock_credentials_file))
+
+    # Mock authentication
+    with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+        with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+            fetcher.authenticate()
+            yield fetcher
+
+
+@pytest.fixture
+def temp_dir() -> Generator[Path, None, None]:
+    """Create a temporary directory for tests."""
+    with tempfile.TemporaryDirectory(prefix="gmail_test_") as tmpdir:
+        yield Path(tmpdir)

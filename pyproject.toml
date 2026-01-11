@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
-    {name = "Project Author", email = "author@example.com"}
+    {name = "Gmail Assistant Contributors"}
 ]
 keywords = ["gmail", "email", "backup", "google-api"]
 classifiers = [
@@ -175,6 +175,9 @@ directory = "tests/test_results/htmlcov"
 [tool.coverage.json]
 output = "tests/test_results/coverage.json"
 
+[tool.coverage.xml]
+output = "tests/test_results/coverage.xml"
+
 [tool.ruff]
 target-version = "py310"
 line-length = 100
@@ -182,7 +185,7 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
-ignore = ["E501"]
+ignore = ["E501", "SIM102", "E402"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["gmail_assistant"]

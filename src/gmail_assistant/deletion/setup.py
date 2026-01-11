@@ -136,7 +136,7 @@ def analyze_current_state():
 def create_deletion_plan(email_stats):
     """Suggest deletion strategies based on current state"""
     unread = email_stats.get('Unread emails', 0)
-    total = email_stats.get('Total emails', 0)
+    email_stats.get('Total emails', 0)
 
     if unread == 0:
         print("\n✅ No unread emails - inbox already clean!")
@@ -183,7 +183,7 @@ def main():
         return
 
     # Step 3: Test connection
-    connected, stats = test_gmail_connection()
+    connected, _stats = test_gmail_connection()
     if not connected:
         print("\n❌ Setup incomplete - fix Gmail API connection")
         return

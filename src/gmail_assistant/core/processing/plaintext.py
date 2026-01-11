@@ -28,7 +28,7 @@ class EmailPlaintextProcessor:
     def __init__(self, db_path: str, batch_size: int = 100):
         """
         Initialize the processor.
-        
+
         Args:
             db_path: Path to the SQLite database file
             batch_size: Number of emails to process in each batch
@@ -55,7 +55,7 @@ class EmailPlaintextProcessor:
     def add_plaintext_column(self) -> bool:
         """
         Add the plain_text_content column to the emails table if it doesn't exist.
-        
+
         Returns:
             True if successful, False otherwise
         """
@@ -74,7 +74,7 @@ class EmailPlaintextProcessor:
             if 'plain_text_content' not in columns:
                 self.logger.info("Adding plain_text_content column to emails table...")
                 cursor.execute("""
-                    ALTER TABLE emails 
+                    ALTER TABLE emails
                     ADD COLUMN plain_text_content TEXT
                 """)
                 conn.commit()
@@ -96,10 +96,10 @@ class EmailPlaintextProcessor:
     def markdown_to_plaintext(self, markdown_content: str) -> str:
         """
         Convert markdown content to clean, readable plain text.
-        
+
         Args:
             markdown_content: The markdown-formatted email content
-            
+
         Returns:
             Clean plain text with preserved spacing and readability
         """
@@ -174,12 +174,12 @@ class EmailPlaintextProcessor:
     def process_emails_batch(self, offset: int, limit: int, dry_run: bool = False) -> tuple[int, int]:
         """
         Process a batch of emails to extract plain text content.
-        
+
         Args:
             offset: Starting position for the batch
             limit: Number of emails to process
             dry_run: If True, don't actually update the database
-            
+
         Returns:
             Tuple of (processed_count, error_count)
         """
@@ -192,8 +192,8 @@ class EmailPlaintextProcessor:
 
             # Fetch batch of emails that need processing
             cursor.execute("""
-                SELECT id, message_content, subject 
-                FROM emails 
+                SELECT id, message_content, subject
+                FROM emails
                 WHERE plain_text_content IS NULL OR plain_text_content = ''
                 LIMIT ? OFFSET ?
             """, (limit, offset))
@@ -210,8 +210,8 @@ class EmailPlaintextProcessor:
                     if not dry_run:
                         # Update the database
                         cursor.execute("""
-                            UPDATE emails 
-                            SET plain_text_content = ? 
+                            UPDATE emails
+                            SET plain_text_content = ?
                             WHERE id = ?
                         """, (plain_text, email_id))
 
@@ -241,7 +241,7 @@ class EmailPlaintextProcessor:
     def get_processing_stats(self) -> tuple[int, int]:
         """
         Get statistics about emails needing processing.
-        
+
         Returns:
             Tuple of (total_emails, emails_needing_processing)
         """
@@ -255,7 +255,7 @@ class EmailPlaintextProcessor:
             total_emails = cursor.fetchone()[0]
 
             cursor.execute("""
-                SELECT COUNT(*) FROM emails 
+                SELECT COUNT(*) FROM emails
                 WHERE plain_text_content IS NULL OR plain_text_content = ''
             """)
             emails_needing_processing = cursor.fetchone()[0]
@@ -272,10 +272,10 @@ class EmailPlaintextProcessor:
     def process_all_emails(self, dry_run: bool = False) -> bool:
         """
         Process all emails in the database to extract plain text content.
-        
+
         Args:
             dry_run: If True, don't actually update the database
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -323,7 +323,7 @@ class EmailPlaintextProcessor:
     def show_sample_comparison(self, limit: int = 3) -> None:
         """
         Show sample comparison of original vs plain text content.
-        
+
         Args:
             limit: Number of samples to show
         """
@@ -333,8 +333,8 @@ class EmailPlaintextProcessor:
             cursor = conn.cursor()
 
             cursor.execute("""
-                SELECT subject, message_content, plain_text_content 
-                FROM emails 
+                SELECT subject, message_content, plain_text_content
+                FROM emails
                 WHERE plain_text_content IS NOT NULL AND plain_text_content != ''
                 LIMIT ?
             """, (limit,))

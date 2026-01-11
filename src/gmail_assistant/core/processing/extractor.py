@@ -7,6 +7,7 @@ and organizes them into monthly JSON files.
 """
 
 import argparse
+import contextlib
 import json
 import re
 import subprocess
@@ -18,7 +19,7 @@ class EmailDataExtractor:
     def __init__(self, base_folder: str, output_folder: str = "monthly_email_data"):
         """
         Initialize the EmailDataExtractor.
-        
+
         Args:
             base_folder: Path to the regenerated folder containing email markdown files
             output_folder: Folder to save monthly JSON files
@@ -30,10 +31,10 @@ class EmailDataExtractor:
     def extract_email_metadata(self, file_path: Path) -> dict | None:
         """
         Extract email metadata and content from a markdown file.
-        
+
         Args:
             file_path: Path to the markdown file
-            
+
         Returns:
             Dictionary containing email data or None if extraction fails
         """
@@ -75,10 +76,8 @@ class EmailDataExtractor:
                 filename = file_path.name
                 filename_match = re.match(r'(\d{4}-\d{2}-\d{2})_(\d{6})_(.+)_([a-f0-9]+)\.md$', filename)
                 if filename_match:
-                    try:
+                    with contextlib.suppress(ValueError):
                         parsed_date = datetime.strptime(filename_match.group(1), '%Y-%m-%d')
-                    except ValueError:
-                        pass
 
             # Extract filename components for additional context
             filename = file_path.name
@@ -114,10 +113,10 @@ class EmailDataExtractor:
     def parse_date(self, date_str: str) -> datetime | None:
         """
         Parse various date formats found in email headers.
-        
+
         Args:
             date_str: Date string from email header
-            
+
         Returns:
             Parsed datetime object or None if parsing fails
         """
@@ -176,7 +175,7 @@ class EmailDataExtractor:
     def find_md_files_manually(self) -> list[Path]:
         """
         Use system find command to locate markdown files, avoiding Python directory traversal issues.
-        
+
         Returns:
             List of markdown file paths
         """
@@ -203,7 +202,7 @@ class EmailDataExtractor:
     def find_md_files_python_fallback(self) -> list[Path]:
         """
         Python fallback for finding markdown files, skipping problematic directories.
-        
+
         Returns:
             List of markdown file paths
         """
@@ -230,7 +229,7 @@ class EmailDataExtractor:
     def process_all_emails(self) -> dict[str, int]:
         """
         Process all email markdown files and organize into monthly JSON files.
-        
+
         Returns:
             Dictionary with statistics about processed emails
         """

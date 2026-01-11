@@ -295,7 +295,7 @@ class DeadLetterQueue:
             ).fetchall()
             return [self._row_to_item(row) for row in rows]
 
-    def mark_resolved(self, item_id: int, reason: str = None) -> None:
+    def mark_resolved(self, item_id: int, reason: str | None = None) -> None:
         """
         Mark an item as resolved.
 

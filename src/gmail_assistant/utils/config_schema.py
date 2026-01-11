@@ -6,7 +6,7 @@ Security: Prevents unsafe configuration injection (M-5 fix)
 """
 
 import logging
-from typing import Any
+from typing import Any, ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +20,15 @@ class ConfigSchema:
     """Schema definitions and validation for configuration files (M-5 security fix)"""
 
     # Valid strategies for email parsing
-    VALID_STRATEGIES: set[str] = {
+    VALID_STRATEGIES: ClassVar[set[str]] = {
         "smart", "readability", "trafilatura", "html2text", "markdownify"
     }
 
     # Valid output formats
-    VALID_OUTPUT_FORMATS: set[str] = {"eml", "markdown", "both"}
+    VALID_OUTPUT_FORMATS: ClassVar[set[str]] = {"eml", "markdown", "both"}
 
     # Valid organization types
-    VALID_ORGANIZATION_TYPES: set[str] = {"date", "sender", "none"}
+    VALID_ORGANIZATION_TYPES: ClassVar[set[str]] = {"date", "sender", "none"}
 
     @classmethod
     def validate_parser_config(cls, config: dict[str, Any]) -> dict[str, Any]:

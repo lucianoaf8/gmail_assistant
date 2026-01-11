@@ -5,6 +5,7 @@ Provides atomic writes with restrictive permissions.
 Security: Prevents unauthorized file access (M-7 fix)
 """
 
+import contextlib
 import logging
 import os
 import stat
@@ -85,19 +86,15 @@ class SecureFileWriter:
             except Exception:
                 # Close fd if still open
                 if fd is not None:
-                    try:
+                    with contextlib.suppress(OSError):
                         os.close(fd)
-                    except OSError:
-                        pass
                 raise
 
         finally:
             # Clean up temp file on failure
             if tmp_path and os.path.exists(tmp_path):
-                try:
+                with contextlib.suppress(OSError):
                     os.unlink(tmp_path)
-                except OSError:
-                    pass
 
     @classmethod
     def write_secure_bytes(cls, path: str | Path, content: bytes) -> None:
@@ -138,18 +135,14 @@ class SecureFileWriter:
 
             except Exception:
                 if fd is not None:
-                    try:
+                    with contextlib.suppress(OSError):
                         os.close(fd)
-                    except OSError:
-                        pass
                 raise
 
         finally:
             if tmp_path and os.path.exists(tmp_path):
-                try:
+                with contextlib.suppress(OSError):
                     os.unlink(tmp_path)
-                except OSError:
-                    pass
 
     @classmethod
     def create_secure_directory(cls, path: str | Path) -> Path:
@@ -291,9 +284,7 @@ class SecureFileWriter:
             if os.name != 'nt':
                 mode = path.stat().st_mode
                 # Check that group and others have no access
-                if mode & (stat.S_IRWXG | stat.S_IRWXO):
-                    return False
-                return True
+                return not mode & (stat.S_IRWXG | stat.S_IRWXO)
             else:
                 # Windows: basic check - file should not be world-readable
                 # Full verification requires pywin32

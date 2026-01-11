@@ -103,35 +103,35 @@ def __getattr__(name):
 
 
 __all__ = [
+    'AINewsletterCleaner',
+    # AI
+    'AINewsletterDetector',
+    "APIError",
     # Core - Configuration and Exceptions
     "AppConfig",
-    "GmailAssistantError",
-    "ConfigError",
+    'AsyncGmailFetcher',
     "AuthError",
-    "NetworkError",
-    "APIError",
-    # Auth
-    'ReadOnlyGmailAuth',
-    'GmailModifyAuth',
-    'FullGmailAuth',
     'AuthenticationBase',
     'AuthenticationError',
-    'SecureCredentialManager',
-    # Fetch
-    'GmailFetcher',
-    'GmailAPIClient',
-    'StreamingGmailFetcher',
-    'AsyncGmailFetcher',
-    'IncrementalFetcher',
+    "ConfigError",
     # Processing
     'EmailClassifier',
     'EmailDataExtractor',
-    'EmailPlaintextProcessor',
     'EmailDatabaseImporter',
-    # AI
-    'AINewsletterDetector',
-    'AINewsletterCleaner',
+    'EmailPlaintextProcessor',
+    'FullGmailAuth',
+    'GmailAPIClient',
     'GmailAnalysisIntegration',
+    "GmailAssistantError",
+    # Fetch
+    'GmailFetcher',
+    'GmailModifyAuth',
+    'IncrementalFetcher',
+    "NetworkError",
+    # Auth
+    'ReadOnlyGmailAuth',
+    'SecureCredentialManager',
     # Top-level
     'ServiceContainer',
+    'StreamingGmailFetcher',
 ]

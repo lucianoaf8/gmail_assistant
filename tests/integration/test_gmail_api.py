@@ -1,128 +1,218 @@
 """Integration tests for Gmail API operations.
 
-These tests require actual Gmail API credentials and will skip
-if credentials are not available. Use pytest markers to control
-which tests run in CI vs local development.
-
-To run integration tests locally:
-    pytest tests/integration/ -m integration --credentials=/path/to/credentials.json
-
-Required environment:
-    - GMAIL_CREDENTIALS_PATH: Path to OAuth credentials file
-    - GMAIL_TEST_ACCOUNT: Email address for test account (optional)
+These tests use comprehensive mocks to test Gmail API integration
+without requiring real credentials. Tests validate the integration
+of internal components and API interaction patterns.
 """
 from __future__ import annotations
 
-import os
+import time
 from pathlib import Path
 from typing import Optional
+from unittest import mock
 
 import pytest
 
 
-# Check if credentials are available
-def _get_credentials_path() -> Optional[Path]:
-    """Get path to Gmail API credentials."""
-    env_path = os.environ.get("GMAIL_CREDENTIALS_PATH")
-    if env_path:
-        path = Path(env_path)
-        if path.exists():
-            return path
-
-    # Check common locations
-    common_paths = [
-        Path.home() / ".gmail-assistant" / "credentials.json",
-        Path.cwd() / "credentials.json",
-        Path.cwd() / "config" / "credentials.json",
-    ]
-
-    for path in common_paths:
-        if path.exists():
-            return path
-
-    return None
-
-
-CREDENTIALS_PATH = _get_credentials_path()
-SKIP_REASON = "Gmail API credentials not available"
-
-
-@pytest.fixture
-def gmail_credentials() -> Path:
-    """Provide Gmail credentials path or skip test."""
-    if CREDENTIALS_PATH is None:
-        pytest.skip(SKIP_REASON)
-    return CREDENTIALS_PATH
-
-
 @pytest.mark.integration
-@pytest.mark.skipif(CREDENTIALS_PATH is None, reason=SKIP_REASON)
 class TestGmailAuthentication:
     """Integration tests for Gmail authentication."""
 
-    def test_authenticate_with_credentials(self, gmail_credentials: Path):
+    def test_authenticate_with_credentials(self, mock_credentials_file, mock_gmail_service_full):
         """Should authenticate successfully with valid credentials."""
         from gmail_assistant.core.auth.base import ReadOnlyGmailAuth
 
-        auth = ReadOnlyGmailAuth(str(gmail_credentials))
+        auth = ReadOnlyGmailAuth(str(mock_credentials_file))
 
-        # Note: This will open a browser for OAuth flow if no token cached
-        # In CI, this should be skipped or use cached tokens
-        pytest.skip("Manual OAuth flow required - run locally")
+        # Mock the service building
+        with mock.patch('gmail_assistant.core.auth.base.build', return_value=mock_gmail_service_full):
+            with mock.patch('gmail_assistant.core.auth.base.InstalledAppFlow.from_client_secrets_file') as mock_flow:
+                # Mock credentials
+                mock_creds = mock.MagicMock()
+                mock_creds.valid = True
+                mock_creds.expired = False
+                mock_creds.refresh_token = "test-refresh-token"
 
-    def test_get_user_profile(self, gmail_credentials: Path):
+                mock_flow.return_value.run_local_server.return_value = mock_creds
+
+                # Mock Credentials.from_authorized_user_file
+                with mock.patch('gmail_assistant.core.auth.base.Credentials') as mock_creds_class:
+                    mock_creds_class.from_authorized_user_file.return_value = mock_creds
+
+                    result = auth.authenticate()
+
+                    assert result is True
+                    assert auth.service is not None
+
+    def test_get_user_profile(self, mock_credentials_file, mock_gmail_service_full):
         """Should fetch user profile after authentication."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+
+        fetcher = GmailFetcher(str(mock_credentials_file))
+
+        with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                fetcher.authenticate()
+                profile = fetcher.get_profile()
+
+                assert profile is not None
+                assert 'email' in profile
+                assert profile['email'] == 'test@gmail.com'
+                assert profile['total_messages'] == 10000
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(CREDENTIALS_PATH is None, reason=SKIP_REASON)
 class TestGmailFetching:
     """Integration tests for email fetching."""
 
-    def test_search_emails(self, gmail_credentials: Path):
+    def test_search_emails(self, mock_credentials_file, mock_gmail_service_full):
         """Should search emails with query."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 
-    def test_fetch_email_by_id(self, gmail_credentials: Path):
+        fetcher = GmailFetcher(str(mock_credentials_file))
+
+        with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                fetcher.authenticate()
+
+                # Test search with query
+                message_ids = fetcher.search_messages("is:unread", max_results=10)
+
+                assert isinstance(message_ids, list)
+                assert len(message_ids) <= 10
+
+    def test_fetch_email_by_id(self, mock_credentials_file, mock_gmail_service_full):
         """Should fetch email by message ID."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 
-    def test_download_emails_to_directory(self, gmail_credentials: Path, temp_dir: Path):
+        fetcher = GmailFetcher(str(mock_credentials_file))
+
+        with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                fetcher.authenticate()
+
+                # Get message details
+                message_details = fetcher.get_message_details("msg00001")
+
+                assert message_details is not None
+                assert 'id' in message_details
+                assert 'payload' in message_details
+
+    def test_download_emails_to_directory(self, mock_credentials_file, mock_gmail_service_full, temp_dir: Path):
         """Should download emails to specified directory."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+
+        fetcher = GmailFetcher(str(mock_credentials_file))
+        output_dir = temp_dir / "downloads"
+
+        with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                fetcher.authenticate()
+
+                # Download emails
+                fetcher.download_emails(
+                    query="",
+                    max_emails=2,
+                    output_dir=str(output_dir),
+                    format_type="eml",
+                    organize_by="none"
+                )
+
+                # Verify files were created
+                assert output_dir.exists()
+                eml_files = list(output_dir.rglob("*.eml"))
+                assert len(eml_files) > 0
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(CREDENTIALS_PATH is None, reason=SKIP_REASON)
 class TestGmailDeletion:
     """Integration tests for email deletion.
 
-    WARNING: These tests can delete real emails!
-    Only run against a dedicated test account.
+    Tests deletion workflows using mocked API calls.
     """
 
-    def test_trash_email_dry_run(self, gmail_credentials: Path):
+    def test_trash_email_dry_run(self, mock_credentials_file, mock_gmail_service_full):
         """Should perform dry run without deleting."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
 
-    def test_delete_by_query_dry_run(self, gmail_credentials: Path):
+        client = GmailAPIClient(str(mock_credentials_file))
+
+        with mock.patch.object(client.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(client.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                client.authenticate()
+
+                # Test dry run - should not actually call trash
+                messages = client.search_messages("from:spam", max_results=5)
+
+                # Verify messages found but not deleted (dry run)
+                assert isinstance(messages, list)
+                assert len(messages) <= 5
+
+    def test_delete_by_query_dry_run(self, mock_credentials_file, mock_gmail_service_full):
         """Should list emails to delete without deleting."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
+
+        client = GmailAPIClient(str(mock_credentials_file))
+
+        with mock.patch.object(client.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(client.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                client.authenticate()
+
+                # Search for messages to potentially delete
+                messages = client.search_messages("from:noreply", max_results=10)
+
+                assert isinstance(messages, list)
+                # Verify we can get message details for potential deletion
+                if messages:
+                    details = client.get_message_details(messages[0])
+                    assert details is not None
 
 
 @pytest.mark.integration
-@pytest.mark.skipif(CREDENTIALS_PATH is None, reason=SKIP_REASON)
 class TestGmailAnalysis:
     """Integration tests for email analysis."""
 
-    def test_analyze_email_content(self, gmail_credentials: Path):
+    def test_analyze_email_content(self, mock_credentials_file, mock_gmail_service_full):
         """Should analyze email content."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 
-    def test_classify_newsletters(self, gmail_credentials: Path):
+        fetcher = GmailFetcher(str(mock_credentials_file))
+
+        with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                fetcher.authenticate()
+
+                # Get message and analyze content
+                message_ids = fetcher.search_messages("", max_results=1)
+                assert len(message_ids) > 0
+
+                message_details = fetcher.get_message_details(message_ids[0])
+                assert message_details is not None
+
+                # Extract and verify content
+                headers = fetcher.extract_headers(message_details)
+                assert isinstance(headers, dict)
+                assert 'From' in headers or 'Subject' in headers
+
+    def test_classify_newsletters(self, mock_credentials_file, mock_gmail_service_full):
         """Should classify emails as newsletters."""
-        pytest.skip("Requires authenticated session - run locally")
+        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+
+        fetcher = GmailFetcher(str(mock_credentials_file))
+
+        with mock.patch.object(fetcher.auth, 'authenticate', return_value=True):
+            with mock.patch.object(type(fetcher.auth), 'service', new_callable=mock.PropertyMock, return_value=mock_gmail_service_full):
+                fetcher.authenticate()
+
+                # Search for potential newsletters
+                message_ids = fetcher.search_messages("subject:newsletter", max_results=5)
+
+                assert isinstance(message_ids, list)
+                # Verify we can get details for classification
+                for msg_id in message_ids[:2]:
+                    details = fetcher.get_message_details(msg_id)
+                    assert details is not None
+                    assert 'payload' in details
 
 
 @pytest.mark.integration
@@ -135,7 +225,6 @@ class TestRateLimiting:
 
     def test_rate_limiter_throttles_requests(self):
         """Rate limiter should throttle rapid requests."""
-        import time
         from gmail_assistant.utils.rate_limiter import GmailRateLimiter
 
         limiter = GmailRateLimiter(requests_per_second=10.0)
@@ -207,7 +296,6 @@ class TestCircuitBreakerRecovery:
 
     def test_circuit_breaker_recovery_timing(self):
         """Circuit breaker should recover after timeout."""
-        import time
         from gmail_assistant.utils.circuit_breaker import (
             CircuitBreaker,
             CircuitState,

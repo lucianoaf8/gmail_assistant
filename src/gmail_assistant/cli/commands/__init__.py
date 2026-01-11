@@ -7,15 +7,15 @@ from .delete import delete_emails, get_email_count
 from .fetch import fetch_emails
 
 __all__ = [
-    # Fetch operations
-    "fetch_emails",
-    # Delete operations
-    "delete_emails",
-    "get_email_count",
     # Analyze operations
     "analyze_emails",
     # Auth operations
     "authenticate",
     "check_auth_status",
+    # Delete operations
+    "delete_emails",
+    # Fetch operations
+    "fetch_emails",
+    "get_email_count",
     "revoke_auth",
 ]
