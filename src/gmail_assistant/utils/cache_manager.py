@@ -3,16 +3,15 @@ Intelligent caching system for Gmail Fetcher.
 Provides memory-efficient caching with automatic cleanup and persistence.
 """
 
-import json
 import hashlib
+import json
 import logging
-import time
-from typing import Any, Dict, Optional, List, Union
-from pathlib import Path
-from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
 import threading
+import time
 from contextlib import contextmanager
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 from .memory_manager import MemoryOptimizedCache, MemoryTracker
 
@@ -27,7 +26,7 @@ class CacheEntry:
     created_at: float
     last_accessed: float
     access_count: int
-    ttl: Optional[float] = None
+    ttl: float | None = None
     size_bytes: int = 0
 
     def is_expired(self) -> bool:
@@ -36,7 +35,7 @@ class CacheEntry:
             return False
         return time.time() - self.created_at > self.ttl
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'key': self.key,
@@ -55,7 +54,7 @@ class IntelligentCache:
 
     def __init__(self,
                  memory_limit_mb: int = 100,
-                 disk_cache_dir: Optional[Path] = None,
+                 disk_cache_dir: Path | None = None,
                  default_ttl: int = 3600,
                  enable_persistence: bool = True):
         """
@@ -81,7 +80,7 @@ class IntelligentCache:
         self.disk_cache_dir.mkdir(exist_ok=True)
 
         # Cache metadata
-        self.metadata: Dict[str, CacheEntry] = {}
+        self.metadata: dict[str, CacheEntry] = {}
         self.lock = threading.RLock()
 
         # Load existing metadata
@@ -149,7 +148,7 @@ class IntelligentCache:
 
             return default
 
-    def put(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    def put(self, key: str, value: Any, ttl: int | None = None) -> bool:
         """
         Store value in cache with intelligent placement.
 
@@ -232,7 +231,7 @@ class IntelligentCache:
                     return None
 
             # Load value using JSON (secure deserialization)
-            with open(disk_path, 'r', encoding='utf-8') as f:
+            with open(disk_path, encoding='utf-8') as f:
                 return json.load(f)
 
         except json.JSONDecodeError as e:
@@ -270,7 +269,7 @@ class IntelligentCache:
         try:
             metadata_path = self.disk_cache_dir / 'metadata.json'
             if metadata_path.exists():
-                with open(metadata_path, 'r') as f:
+                with open(metadata_path) as f:
                     data = json.load(f)
 
                 # Reconstruct metadata
@@ -381,7 +380,7 @@ class IntelligentCache:
 
             logger.info("Cache cleared completely")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get comprehensive cache statistics."""
         with self.lock:
             memory_stats = self.memory_cache.get_stats()
@@ -413,7 +412,7 @@ class IntelligentCache:
         with self.lock:
             yield self
 
-    def optimize(self) -> Dict[str, int]:
+    def optimize(self) -> dict[str, int]:
         """
         Optimize cache by cleaning up expired entries and managing memory.
 
@@ -512,11 +511,11 @@ class CacheManager:
             enable_persistence=True
         )
 
-    def cache_email_metadata(self, email_id: str, metadata: Dict[str, Any]) -> None:
+    def cache_email_metadata(self, email_id: str, metadata: dict[str, Any]) -> None:
         """Cache email metadata."""
         self.metadata_cache.put(f"metadata:{email_id}", metadata, ttl=7200)
 
-    def get_email_metadata(self, email_id: str) -> Optional[Dict[str, Any]]:
+    def get_email_metadata(self, email_id: str) -> dict[str, Any] | None:
         """Get cached email metadata."""
         return self.metadata_cache.get(f"metadata:{email_id}")
 
@@ -524,25 +523,25 @@ class CacheManager:
         """Cache email content."""
         self.content_cache.put(f"content:{email_id}", content, ttl=86400)
 
-    def get_email_content(self, email_id: str) -> Optional[str]:
+    def get_email_content(self, email_id: str) -> str | None:
         """Get cached email content."""
         return self.content_cache.get(f"content:{email_id}")
 
-    def cache_query_results(self, query: str, results: List[str]) -> None:
+    def cache_query_results(self, query: str, results: list[str]) -> None:
         """Cache query results."""
         query_hash = hashlib.sha256(query.encode()).hexdigest()[:16]
         self.query_cache.put(f"query:{query_hash}", results, ttl=3600)
 
-    def get_query_results(self, query: str) -> Optional[List[str]]:
+    def get_query_results(self, query: str) -> list[str] | None:
         """Get cached query results."""
         query_hash = hashlib.sha256(query.encode()).hexdigest()[:16]
         return self.query_cache.get(f"query:{query_hash}")
 
-    def cache_profile(self, profile: Dict[str, Any]) -> None:
+    def cache_profile(self, profile: dict[str, Any]) -> None:
         """Cache Gmail profile."""
         self.profile_cache.put("gmail_profile", profile, ttl=86400)
 
-    def get_profile(self) -> Optional[Dict[str, Any]]:
+    def get_profile(self) -> dict[str, Any] | None:
         """Get cached Gmail profile."""
         return self.profile_cache.get("gmail_profile")
 
@@ -558,7 +557,7 @@ class CacheManager:
         self.query_cache.clear()
         self.profile_cache.clear()
 
-    def get_global_stats(self) -> Dict[str, Any]:
+    def get_global_stats(self) -> dict[str, Any]:
         """Get statistics for all caches."""
         return {
             'metadata_cache': self.metadata_cache.get_stats(),
@@ -567,7 +566,7 @@ class CacheManager:
             'profile_cache': self.profile_cache.get_stats()
         }
 
-    def optimize_all(self) -> Dict[str, Any]:
+    def optimize_all(self) -> dict[str, Any]:
         """Optimize all caches."""
         return {
             'metadata_cache': self.metadata_cache.optimize(),

@@ -85,7 +85,7 @@ class AppConfig:
         cli_config: Path | None = None,
         *,
         allow_repo_credentials: bool = False,
-    ) -> "AppConfig":
+    ) -> AppConfig:
         """
         Load config following resolution order:
         1. --config CLI argument
@@ -141,7 +141,7 @@ class AppConfig:
         cls,
         config_path: Path,
         allow_repo_credentials: bool,
-    ) -> "AppConfig":
+    ) -> AppConfig:
         try:
             data = json.loads(config_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:

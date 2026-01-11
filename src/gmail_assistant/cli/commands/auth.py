@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any
 
 import click
 
@@ -16,7 +16,7 @@ logger = SecureLogger(__name__)
 def authenticate(
     credentials_path: Path,
     force_reauth: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Authenticate with Gmail API (C-2 implementation).
 
@@ -76,7 +76,7 @@ def authenticate(
         raise AuthError("Authentication failed")
 
 
-def check_auth_status(credentials_path: Path) -> Dict[str, Any]:
+def check_auth_status(credentials_path: Path) -> dict[str, Any]:
     """
     Check current authentication status without triggering OAuth flow.
 
@@ -115,7 +115,7 @@ def check_auth_status(credentials_path: Path) -> Dict[str, Any]:
     }
 
 
-def revoke_auth() -> Dict[str, Any]:
+def revoke_auth() -> dict[str, Any]:
     """
     Revoke stored authentication credentials.
 

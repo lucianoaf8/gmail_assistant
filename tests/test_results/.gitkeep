@@ -1,0 +1,5 @@
+# This directory contains test output files
+# - test-results.xml (pytest JUnit XML report)
+# - coverage.json (coverage JSON report)
+# - htmlcov/ (HTML coverage report)
+# - .coverage (coverage data file)

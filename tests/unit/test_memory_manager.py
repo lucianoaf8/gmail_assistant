@@ -366,13 +366,20 @@ class TestMemoryOptimizedCacheGet:
 
     def test_get_updates_access_order(self, memory_cache: MemoryOptimizedCache):
         """get should move key to end of access order."""
-        memory_cache.put("key1", "value1")
-        memory_cache.put("key2", "value2")
+        # Use a cache with high memory limit to avoid cleanup during test
+        from unittest.mock import patch, MagicMock
 
-        # Access key1, should move to end
-        memory_cache.get("key1")
+        # Mock memory tracker to prevent cleanup
+        with patch.object(memory_cache.memory_tracker, 'check_memory') as mock_check:
+            mock_check.return_value = {'status': 'normal', 'current_mb': 10}
 
-        assert memory_cache.access_order[-1] == "key1"
+            memory_cache.put("key1", "value1")
+            memory_cache.put("key2", "value2")
+
+            # Access key1, should move to end
+            memory_cache.get("key1")
+
+            assert memory_cache.access_order[-1] == "key1"
 
 
 @pytest.mark.unit
@@ -453,9 +460,15 @@ class TestMemoryOptimizedCacheStats:
 
     def test_get_stats_with_items(self, memory_cache: MemoryOptimizedCache):
         """get_stats should reflect cached items."""
-        memory_cache.put("key1", "value1")
-        memory_cache.put("key2", "value2")
+        from unittest.mock import patch
 
-        stats = memory_cache.get_stats()
+        # Mock memory tracker to prevent cleanup during test
+        with patch.object(memory_cache.memory_tracker, 'check_memory') as mock_check:
+            mock_check.return_value = {'status': 'normal', 'current_mb': 10}
 
-        assert stats["size"] == 2
+            memory_cache.put("key1", "value1")
+            memory_cache.put("key2", "value2")
+
+            stats = memory_cache.get_stats()
+
+            assert stats["size"] == 2

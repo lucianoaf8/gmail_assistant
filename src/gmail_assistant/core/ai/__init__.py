@@ -2,6 +2,7 @@
 
 from .newsletter_cleaner import AINewsletterCleaner, AINewsletterDetector, GmailCleaner
 
+
 # Lazy import for GmailAnalysisIntegration to avoid requiring pyarrow at import time
 def __getattr__(name):
     """Lazy import handler for optional dependencies."""
@@ -13,6 +14,6 @@ def __getattr__(name):
 __all__ = [
     'AINewsletterCleaner',
     'AINewsletterDetector',
-    'GmailCleaner',
     'GmailAnalysisIntegration',
+    'GmailCleaner',
 ]

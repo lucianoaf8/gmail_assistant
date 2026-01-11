@@ -5,14 +5,15 @@ Implements proper quota management and request throttling.
 H-2 fix: Uses centralized RateLimitError from exceptions.py
 """
 
-import time
 import logging
 import random
 import threading
-from typing import Optional, Callable, Any
-from functools import wraps
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+import time
+from collections.abc import Callable
+from typing import Any
+
 from googleapiclient.errors import HttpError
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from gmail_assistant.core.exceptions import RateLimitError
 
@@ -145,7 +146,7 @@ class GmailRateLimiter:
 
         return False
 
-    def get_retry_delay_from_error(self, exception: Exception) -> Optional[float]:
+    def get_retry_delay_from_error(self, exception: Exception) -> float | None:
         """
         Extract retry delay from error response.
 

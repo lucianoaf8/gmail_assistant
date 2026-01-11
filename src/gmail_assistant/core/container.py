@@ -20,31 +20,17 @@ Usage:
 """
 
 import logging
+import threading
+from collections.abc import Callable
+from contextlib import contextmanager
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Generic,
     Optional,
-    Type,
     TypeVar,
-    Union,
-    overload,
 )
-from contextlib import contextmanager
-from functools import lru_cache
-import threading
 
 from .protocols import (
-    GmailClientProtocol,
-    EmailFetcherProtocol,
-    EmailDeleterProtocol,
-    EmailParserProtocol,
     EmailRepositoryProtocol,  # M-9: Repository pattern
-    CacheProtocol,
-    RateLimiterProtocol,
-    ValidatorProtocol,
-    ServiceContainerProtocol,
 )
 
 logger = logging.getLogger(__name__)
@@ -74,14 +60,14 @@ class ServiceDescriptor:
 
     def __init__(
         self,
-        service_type: Type[T],
-        implementation: Union[T, Callable[[], T], Type[T]],
+        service_type: type[T],
+        implementation: T | Callable[[], T] | type[T],
         lifetime: str = ServiceLifetime.SINGLETON
     ):
         self.service_type = service_type
         self.implementation = implementation
         self.lifetime = lifetime
-        self.instance: Optional[T] = None
+        self.instance: T | None = None
         self._is_factory = callable(implementation) and not isinstance(implementation, type)
         self._is_type = isinstance(implementation, type)
 
@@ -140,14 +126,14 @@ class ServiceContainer:
     """
 
     def __init__(self, parent: Optional['ServiceContainer'] = None):
-        self._services: Dict[Type, ServiceDescriptor] = {}
+        self._services: dict[type, ServiceDescriptor] = {}
         self._parent = parent
         self._lock = threading.RLock()
         self._resolving: set = set()  # Track currently resolving services
 
     def register(
         self,
-        service_type: Type[T],
+        service_type: type[T],
         instance: T,
         lifetime: str = ServiceLifetime.SINGLETON
     ) -> 'ServiceContainer':
@@ -171,7 +157,7 @@ class ServiceContainer:
 
     def register_factory(
         self,
-        service_type: Type[T],
+        service_type: type[T],
         factory: Callable[[], T],
         lifetime: str = ServiceLifetime.SINGLETON
     ) -> 'ServiceContainer':
@@ -195,8 +181,8 @@ class ServiceContainer:
 
     def register_type(
         self,
-        service_type: Type[T],
-        implementation_type: Type[T],
+        service_type: type[T],
+        implementation_type: type[T],
         lifetime: str = ServiceLifetime.TRANSIENT
     ) -> 'ServiceContainer':
         """
@@ -217,7 +203,7 @@ class ServiceContainer:
             logger.debug(f"Registered type: {service_type.__name__} -> {implementation_type.__name__}")
         return self
 
-    def resolve(self, service_type: Type[T]) -> T:
+    def resolve(self, service_type: type[T]) -> T:
         """
         Resolve a service by type.
 
@@ -257,7 +243,7 @@ class ServiceContainer:
             finally:
                 self._resolving.discard(service_type)
 
-    def try_resolve(self, service_type: Type[T]) -> Optional[T]:
+    def try_resolve(self, service_type: type[T]) -> T | None:
         """
         Try to resolve a service, returning None if not found.
 
@@ -272,7 +258,7 @@ class ServiceContainer:
         except ServiceNotFoundError:
             return None
 
-    def has_service(self, service_type: Type) -> bool:
+    def has_service(self, service_type: type) -> bool:
         """
         Check if a service is registered.
 
@@ -300,7 +286,7 @@ class ServiceContainer:
         """
         return ServiceContainer(parent=self)
 
-    def get_registered_services(self) -> Dict[str, str]:
+    def get_registered_services(self) -> dict[str, str]:
         """
         Get information about registered services.
 
@@ -352,14 +338,13 @@ def create_default_container() -> ServiceContainer:
     Returns:
         Configured ServiceContainer.
     """
+    from ..utils.cache_manager import CacheManager
+    from ..utils.error_handler import ErrorHandler
+    from ..utils.input_validator import InputValidator
+    from ..utils.rate_limiter import GmailRateLimiter
     from .constants import (
-        DEFAULT_CREDENTIALS_PATH,
         CONSERVATIVE_REQUESTS_PER_SECOND,
     )
-    from ..utils.cache_manager import CacheManager
-    from ..utils.rate_limiter import GmailRateLimiter
-    from ..utils.input_validator import InputValidator
-    from ..utils.error_handler import ErrorHandler
     from .processing.database import EmailDatabaseImporter
 
     container = ServiceContainer()
@@ -468,9 +453,9 @@ def create_full_container(
     Returns:
         Configured ServiceContainer.
     """
+    from ..parsers.advanced_email_parser import EmailContentParser
     from .auth_base import FullGmailAuth
     from .gmail_assistant import GmailFetcher
-    from ..parsers.advanced_email_parser import EmailContentParser
 
     container = create_default_container()
 
@@ -497,7 +482,7 @@ def create_full_container(
 # Convenience Functions
 # =============================================================================
 
-def inject(service_type: Type[T]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def inject(service_type: type[T]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator for injecting services into functions.
 
@@ -519,7 +504,7 @@ def inject(service_type: Type[T]) -> Callable[[Callable[..., Any]], Callable[...
 
 
 # Global container for convenience (optional usage)
-_global_container: Optional[ServiceContainer] = None
+_global_container: ServiceContainer | None = None
 
 
 def set_global_container(container: ServiceContainer) -> None:
@@ -528,12 +513,12 @@ def set_global_container(container: ServiceContainer) -> None:
     _global_container = container
 
 
-def get_global_container() -> Optional[ServiceContainer]:
+def get_global_container() -> ServiceContainer | None:
     """Get the global container."""
     return _global_container
 
 
-def resolve(service_type: Type[T]) -> T:
+def resolve(service_type: type[T]) -> T:
     """
     Resolve a service from the global container.
 

@@ -16,9 +16,9 @@ Usage:
 
 import logging
 import sqlite3
-from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class ParquetExporter:
         compression: str = 'snappy',
         batch_size: int = 10000,
         include_deleted: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Export emails to Parquet files.
 
@@ -218,7 +218,7 @@ class ParquetExporter:
         schema: 'pa.Schema',
         compression: str,
         include_deleted: bool
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Export a single partition."""
         delete_filter = "" if include_deleted else "AND deleted_at IS NULL"
 
@@ -260,7 +260,7 @@ class ParquetExporter:
             'size_bytes': output_file.stat().st_size
         }
 
-    def _build_data_arrays(self, rows: List) -> Dict[str, List]:
+    def _build_data_arrays(self, rows: list) -> dict[str, list]:
         """Build data arrays from database rows."""
         data = {
             'gmail_id': [],
@@ -319,7 +319,7 @@ class ParquetExporter:
         except (IndexError, AttributeError):
             return ''
 
-    def _parse_datetime(self, date_str: str) -> Optional[datetime]:
+    def _parse_datetime(self, date_str: str) -> datetime | None:
         """Parse date string to datetime."""
         if not date_str:
             return None
@@ -328,7 +328,7 @@ class ParquetExporter:
         except ValueError:
             return None
 
-    def _parse_labels(self, labels_str: str) -> List[str]:
+    def _parse_labels(self, labels_str: str) -> list[str]:
         """Parse comma-separated labels."""
         if not labels_str:
             return []
@@ -347,7 +347,7 @@ class ParquetExporter:
             return False
         return 'UNREAD' in labels_str.upper()
 
-    def _save_export_metadata(self, output_dir: Path, stats: Dict) -> None:
+    def _save_export_metadata(self, output_dir: Path, stats: dict) -> None:
         """Save export metadata file."""
         import json
         metadata_path = output_dir / '_export_metadata.json'
@@ -358,7 +358,7 @@ class ParquetExporter:
         self,
         output_file: Path,
         compression: str = 'snappy'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Export summary statistics as Parquet.
 
@@ -426,7 +426,7 @@ class ParquetExporter:
         output_file: Path,
         min_emails: int = 5,
         compression: str = 'snappy'
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Export sender statistics as Parquet.
 

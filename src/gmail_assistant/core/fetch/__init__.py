@@ -1,15 +1,15 @@
 """Fetch sub-package for Gmail email fetching operations."""
 
-from .gmail_assistant import GmailFetcher
-from .gmail_api_client import GmailAPIClient
-from .streaming import StreamingGmailFetcher
 from .async_fetcher import AsyncGmailFetcher
+from .gmail_api_client import GmailAPIClient
+from .gmail_assistant import GmailFetcher
 from .incremental import IncrementalFetcher
+from .streaming import StreamingGmailFetcher
 
 __all__ = [
-    'GmailFetcher',
-    'GmailAPIClient',
-    'StreamingGmailFetcher',
     'AsyncGmailFetcher',
+    'GmailAPIClient',
+    'GmailFetcher',
     'IncrementalFetcher',
+    'StreamingGmailFetcher',
 ]

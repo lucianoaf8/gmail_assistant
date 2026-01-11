@@ -6,14 +6,11 @@ Creates a SQLite database and imports email data from monthly JSON files
 with proper schema design, indexing, and data validation.
 """
 
-import sqlite3
-import json
-import os
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple
 import argparse
+import json
 import logging
+import sqlite3
+from pathlib import Path
 
 
 class EmailDatabaseImporter:
@@ -28,14 +25,14 @@ class EmailDatabaseImporter:
         self.db_path = Path(db_path)
         self.json_folder = Path(json_folder)
         self.conn = None
-        
+
         # Set up logging
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s'
         )
         self.logger = logging.getLogger(__name__)
-        
+
     def create_database_schema(self):
         """Create the database schema with proper tables and indexes."""
         schema_sql = """
@@ -125,7 +122,7 @@ class EmailDatabaseImporter:
             VALUES (new.id, new.subject, new.message_content, new.sender);
         END;
         """
-        
+
         try:
             self.conn.executescript(schema_sql)
             self.conn.commit()
@@ -133,31 +130,31 @@ class EmailDatabaseImporter:
         except sqlite3.Error as e:
             self.logger.error(f"Error creating database schema: {e}")
             raise
-    
+
     def connect_database(self):
         """Connect to the SQLite database."""
         try:
             self.conn = sqlite3.connect(self.db_path)
             self.conn.row_factory = sqlite3.Row  # Enable column access by name
-            
+
             # Enable foreign keys and other pragmas for better performance
             self.conn.execute("PRAGMA foreign_keys = ON")
             self.conn.execute("PRAGMA journal_mode = WAL")
             self.conn.execute("PRAGMA synchronous = NORMAL")
             self.conn.execute("PRAGMA cache_size = 10000")
-            
+
             self.logger.info(f"Connected to database: {self.db_path}")
         except sqlite3.Error as e:
             self.logger.error(f"Error connecting to database: {e}")
             raise
-    
+
     def close_database(self):
         """Close the database connection."""
         if self.conn:
             self.conn.close()
             self.logger.info("Database connection closed")
-    
-    def import_monthly_json(self, json_file: Path) -> Tuple[int, int]:
+
+    def import_monthly_json(self, json_file: Path) -> tuple[int, int]:
         """
         Import emails from a monthly JSON file.
         
@@ -168,45 +165,45 @@ class EmailDatabaseImporter:
             Tuple of (imported_count, skipped_count)
         """
         try:
-            with open(json_file, 'r', encoding='utf-8') as f:
+            with open(json_file, encoding='utf-8') as f:
                 data = json.load(f)
         except (json.JSONDecodeError, FileNotFoundError) as e:
             self.logger.error(f"Error reading JSON file {json_file}: {e}")
             return 0, 0
-        
+
         year_month = data.get('year_month', 'unknown')
         emails = data.get('emails', [])
-        
+
         if not emails:
             self.logger.warning(f"No emails found in {json_file}")
             return 0, 0
-        
+
         imported_count = 0
         skipped_count = 0
-        
+
         # Check if this batch was already imported
         existing_batch = self.conn.execute(
-            "SELECT id FROM import_batches WHERE year_month = ?", 
+            "SELECT id FROM import_batches WHERE year_month = ?",
             (year_month,)
         ).fetchone()
-        
+
         if existing_batch:
             self.logger.warning(f"Batch {year_month} already imported, skipping...")
             return 0, len(emails)
-        
+
         # Import emails
         for email in emails:
             try:
                 # Check if email already exists (by file_path)
                 existing = self.conn.execute(
-                    "SELECT id FROM emails WHERE file_path = ?", 
+                    "SELECT id FROM emails WHERE file_path = ?",
                     (email.get('file_path', ''),)
                 ).fetchone()
-                
+
                 if existing:
                     skipped_count += 1
                     continue
-                
+
                 # Insert email
                 self.conn.execute("""
                     INSERT INTO emails (
@@ -229,13 +226,13 @@ class EmailDatabaseImporter:
                     email.get('message_content', ''),
                     email.get('extraction_timestamp', '')
                 ))
-                
+
                 imported_count += 1
-                
+
             except sqlite3.Error as e:
                 self.logger.error(f"Error importing email {email.get('filename', 'unknown')}: {e}")
                 skipped_count += 1
-        
+
         # Record the import batch
         try:
             self.conn.execute("""
@@ -253,11 +250,11 @@ class EmailDatabaseImporter:
             ))
         except sqlite3.Error as e:
             self.logger.error(f"Error recording import batch: {e}")
-        
+
         self.conn.commit()
         return imported_count, skipped_count
-    
-    def import_all_monthly_files(self) -> Dict[str, int]:
+
+    def import_all_monthly_files(self) -> dict[str, int]:
         """
         Import all monthly JSON files from the specified folder.
         
@@ -267,15 +264,15 @@ class EmailDatabaseImporter:
         if not self.json_folder.exists():
             self.logger.error(f"JSON folder not found: {self.json_folder}")
             return {}
-        
+
         # Find all monthly JSON files
         json_files = list(self.json_folder.glob("*_emails.json"))
         json_files.sort()  # Process in chronological order
-        
+
         if not json_files:
             self.logger.error(f"No monthly JSON files found in {self.json_folder}")
             return {}
-        
+
         stats = {
             'total_files': len(json_files),
             'total_imported': 0,
@@ -283,26 +280,26 @@ class EmailDatabaseImporter:
             'processed_files': 0,
             'failed_files': 0
         }
-        
+
         self.logger.info(f"Found {len(json_files)} monthly JSON files to import")
-        
+
         for json_file in json_files:
             try:
                 self.logger.info(f"Processing {json_file.name}...")
                 imported, skipped = self.import_monthly_json(json_file)
-                
+
                 stats['total_imported'] += imported
                 stats['total_skipped'] += skipped
                 stats['processed_files'] += 1
-                
+
                 self.logger.info(f"  Imported: {imported}, Skipped: {skipped}")
-                
+
             except Exception as e:
                 self.logger.error(f"Failed to process {json_file}: {e}")
                 stats['failed_files'] += 1
-        
+
         return stats
-    
+
     def update_statistics(self):
         """Update the email_stats table with current database statistics."""
         try:
@@ -319,9 +316,9 @@ class EmailDatabaseImporter:
             FROM emails
             WHERE gmail_id != ''
             """
-            
+
             result = self.conn.execute(stats_query).fetchone()
-            
+
             # Insert statistics
             self.conn.execute("""
                 INSERT INTO email_stats (
@@ -337,26 +334,26 @@ class EmailDatabaseImporter:
                 result['latest_email'],
                 result['months_covered']
             ))
-            
+
             self.conn.commit()
             self.logger.info("Database statistics updated")
-            
+
         except sqlite3.Error as e:
             self.logger.error(f"Error updating statistics: {e}")
-    
-    def get_database_info(self) -> Dict:
+
+    def get_database_info(self) -> dict:
         """Get information about the current database state."""
         try:
             info = {}
-            
+
             # Email counts
             email_count = self.conn.execute("SELECT COUNT(*) FROM emails").fetchone()[0]
             info['total_emails'] = email_count
-            
+
             # Batch counts
             batch_count = self.conn.execute("SELECT COUNT(*) FROM import_batches").fetchone()[0]
             info['imported_batches'] = batch_count
-            
+
             # Date range
             date_range = self.conn.execute("""
                 SELECT MIN(parsed_date) as earliest, MAX(parsed_date) as latest 
@@ -366,7 +363,7 @@ class EmailDatabaseImporter:
                 'earliest': date_range['earliest'],
                 'latest': date_range['latest']
             }
-            
+
             # Top senders
             top_senders = self.conn.execute("""
                 SELECT sender, COUNT(*) as count 
@@ -376,9 +373,9 @@ class EmailDatabaseImporter:
                 ORDER BY count DESC 
                 LIMIT 10
             """).fetchall()
-            info['top_senders'] = [{'sender': row['sender'], 'count': row['count']} 
+            info['top_senders'] = [{'sender': row['sender'], 'count': row['count']}
                                  for row in top_senders]
-            
+
             # Monthly distribution
             monthly_dist = self.conn.execute("""
                 SELECT year_month, COUNT(*) as count 
@@ -386,16 +383,16 @@ class EmailDatabaseImporter:
                 GROUP BY year_month 
                 ORDER BY year_month
             """).fetchall()
-            info['monthly_distribution'] = [{'month': row['year_month'], 'count': row['count']} 
+            info['monthly_distribution'] = [{'month': row['year_month'], 'count': row['count']}
                                           for row in monthly_dist]
-            
+
             return info
-            
+
         except sqlite3.Error as e:
             self.logger.error(f"Error getting database info: {e}")
             return {}
-    
-    def search_emails(self, query: str, limit: int = 50) -> List[Dict]:
+
+    def search_emails(self, query: str, limit: int = 50) -> list[dict]:
         """
         Search emails using full-text search.
         
@@ -416,14 +413,14 @@ class EmailDatabaseImporter:
                 ORDER BY rank
                 LIMIT ?
             """
-            
+
             fallback_query = """
                 SELECT * FROM emails 
                 WHERE subject LIKE ? OR message_content LIKE ? OR sender LIKE ?
                 ORDER BY parsed_date DESC
                 LIMIT ?
             """
-            
+
             try:
                 # Try FTS first
                 results = self.conn.execute(fts_query, (query, limit)).fetchall()
@@ -431,9 +428,9 @@ class EmailDatabaseImporter:
                 # Fall back to LIKE search
                 like_query = f"%{query}%"
                 results = self.conn.execute(fallback_query, (like_query, like_query, like_query, limit)).fetchall()
-            
+
             return [dict(row) for row in results]
-            
+
         except sqlite3.Error as e:
             self.logger.error(f"Error searching emails: {e}")
             return []
@@ -452,47 +449,47 @@ def main():
                        help='Search emails for a query')
     parser.add_argument('--force-recreate', action='store_true',
                        help='Delete existing database and recreate')
-    
+
     args = parser.parse_args()
-    
+
     # Initialize importer
     importer = EmailDatabaseImporter(args.db, args.json_folder)
-    
+
     try:
         # Handle database recreation
         if args.force_recreate and Path(args.db).exists():
             Path(args.db).unlink()
             print(f"Deleted existing database: {args.db}")
-        
+
         # Connect to database
         importer.connect_database()
-        
+
         # Create schema if needed
         importer.create_database_schema()
-        
+
         # Handle info request
         if args.info:
             info = importer.get_database_info()
             print("\n=== Database Information ===")
             print(f"Total emails: {info.get('total_emails', 0)}")
             print(f"Imported batches: {info.get('imported_batches', 0)}")
-            
+
             date_range = info.get('date_range', {})
             print(f"Date range: {date_range.get('earliest', 'N/A')} to {date_range.get('latest', 'N/A')}")
-            
+
             print("\nTop senders:")
             for sender in info.get('top_senders', [])[:5]:
                 print(f"  {sender['sender']}: {sender['count']} emails")
-            
+
             print(f"\nMonthly distribution: {len(info.get('monthly_distribution', []))} months")
             return
-        
+
         # Handle search request
         if args.search:
             results = importer.search_emails(args.search)
             print(f"\n=== Search Results for '{args.search}' ===")
             print(f"Found {len(results)} matches:")
-            
+
             for result in results[:10]:  # Show first 10 results
                 print(f"\nDate: {result.get('parsed_date', 'N/A')}")
                 print(f"From: {result.get('sender', 'N/A')}")
@@ -501,14 +498,14 @@ def main():
                 print(f"Content: {content_preview}{'...' if len(content_preview) == 200 else ''}")
                 print("-" * 50)
             return
-        
+
         # Import emails
         print("Starting email import...")
         stats = importer.import_all_monthly_files()
-        
+
         # Update statistics
         importer.update_statistics()
-        
+
         # Show results
         print("\n=== Import Results ===")
         print(f"Total files found: {stats.get('total_files', 0)}")
@@ -516,19 +513,19 @@ def main():
         print(f"Files failed: {stats.get('failed_files', 0)}")
         print(f"Emails imported: {stats.get('total_imported', 0)}")
         print(f"Emails skipped: {stats.get('total_skipped', 0)}")
-        
+
         # Show database info
         info = importer.get_database_info()
         print(f"\nDatabase now contains {info.get('total_emails', 0)} emails")
         print(f"Database file: {importer.db_path}")
-        
+
     except Exception as e:
         print(f"Error: {e}")
         return 1
-    
+
     finally:
         importer.close_database()
-    
+
     return 0
 
 

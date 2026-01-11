@@ -14,7 +14,7 @@ class TestAPIResponseValidation:
         """Verify _validate_api_response method exists."""
         from gmail_assistant.core.fetch import gmail_assistant
 
-        source = Path(gmail_assistant.__file__).read_text()
+        source = Path(gmail_assistant.__file__).read_text(encoding='utf-8')
 
         assert '_validate_api_response' in source, \
             "_validate_api_response method should exist"
@@ -109,7 +109,7 @@ class TestAPIValidationIntegration:
         """Verify list messages validates API response."""
         from gmail_assistant.core.fetch import gmail_assistant
 
-        source = Path(gmail_assistant.__file__).read_text()
+        source = Path(gmail_assistant.__file__).read_text(encoding='utf-8')
 
         # Should validate message list responses
         assert '_validate_api_response' in source, \
@@ -119,7 +119,7 @@ class TestAPIValidationIntegration:
         """Verify get message validates API response."""
         from gmail_assistant.core.fetch import gmail_assistant
 
-        source = Path(gmail_assistant.__file__).read_text()
+        source = Path(gmail_assistant.__file__).read_text(encoding='utf-8')
 
         # Validation should be called in message retrieval
         assert 'validate' in source.lower()

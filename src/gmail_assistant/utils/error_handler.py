@@ -3,15 +3,15 @@ Standardized error handling framework for Gmail Fetcher.
 Provides consistent error handling patterns and centralized error management.
 """
 
+import json
 import logging
 import traceback
-import sys
-from typing import Dict, Any, Optional, List, Callable, Type, Union
-from enum import Enum
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
-import json
+from typing import Any
 
 from googleapiclient.errors import HttpError
 
@@ -43,11 +43,11 @@ class ErrorCategory(Enum):
 class ErrorContext:
     """Context information for errors."""
     operation: str
-    user_id: Optional[str] = None
-    email_id: Optional[str] = None
-    file_path: Optional[str] = None
-    query: Optional[str] = None
-    additional_data: Optional[Dict[str, Any]] = None
+    user_id: str | None = None
+    email_id: str | None = None
+    file_path: str | None = None
+    query: str | None = None
+    additional_data: dict[str, Any] | None = None
 
 
 @dataclass
@@ -57,15 +57,15 @@ class StandardError:
     category: ErrorCategory
     severity: ErrorSeverity
     message: str
-    original_exception: Optional[Exception]
-    context: Optional[ErrorContext]
+    original_exception: Exception | None
+    context: ErrorContext | None
     timestamp: datetime
     recoverable: bool
     user_message: str
-    technical_details: Optional[str] = None
-    suggested_actions: Optional[List[str]] = None
+    technical_details: str | None = None
+    suggested_actions: list[str] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert error to dictionary."""
         return {
             'error_id': self.error_id,
@@ -92,7 +92,7 @@ class ErrorClassifier:
     """Classify and categorize errors."""
 
     @staticmethod
-    def classify_exception(exception: Exception, context: Optional[ErrorContext] = None) -> StandardError:
+    def classify_exception(exception: Exception, context: ErrorContext | None = None) -> StandardError:
         """
         Classify an exception into a standardized error.
 
@@ -178,7 +178,7 @@ class ErrorClassifier:
 
     @staticmethod
     def _classify_http_error(exception: HttpError, error_id: str,
-                           timestamp: datetime, context: Optional[ErrorContext]) -> StandardError:
+                           timestamp: datetime, context: ErrorContext | None) -> StandardError:
         """Classify HTTP/API errors."""
         status_code = exception.resp.status
         error_content = exception.content.decode() if exception.content else ""
@@ -293,7 +293,7 @@ class ErrorClassifier:
 
     @staticmethod
     def _classify_file_error(exception: Exception, error_id: str,
-                           timestamp: datetime, context: Optional[ErrorContext]) -> StandardError:
+                           timestamp: datetime, context: ErrorContext | None) -> StandardError:
         """Classify file system errors."""
         if isinstance(exception, FileNotFoundError):
             return StandardError(
@@ -349,7 +349,7 @@ class ErrorClassifier:
 class ErrorHandler:
     """Centralized error handler with logging and recovery."""
 
-    def __init__(self, log_dir: Optional[Path] = None):
+    def __init__(self, log_dir: Path | None = None):
         """
         Initialize error handler.
 
@@ -363,8 +363,8 @@ class ErrorHandler:
         self.error_logger = self._setup_error_logger()
 
         # Error statistics
-        self.error_counts: Dict[str, int] = {}
-        self.recovery_handlers: Dict[ErrorCategory, Callable] = {}
+        self.error_counts: dict[str, int] = {}
+        self.recovery_handlers: dict[ErrorCategory, Callable] = {}
 
     def _setup_error_logger(self) -> logging.Logger:
         """Setup dedicated error logger."""
@@ -386,7 +386,7 @@ class ErrorHandler:
 
         return logger
 
-    def handle_error(self, exception: Exception, context: Optional[ErrorContext] = None) -> StandardError:
+    def handle_error(self, exception: Exception, context: ErrorContext | None = None) -> StandardError:
         """
         Handle an error with classification, logging, and recovery.
 
@@ -472,7 +472,7 @@ class ErrorHandler:
         """
         self.recovery_handlers[category] = handler
 
-    def get_error_stats(self) -> Dict[str, Any]:
+    def get_error_stats(self) -> dict[str, Any]:
         """Get error statistics."""
         total_errors = sum(self.error_counts.values())
         return {
@@ -487,7 +487,7 @@ class ErrorHandler:
 
 
 # Decorators for error handling
-def handle_errors(error_handler: ErrorHandler, context: Optional[ErrorContext] = None):
+def handle_errors(error_handler: ErrorHandler, context: ErrorContext | None = None):
     """
     Decorator to automatically handle errors in functions.
 
@@ -509,7 +509,7 @@ def handle_errors(error_handler: ErrorHandler, context: Optional[ErrorContext] =
     return decorator
 
 
-def retry_on_error(max_retries: int = 3, categories: Optional[List[ErrorCategory]] = None):
+def retry_on_error(max_retries: int = 3, categories: list[ErrorCategory] | None = None):
     """
     Decorator to retry operations on specific error categories.
 
@@ -550,7 +550,7 @@ def retry_on_error(max_retries: int = 3, categories: Optional[List[ErrorCategory
 
 
 # Global error handler instance
-_global_error_handler: Optional[ErrorHandler] = None
+_global_error_handler: ErrorHandler | None = None
 
 
 def get_error_handler() -> ErrorHandler:
@@ -561,7 +561,7 @@ def get_error_handler() -> ErrorHandler:
     return _global_error_handler
 
 
-def handle_error(exception: Exception, context: Optional[ErrorContext] = None) -> StandardError:
+def handle_error(exception: Exception, context: ErrorContext | None = None) -> StandardError:
     """Handle error using global error handler."""
     return get_error_handler().handle_error(exception, context)
 
@@ -597,7 +597,7 @@ class IntegratedErrorHandler(ErrorHandler):
 
     def __init__(
         self,
-        log_dir: Optional[Path] = None,
+        log_dir: Path | None = None,
         failure_threshold: int = 5,
         recovery_timeout: float = 60.0
     ):
@@ -642,7 +642,7 @@ class IntegratedErrorHandler(ErrorHandler):
     def handle_api_error(
         self,
         exception: Exception,
-        context: Optional[ErrorContext] = None
+        context: ErrorContext | None = None
     ) -> StandardError:
         """
         Handle API error with circuit breaker integration.
@@ -657,7 +657,6 @@ class IntegratedErrorHandler(ErrorHandler):
         Returns:
             StandardError object
         """
-        import time
 
         # Record failure in circuit breaker
         self.circuit_breaker._record_failure()
@@ -697,8 +696,8 @@ class IntegratedErrorHandler(ErrorHandler):
 
         Implements exponential backoff with jitter.
         """
-        import time
         import random
+        import time
 
         # Extract retry-after if available
         wait_time = self._extract_retry_after(error)
@@ -748,7 +747,7 @@ class IntegratedErrorHandler(ErrorHandler):
         )
         return False  # Cannot auto-recover from quota errors
 
-    def _extract_retry_after(self, error: StandardError) -> Optional[float]:
+    def _extract_retry_after(self, error: StandardError) -> float | None:
         """Extract Retry-After header from error response."""
         if error.original_exception and hasattr(error.original_exception, 'resp'):
             resp = error.original_exception.resp
@@ -790,7 +789,7 @@ class IntegratedErrorHandler(ErrorHandler):
 
         return wrapper
 
-    def get_health_status(self) -> Dict[str, Any]:
+    def get_health_status(self) -> dict[str, Any]:
         """
         Get comprehensive health status.
 
@@ -821,7 +820,7 @@ class IntegratedErrorHandler(ErrorHandler):
 
 
 # Global integrated error handler
-_integrated_handler: Optional[IntegratedErrorHandler] = None
+_integrated_handler: IntegratedErrorHandler | None = None
 
 
 def get_integrated_handler() -> IntegratedErrorHandler:

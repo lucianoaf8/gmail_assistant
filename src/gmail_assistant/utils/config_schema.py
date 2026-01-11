@@ -6,7 +6,7 @@ Security: Prevents unsafe configuration injection (M-5 fix)
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Set
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,18 +20,18 @@ class ConfigSchema:
     """Schema definitions and validation for configuration files (M-5 security fix)"""
 
     # Valid strategies for email parsing
-    VALID_STRATEGIES: Set[str] = {
+    VALID_STRATEGIES: set[str] = {
         "smart", "readability", "trafilatura", "html2text", "markdownify"
     }
 
     # Valid output formats
-    VALID_OUTPUT_FORMATS: Set[str] = {"eml", "markdown", "both"}
+    VALID_OUTPUT_FORMATS: set[str] = {"eml", "markdown", "both"}
 
     # Valid organization types
-    VALID_ORGANIZATION_TYPES: Set[str] = {"date", "sender", "none"}
+    VALID_ORGANIZATION_TYPES: set[str] = {"date", "sender", "none"}
 
     @classmethod
-    def validate_parser_config(cls, config: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_parser_config(cls, config: dict[str, Any]) -> dict[str, Any]:
         """
         Validate parser configuration against schema.
 
@@ -108,7 +108,7 @@ class ConfigSchema:
         return config
 
     @classmethod
-    def validate_ai_config(cls, config: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_ai_config(cls, config: dict[str, Any]) -> dict[str, Any]:
         """
         Validate AI newsletter detection configuration.
 
@@ -199,13 +199,13 @@ class ConfigSchema:
                     )
                 if len(pattern) > 500:
                     raise ConfigValidationError(
-                        f"newsletter_pattern too long (max 500 chars)"
+                        "newsletter_pattern too long (max 500 chars)"
                     )
 
         return config
 
     @classmethod
-    def validate_gmail_config(cls, config: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_gmail_config(cls, config: dict[str, Any]) -> dict[str, Any]:
         """
         Validate Gmail fetcher configuration.
 
@@ -258,7 +258,7 @@ class ConfigSchema:
         return config
 
 
-def validate_config_file(config: Dict[str, Any], config_type: str) -> Dict[str, Any]:
+def validate_config_file(config: dict[str, Any], config_type: str) -> dict[str, Any]:
     """
     Validate a configuration file against its schema.
 
@@ -286,3 +286,41 @@ def validate_config_file(config: Dict[str, Any], config_type: str) -> Dict[str, 
         )
 
     return validator(config)
+
+
+class ConfigValidator:
+    """
+    Wrapper class for configuration validation.
+    Provides validate() method that tests expect.
+    """
+
+    def __init__(self) -> None:
+        """Initialize validator with available schemas."""
+        self.schemas: dict[str, Any] = {
+            'parser': ConfigSchema.validate_parser_config,
+            'ai': ConfigSchema.validate_ai_config,
+            'gmail': ConfigSchema.validate_gmail_config,
+        }
+
+    def validate(self, config: dict[str, Any], config_type: str) -> dict[str, Any]:
+        """
+        Validate a configuration dictionary.
+
+        Args:
+            config: Configuration dictionary to validate
+            config_type: Type of config ('parser', 'ai', 'gmail')
+
+        Returns:
+            Dictionary with 'valid' bool and 'errors' list
+        """
+        try:
+            validate_config_file(config, config_type)
+            return {'valid': True, 'errors': []}
+        except ConfigValidationError as e:
+            return {'valid': False, 'errors': [str(e)]}
+        except Exception as e:
+            return {'valid': False, 'errors': [f"Validation failed: {e}"]}
+
+    def get_schema(self, config_type: str) -> Any | None:
+        """Get validator for config type."""
+        return self.schemas.get(config_type)

@@ -17,26 +17,26 @@ from __future__ import annotations
 import asyncio
 import functools
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, Any, TypeVar
+from typing import Any, TypeVar
 
 import click
 
 from gmail_assistant import __version__
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import (
-    ConfigError,
-    AuthError,
-    NetworkError,
-    APIError,
-    GmailAssistantError,
-)
+from gmail_assistant.cli.commands.analyze import analyze_emails
+from gmail_assistant.cli.commands.auth import authenticate, check_auth_status, revoke_auth
+from gmail_assistant.cli.commands.delete import delete_emails, get_email_count
 
 # C-2: Import command implementations
 from gmail_assistant.cli.commands.fetch import fetch_emails
-from gmail_assistant.cli.commands.delete import delete_emails, get_email_count
-from gmail_assistant.cli.commands.analyze import analyze_emails
-from gmail_assistant.cli.commands.auth import authenticate, check_auth_status, revoke_auth
+from gmail_assistant.core.config import AppConfig
+from gmail_assistant.core.exceptions import (
+    AuthError,
+    ConfigError,
+    GmailAssistantError,
+    NetworkError,
+)
 
 F = TypeVar("F", bound=Callable[..., None])
 
@@ -48,7 +48,7 @@ def _fetch_async(
     output_format: str,
     credentials_path: Path,
     concurrency: int
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Async fetch implementation (M-5).
 
@@ -99,7 +99,7 @@ def _fetch_async(
     return asyncio.run(_run_async())
 
 
-def _save_email_async(email_data: Dict[str, Any], output_dir: Path, output_format: str, index: int) -> None:
+def _save_email_async(email_data: dict[str, Any], output_dir: Path, output_format: str, index: int) -> None:
     """Save email from async fetch."""
     import json
     import re

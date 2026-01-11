@@ -19,13 +19,13 @@ import warnings
 
 # H-4: Canonical implementation from daily_email_analyzer.py
 from .daily_email_analyzer import (
+    ContentAnalyzer,
     DailyEmailAnalyzer,
     DataQualityAssessment,
     HierarchicalClassifier,
-    TemporalAnalyzer,
-    SenderAnalyzer,
-    ContentAnalyzer,
     InsightsGenerator,
+    SenderAnalyzer,
+    TemporalAnalyzer,
 )
 
 # Data converter (no duplicate)

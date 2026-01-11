@@ -20,11 +20,11 @@ Usage:
 
 import json
 import logging
-from pathlib import Path
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, asdict, field
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -60,20 +60,20 @@ class SyncCheckpoint:
     failed_messages: int = 0
 
     # Resume information
-    last_message_id: Optional[str] = None
-    last_page_token: Optional[str] = None
-    history_id: Optional[int] = None
+    last_message_id: str | None = None
+    last_page_token: str | None = None
+    history_id: int | None = None
 
     # Query context
     query: str = ""
     output_directory: str = ""
 
     # Failed items for retry
-    failed_ids: List[str] = field(default_factory=list)
+    failed_ids: list[str] = field(default_factory=list)
 
     # Metadata
-    error_message: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_message: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def progress_percent(self) -> float:
@@ -87,7 +87,7 @@ class SyncCheckpoint:
         """Check if checkpoint can be resumed."""
         return self.state in (SyncState.IN_PROGRESS, SyncState.INTERRUPTED)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         data = asdict(self)
         data['state'] = self.state.value
@@ -96,7 +96,7 @@ class SyncCheckpoint:
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'SyncCheckpoint':
+    def from_dict(cls, data: dict[str, Any]) -> 'SyncCheckpoint':
         """Create from dictionary."""
         data = data.copy()
         data['state'] = SyncState(data['state'])
@@ -119,7 +119,7 @@ class CheckpointManager:
     DEFAULT_DIR = Path("data/checkpoints")
     MAX_CHECKPOINTS = 10  # Keep last N checkpoints per type
 
-    def __init__(self, checkpoint_dir: Optional[Path] = None):
+    def __init__(self, checkpoint_dir: Path | None = None):
         """
         Initialize checkpoint manager.
 
@@ -135,7 +135,7 @@ class CheckpointManager:
         query: str,
         output_directory: str,
         total_messages: int = 0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> SyncCheckpoint:
         """
         Create new sync checkpoint.
@@ -192,7 +192,7 @@ class CheckpointManager:
                 temp_filepath.unlink()
             raise
 
-    def load_checkpoint(self, sync_id: str) -> Optional[SyncCheckpoint]:
+    def load_checkpoint(self, sync_id: str) -> SyncCheckpoint | None:
         """
         Load checkpoint by ID.
 
@@ -208,7 +208,7 @@ class CheckpointManager:
             return None
 
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with open(filepath, encoding='utf-8') as f:
                 data = json.load(f)
             return SyncCheckpoint.from_dict(data)
         except Exception as e:
@@ -217,9 +217,9 @@ class CheckpointManager:
 
     def get_latest_checkpoint(
         self,
-        query: Optional[str] = None,
+        query: str | None = None,
         resumable_only: bool = True
-    ) -> Optional[SyncCheckpoint]:
+    ) -> SyncCheckpoint | None:
         """
         Get most recent checkpoint.
 
@@ -247,8 +247,8 @@ class CheckpointManager:
 
     def list_checkpoints(
         self,
-        state: Optional[SyncState] = None
-    ) -> List[SyncCheckpoint]:
+        state: SyncState | None = None
+    ) -> list[SyncCheckpoint]:
         """
         List all checkpoints.
 
@@ -272,9 +272,9 @@ class CheckpointManager:
         self,
         checkpoint: SyncCheckpoint,
         processed: int,
-        last_message_id: Optional[str] = None,
-        last_page_token: Optional[str] = None,
-        failed_ids: Optional[List[str]] = None
+        last_message_id: str | None = None,
+        last_page_token: str | None = None,
+        failed_ids: list[str] | None = None
     ) -> None:
         """
         Update checkpoint progress.
@@ -302,7 +302,7 @@ class CheckpointManager:
     def mark_completed(
         self,
         checkpoint: SyncCheckpoint,
-        history_id: Optional[int] = None
+        history_id: int | None = None
     ) -> None:
         """
         Mark sync as completed.
@@ -321,7 +321,7 @@ class CheckpointManager:
         self,
         checkpoint: SyncCheckpoint,
         error: str,
-        failed_ids: Optional[List[str]] = None
+        failed_ids: list[str] | None = None
     ) -> None:
         """
         Mark sync as failed.
@@ -350,7 +350,7 @@ class CheckpointManager:
         self.save_checkpoint(checkpoint)
         logger.warning(f"Sync interrupted: {checkpoint.sync_id}")
 
-    def get_resume_info(self, checkpoint: SyncCheckpoint) -> Dict[str, Any]:
+    def get_resume_info(self, checkpoint: SyncCheckpoint) -> dict[str, Any]:
         """
         Get information needed to resume a sync.
 
@@ -423,7 +423,7 @@ class CheckpointManager:
             return True
         return False
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get checkpoint statistics."""
         checkpoints = self.list_checkpoints()
 

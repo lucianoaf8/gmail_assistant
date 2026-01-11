@@ -48,7 +48,7 @@ Before creating any file, Claude must:
 
 ### 6. Governance Resources
 - **Detailed Rules**: `config/0922-0238_project_governance.json`
-- **Quick Reference**: `docs/0922-0238_governance_quick_reference.md`
+- **Quick Reference**: `docs/reference/governance-quick-reference.md`
 - **Enforcement**: These rules are mandatory and override any default behaviors
 
 ## Project Overview
@@ -386,8 +386,9 @@ mypy src/gmail_assistant
 ## Technical Reference
 
 For comprehensive documentation, see:
-- `docs/0109-2307_architecture_overview.md` - System architecture
-- `docs/0109-2307_component_deep_dive.md` - Component details
-- `docs/0109-1500_CLI_REFERENCE.md` - CLI command reference
-- `docs/0109-1700_PUBLIC_API_REFERENCE.md` - Public API reference
-- `docs/0109-2200_architecture_diagrams.md` - Architecture diagrams
+- `docs/README.md` - Documentation index
+- `docs/architecture/overview.md` - System architecture
+- `docs/architecture/component-deep-dive.md` - Component details
+- `docs/user-guide/cli-reference.md` - CLI command reference
+- `docs/api/public-api-reference.md` - Public API reference
+- `docs/architecture/diagrams.md` - Architecture diagrams

@@ -12,15 +12,9 @@ A bulletproof converter that:
 
 import email
 import email.policy
-from email.message import EmailMessage
-from pathlib import Path
 import logging
-import sys
-import os
-from typing import Dict, Optional, Tuple, Union
-from datetime import datetime
-import re
-import html
+from pathlib import Path
+
 import frontmatter
 
 # Import our advanced parser
@@ -39,7 +33,7 @@ class RobustEMLConverter:
         """Initialize converter with advanced parser"""
         self.advanced_parser = EmailContentParser()
 
-    def extract_email_parts(self, eml_path: Path) -> Dict[str, Union[str, None]]:
+    def extract_email_parts(self, eml_path: Path) -> dict[str, str | None]:
         """
         Extract email content and metadata from EML file
 
@@ -76,7 +70,7 @@ class RobustEMLConverter:
 
             try:
                 # Read the raw EML file content directly
-                with open(eml_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(eml_path, encoding='utf-8', errors='ignore') as f:
                     raw_file_content = f.read()
 
                 # Extract the actual email body from raw content
@@ -142,7 +136,7 @@ class RobustEMLConverter:
             logger.warning(f"Failed to decode header '{header_value}': {e}")
             return str(header_value).strip()
 
-    def _parse_date(self, date_str: str) -> Optional[str]:
+    def _parse_date(self, date_str: str) -> str | None:
         """Parse email date to ISO format"""
         if not date_str:
             return None
@@ -155,7 +149,7 @@ class RobustEMLConverter:
             logger.warning(f"Failed to parse date '{date_str}': {e}")
             return None
 
-    def _find_actual_email_headers(self, msg) -> Dict[str, str]:
+    def _find_actual_email_headers(self, msg) -> dict[str, str]:
         """
         Find actual email headers in Gmail API EML format
 
@@ -192,7 +186,7 @@ class RobustEMLConverter:
                 return {}
 
             # Read the raw EML file content
-            with open(eml_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(eml_path, encoding='utf-8', errors='ignore') as f:
                 raw_content = f.read()
 
             lines = raw_content.split('\n')
@@ -366,7 +360,7 @@ class RobustEMLConverter:
             logger.error(f"Failed to convert {eml_path}: {e}")
             return False
 
-    def convert_directory(self, input_dir: Path, output_dir: Path, limit: int = 0) -> Dict[str, int]:
+    def convert_directory(self, input_dir: Path, output_dir: Path, limit: int = 0) -> dict[str, int]:
         """
         Convert all EML files in directory tree to markdown
 
@@ -537,7 +531,7 @@ def main():
     converter = RobustEMLConverter()
     stats = converter.convert_directory(Path(args.input), Path(args.output), args.limit)
 
-    print(f"\nConversion Results:")
+    print("\nConversion Results:")
     print(f"Total files: {stats['total']}")
     print(f"Successful: {stats['success']}")
     print(f"Failed: {stats['failed']}")

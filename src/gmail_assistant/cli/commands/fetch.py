@@ -3,13 +3,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any
 
 import click
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gmail_assistant.core.exceptions import AuthError
 from gmail_assistant.core.fetch.checkpoint import CheckpointManager
-from gmail_assistant.core.exceptions import AuthError, NetworkError, APIError
+from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
 from gmail_assistant.utils.secure_logger import SecureLogger
 
 logger = SecureLogger(__name__)
@@ -22,7 +22,7 @@ def fetch_emails(
     output_format: str,
     credentials_path: Path,
     resume: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Fetch emails from Gmail (C-2 implementation).
 
@@ -121,12 +121,12 @@ def fetch_emails(
 
         return {'fetched': fetched, 'total': len(message_ids)}
 
-    except Exception as e:
+    except Exception:
         checkpoint_mgr.mark_interrupted(checkpoint)
         raise
 
 
-def _save_email(email_data: Dict[str, Any], output_dir: Path, output_format: str, index: int) -> None:
+def _save_email(email_data: dict[str, Any], output_dir: Path, output_format: str, index: int) -> None:
     """Save email in the specified format."""
     # Generate safe filename
     subject = email_data.get('subject', 'no_subject')[:50]

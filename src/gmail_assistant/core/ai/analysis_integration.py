@@ -10,16 +10,13 @@ This module provides integration points for:
 - Workflow orchestration
 """
 
-import sys
 import json
-import pandas as pd
-import subprocess
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
 import logging
-
-from gmail_assistant.analysis.daily_email_analyzer import DailyEmailAnalyzer
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 class GmailAnalysisIntegration:
@@ -32,8 +29,8 @@ class GmailAnalysisIntegration:
     - Output coordination
     - Performance monitoring
     """
-    
-    def __init__(self, base_dir: Optional[str] = None):
+
+    def __init__(self, base_dir: str | None = None):
         """
         Initialize the integration system
         
@@ -42,49 +39,49 @@ class GmailAnalysisIntegration:
         """
         self.base_dir = Path(base_dir) if base_dir else Path.cwd()
         self.logger = self._setup_logging()
-        
+
         # Integration paths
         self.gmail_assistant_script = self.base_dir / 'gmail_assistant.py'
         self.analysis_script = self.base_dir / 'scripts' / 'analysis' / 'daily_email_analysis.py'
         self.analysis_config = self.base_dir / 'config' / 'analysis' / '0922-1430_daily_analysis_config.json'
-        
+
         # Output directories
         self.gmail_backup_dir = self.base_dir / 'gmail_backup'
         self.analysis_output_dir = self.base_dir / 'output' / 'daily'
-        
+
         # Ensure directories exist
         self.analysis_output_dir.mkdir(parents=True, exist_ok=True)
-        
+
     def _setup_logging(self) -> logging.Logger:
         """Setup logging for integration operations"""
         logger = logging.getLogger('GmailAnalysisIntegration')
         logger.setLevel(logging.INFO)
-        
+
         if not logger.handlers:
             # Create logs directory
             log_dir = self.base_dir / 'logs'
             log_dir.mkdir(exist_ok=True)
-            
+
             # File handler
             file_handler = logging.FileHandler(log_dir / 'integration.log')
             console_handler = logging.StreamHandler()
-            
+
             # Formatter
             formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
             file_handler.setFormatter(formatter)
             console_handler.setFormatter(formatter)
-            
+
             logger.addHandler(file_handler)
             logger.addHandler(console_handler)
-        
+
         return logger
-    
-    def run_integrated_workflow(self, 
-                               gmail_query: str, 
+
+    def run_integrated_workflow(self,
+                               gmail_query: str,
                                max_emails: int = 1000,
-                               analysis_date: Optional[str] = None,
+                               analysis_date: str | None = None,
                                gmail_format: str = "both",
-                               gmail_organize: str = "date") -> Dict[str, Any]:
+                               gmail_organize: str = "date") -> dict[str, Any]:
         """
         Run integrated Gmail fetch + analysis workflow
         
@@ -100,7 +97,7 @@ class GmailAnalysisIntegration:
         """
         workflow_start = datetime.now()
         self.logger.info("🚀 Starting integrated Gmail fetch + analysis workflow")
-        
+
         try:
             # Step 1: Run Gmail Fetcher
             self.logger.info("Step 1: Fetching emails from Gmail...")
@@ -110,18 +107,18 @@ class GmailAnalysisIntegration:
                 format_type=gmail_format,
                 organize=gmail_organize
             )
-            
+
             if not gmail_result['success']:
                 return {
                     'success': False,
                     'error': f"Gmail fetch failed: {gmail_result['error']}",
                     'workflow_duration': (datetime.now() - workflow_start).total_seconds()
                 }
-            
+
             # Step 2: Locate and validate output data
             self.logger.info("Step 2: Locating Gmail fetcher output...")
             data_file = self._find_latest_gmail_output()
-            
+
             if not data_file:
                 return {
                     'success': False,
@@ -129,14 +126,14 @@ class GmailAnalysisIntegration:
                     'gmail_result': gmail_result,
                     'workflow_duration': (datetime.now() - workflow_start).total_seconds()
                 }
-            
+
             # Step 3: Run email analysis
             self.logger.info("Step 3: Running email analysis...")
             analysis_result = self._run_email_analysis(
                 input_file=data_file,
                 analysis_date=analysis_date
             )
-            
+
             if not analysis_result['success']:
                 return {
                     'success': False,
@@ -144,13 +141,13 @@ class GmailAnalysisIntegration:
                     'gmail_result': gmail_result,
                     'workflow_duration': (datetime.now() - workflow_start).total_seconds()
                 }
-            
+
             # Step 4: Generate integrated summary
             self.logger.info("Step 4: Generating integrated summary...")
             summary = self._generate_integrated_summary(gmail_result, analysis_result)
-            
+
             workflow_duration = (datetime.now() - workflow_start).total_seconds()
-            
+
             result = {
                 'success': True,
                 'workflow_duration': workflow_duration,
@@ -161,23 +158,23 @@ class GmailAnalysisIntegration:
                 'analysis_file': analysis_result.get('output_file'),
                 'timestamp': datetime.now().isoformat()
             }
-            
+
             self.logger.info(f"✅ Integrated workflow completed successfully in {workflow_duration:.2f} seconds")
             return result
-            
+
         except Exception as e:
-            self.logger.error(f"❌ Integrated workflow failed: {str(e)}")
+            self.logger.error(f"❌ Integrated workflow failed: {e!s}")
             return {
                 'success': False,
                 'error': str(e),
                 'workflow_duration': (datetime.now() - workflow_start).total_seconds()
             }
-    
-    def _run_gmail_assistant(self, 
-                          query: str, 
-                          max_emails: int, 
+
+    def _run_gmail_assistant(self,
+                          query: str,
+                          max_emails: int,
                           format_type: str,
-                          organize: str) -> Dict[str, Any]:
+                          organize: str) -> dict[str, Any]:
         """
         Run Gmail Fetcher with specified parameters
         
@@ -199,17 +196,17 @@ class GmailAnalysisIntegration:
                 '--format', format_type,
                 '--organize', organize
             ]
-            
+
             self.logger.info(f"Running Gmail fetcher: {' '.join(cmd)}")
-            
+
             # Execute Gmail fetcher
             result = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
+                cmd,
+                capture_output=True,
+                text=True,
                 timeout=1800  # 30 minute timeout
             )
-            
+
             if result.returncode == 0:
                 return {
                     'success': True,
@@ -225,7 +222,7 @@ class GmailAnalysisIntegration:
                     'command': ' '.join(cmd),
                     'returncode': result.returncode
                 }
-                
+
         except subprocess.TimeoutExpired:
             return {
                 'success': False,
@@ -234,10 +231,10 @@ class GmailAnalysisIntegration:
         except Exception as e:
             return {
                 'success': False,
-                'error': f'Failed to run Gmail fetcher: {str(e)}'
+                'error': f'Failed to run Gmail fetcher: {e!s}'
             }
-    
-    def _find_latest_gmail_output(self) -> Optional[Path]:
+
+    def _find_latest_gmail_output(self) -> Path | None:
         """
         Find the most recent Gmail fetcher output file
         
@@ -247,7 +244,7 @@ class GmailAnalysisIntegration:
         try:
             # Look for parquet files in gmail_backup directory
             parquet_files = list(self.gmail_backup_dir.rglob('*.parquet'))
-            
+
             if not parquet_files:
                 # Also check for alternative locations
                 backup_dirs = [
@@ -255,28 +252,28 @@ class GmailAnalysisIntegration:
                     self.base_dir / 'data' / 'raw',
                     self.base_dir
                 ]
-                
+
                 for backup_dir in backup_dirs:
                     if backup_dir.exists():
                         parquet_files.extend(backup_dir.rglob('*.parquet'))
-            
+
             if not parquet_files:
                 self.logger.warning("No parquet files found in any backup directory")
                 return None
-            
+
             # Return the most recently modified file
             latest_file = max(parquet_files, key=lambda f: f.stat().st_mtime)
             self.logger.info(f"Found latest Gmail output: {latest_file}")
-            
+
             return latest_file
-            
+
         except Exception as e:
-            self.logger.error(f"Error finding Gmail output: {str(e)}")
+            self.logger.error(f"Error finding Gmail output: {e!s}")
             return None
-    
-    def _run_email_analysis(self, 
-                           input_file: Path, 
-                           analysis_date: Optional[str] = None) -> Dict[str, Any]:
+
+    def _run_email_analysis(self,
+                           input_file: Path,
+                           analysis_date: str | None = None) -> dict[str, Any]:
         """
         Run email analysis on the specified input file
         
@@ -297,9 +294,9 @@ class GmailAnalysisIntegration:
                     date_suffix = analysis_date.replace('-', '')
             else:
                 date_suffix = 'all'
-            
+
             output_file = self.analysis_output_dir / f'analysis_{date_suffix}_{timestamp}.json'
-            
+
             # Construct analysis command
             cmd = [
                 sys.executable, str(self.analysis_script),
@@ -307,16 +304,16 @@ class GmailAnalysisIntegration:
                 '--output', str(output_file),
                 '--config', str(self.analysis_config)
             ]
-            
+
             # Add date filter if specified
             if analysis_date:
                 if analysis_date == 'yesterday':
                     cmd.extend(['--yesterday'])
                 else:
                     cmd.extend(['--date', analysis_date])
-            
+
             self.logger.info(f"Running email analysis: {' '.join(cmd)}")
-            
+
             # Execute analysis
             result = subprocess.run(
                 cmd,
@@ -324,13 +321,13 @@ class GmailAnalysisIntegration:
                 text=True,
                 timeout=3600  # 60 minute timeout
             )
-            
+
             if result.returncode == 0:
                 # Load and validate analysis results
                 if output_file.exists():
-                    with open(output_file, 'r') as f:
+                    with open(output_file) as f:
                         analysis_data = json.load(f)
-                    
+
                     return {
                         'success': True,
                         'command': ' '.join(cmd),
@@ -351,7 +348,7 @@ class GmailAnalysisIntegration:
                     'command': ' '.join(cmd),
                     'returncode': result.returncode
                 }
-                
+
         except subprocess.TimeoutExpired:
             return {
                 'success': False,
@@ -360,9 +357,9 @@ class GmailAnalysisIntegration:
         except Exception as e:
             return {
                 'success': False,
-                'error': f'Failed to run email analysis: {str(e)}'
+                'error': f'Failed to run email analysis: {e!s}'
             }
-    
+
     def _extract_email_count(self, gmail_output: str) -> int:
         """
         Extract number of emails fetched from Gmail fetcher output
@@ -382,20 +379,20 @@ class GmailAnalysisIntegration:
                 r'Processing (\d+) emails',
                 r'Found (\d+) emails'
             ]
-            
+
             for pattern in patterns:
                 match = re.search(pattern, gmail_output, re.IGNORECASE)
                 if match:
                     return int(match.group(1))
-            
+
             return 0
-            
+
         except Exception:
             return 0
-    
-    def _generate_integrated_summary(self, 
-                                   gmail_result: Dict[str, Any], 
-                                   analysis_result: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _generate_integrated_summary(self,
+                                   gmail_result: dict[str, Any],
+                                   analysis_result: dict[str, Any]) -> dict[str, Any]:
         """
         Generate integrated summary combining Gmail fetch and analysis results
         
@@ -408,7 +405,7 @@ class GmailAnalysisIntegration:
         """
         try:
             analysis_data = analysis_result.get('analysis_data', {})
-            
+
             return {
                 'workflow_summary': {
                     'emails_fetched': gmail_result.get('emails_fetched', 0),
@@ -425,12 +422,12 @@ class GmailAnalysisIntegration:
                 'key_recommendations': self._extract_key_recommendations(analysis_data),
                 'volume_patterns': self._extract_volume_patterns(analysis_data)
             }
-            
+
         except Exception as e:
-            self.logger.error(f"Error generating integrated summary: {str(e)}")
-            return {'error': f'Failed to generate summary: {str(e)}'}
-    
-    def _extract_top_categories(self, analysis_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+            self.logger.error(f"Error generating integrated summary: {e!s}")
+            return {'error': f'Failed to generate summary: {e!s}'}
+
+    def _extract_top_categories(self, analysis_data: dict[str, Any]) -> list[dict[str, Any]]:
         """Extract top email categories from analysis data"""
         try:
             classification = analysis_data.get('classification_summary', {})
@@ -448,8 +445,8 @@ class GmailAnalysisIntegration:
             ]
         except Exception:
             return []
-    
-    def _extract_automation_insights(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _extract_automation_insights(self, analysis_data: dict[str, Any]) -> dict[str, Any]:
         """Extract automation insights from analysis data"""
         try:
             automation = analysis_data.get('sender_analysis', {}).get('automation_analysis', {})
@@ -460,8 +457,8 @@ class GmailAnalysisIntegration:
             }
         except Exception:
             return {}
-    
-    def _extract_key_recommendations(self, analysis_data: Dict[str, Any]) -> List[str]:
+
+    def _extract_key_recommendations(self, analysis_data: dict[str, Any]) -> list[str]:
         """Extract key recommendations from analysis data"""
         try:
             recommendations = analysis_data.get('insights', {}).get('recommendations', [])
@@ -472,8 +469,8 @@ class GmailAnalysisIntegration:
             ]
         except Exception:
             return []
-    
-    def _extract_volume_patterns(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _extract_volume_patterns(self, analysis_data: dict[str, Any]) -> dict[str, Any]:
         """Extract volume pattern insights from analysis data"""
         try:
             volume_patterns = analysis_data.get('temporal_analysis', {}).get('volume_patterns', {})
@@ -484,10 +481,10 @@ class GmailAnalysisIntegration:
             }
         except Exception:
             return {}
-    
-    def run_daily_automation(self, 
+
+    def run_daily_automation(self,
                            gmail_query: str = "newer_than:1d",
-                           max_emails: int = 500) -> Dict[str, Any]:
+                           max_emails: int = 500) -> dict[str, Any]:
         """
         Run automated daily workflow optimized for cron execution
         
@@ -499,7 +496,7 @@ class GmailAnalysisIntegration:
             Dict with automation results
         """
         self.logger.info("🤖 Starting daily automation workflow")
-        
+
         return self.run_integrated_workflow(
             gmail_query=gmail_query,
             max_emails=max_emails,
@@ -507,8 +504,8 @@ class GmailAnalysisIntegration:
             gmail_format='both',
             gmail_organize='date'
         )
-    
-    def create_automation_script(self, output_path: Optional[str] = None) -> Path:
+
+    def create_automation_script(self, output_path: str | None = None) -> Path:
         """
         Create automation script for cron job execution
         
@@ -520,7 +517,7 @@ class GmailAnalysisIntegration:
         """
         if not output_path:
             output_path = self.base_dir / 'scripts' / 'daily_automation.py'
-        
+
         script_content = f'''#!/usr/bin/env python3
 """
 Daily Gmail Fetch + Analysis Automation
@@ -562,18 +559,18 @@ def main():
 if __name__ == "__main__":
     main()
 '''
-        
+
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(output_file, 'w') as f:
             f.write(script_content)
-        
+
         output_file.chmod(0o755)  # Make executable
-        
+
         self.logger.info(f"Created automation script: {output_file}")
         return output_file
-    
+
     def generate_cron_template(self) -> str:
         """
         Generate cron job template for daily automation
@@ -583,7 +580,7 @@ if __name__ == "__main__":
         """
         automation_script = self.base_dir / 'scripts' / 'daily_automation.py'
         log_file = self.base_dir / 'logs' / 'daily_automation.log'
-        
+
         cron_template = f"""# Gmail Fetcher + Analysis Daily Automation
 # Add this line to your crontab (crontab -e)
 
@@ -596,14 +593,14 @@ if __name__ == "__main__":
 # Weekly summary report on Sundays at 9:00 AM
 # 0 9 * * 0 cd {self.base_dir} && python scripts/analysis/weekly_summary.py >> {log_file} 2>&1
 """
-        
+
         return cron_template
 
 
 # Convenience functions for easy integration
-def run_daily_workflow(gmail_query: str = "newer_than:1d", 
+def run_daily_workflow(gmail_query: str = "newer_than:1d",
                       max_emails: int = 500,
-                      base_dir: Optional[str] = None) -> Dict[str, Any]:
+                      base_dir: str | None = None) -> dict[str, Any]:
     """
     Convenience function to run daily Gmail + analysis workflow
     
@@ -619,7 +616,7 @@ def run_daily_workflow(gmail_query: str = "newer_than:1d",
     return integration.run_daily_automation(gmail_query, max_emails)
 
 
-def setup_daily_automation(base_dir: Optional[str] = None) -> Tuple[Path, str]:
+def setup_daily_automation(base_dir: str | None = None) -> tuple[Path, str]:
     """
     Setup daily automation for Gmail + analysis workflow
     
@@ -630,13 +627,13 @@ def setup_daily_automation(base_dir: Optional[str] = None) -> Tuple[Path, str]:
         Tuple of (automation_script_path, cron_template)
     """
     integration = GmailAnalysisIntegration(base_dir)
-    
+
     # Create automation script
     script_path = integration.create_automation_script()
-    
+
     # Generate cron template
     cron_template = integration.generate_cron_template()
-    
+
     return script_path, cron_template
 
 
@@ -644,16 +641,16 @@ if __name__ == "__main__":
     # Example usage
     print("Gmail Fetcher + Analysis Integration")
     print("=" * 40)
-    
+
     # Test integration
     integration = GmailAnalysisIntegration()
-    
+
     print("Setting up daily automation...")
     script_path, cron_template = setup_daily_automation()
-    
+
     print(f"✅ Automation script created: {script_path}")
     print("\n📅 Cron template:")
     print(cron_template)
-    
+
     print("\n🚀 To test the integration, run:")
     print(f"python {script_path}")

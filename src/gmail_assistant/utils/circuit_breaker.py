@@ -3,12 +3,13 @@ Circuit Breaker pattern implementation for Gmail API calls.
 Prevents cascading failures when the Gmail API is experiencing issues.
 """
 
-import time
 import logging
 import threading
+import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Any, Optional
 from functools import wraps
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ class CircuitBreaker:
         self._state = CircuitState.CLOSED
         self._failure_count = 0
         self._success_count = 0
-        self._last_failure_time: Optional[float] = None
+        self._last_failure_time: float | None = None
         self._half_open_calls = 0
 
         logger.info(f"Circuit breaker initialized: threshold={failure_threshold}, "
@@ -177,7 +178,7 @@ class CircuitBreaker:
             result = func(*args, **kwargs)
             self._record_success()
             return result
-        except Exception as e:
+        except Exception:
             self._record_failure()
             raise
 

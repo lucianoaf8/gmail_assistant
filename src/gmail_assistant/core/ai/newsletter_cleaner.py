@@ -6,14 +6,12 @@ Identifies and deletes AI newsletter emails with dry-run support and logging.
 Security: Implements ReDoS protection with regex timeout (M-2 fix)
 """
 
-import json
-import csv
-import os
 import argparse
-from datetime import datetime
-from typing import List, Dict, Set, Optional
+import csv
+import json
+import os
 from dataclasses import dataclass
-from pathlib import Path
+from datetime import datetime
 
 # Use regex module for timeout support (M-2 security fix)
 try:
@@ -24,9 +22,10 @@ except ImportError:
     HAS_REGEX_TIMEOUT = False
 
 # Import centralized constants and schemas
-from ..constants import AI_CONFIG_PATH
-from ..schemas import Email, EmailDataCompat
-from ...utils.secure_logger import SecureLogger
+from gmail_assistant.core.constants import AI_CONFIG_PATH
+from gmail_assistant.core.schemas import Email
+from gmail_assistant.utils.input_validator import InputValidator
+from gmail_assistant.utils.secure_logger import SecureLogger
 
 logger = SecureLogger(__name__)
 
@@ -47,7 +46,7 @@ class EmailData:
     subject: str
     sender: str
     date: str
-    labels: List[str] = None
+    labels: list[str] = None
     thread_id: str = None
     body_snippet: str = ""
 
@@ -75,8 +74,28 @@ class EmailData:
 class AINewsletterDetector:
     """Detects AI newsletters using multiple pattern matching strategies"""
 
-    def __init__(self, config_path: str = None):
-        self.config_path = config_path or str(AI_CONFIG_PATH)
+    def __init__(self, config_path: str | None = None):
+        # Use default config path if not provided
+        resolved_path = config_path or str(AI_CONFIG_PATH)
+
+        # Validate user-provided config paths (L-AUDIT-03 fix)
+        if config_path is not None:
+            # Get config directory as allowed base
+            config_dir = str(AI_CONFIG_PATH.parent) if hasattr(AI_CONFIG_PATH, 'parent') else 'config'
+            is_valid, validated_path = InputValidator.validate_file_path(
+                config_path,
+                allowed_base=config_dir,
+                allow_create=False
+            )
+            if not is_valid:
+                logger.warning(
+                    f"Invalid config path '{config_path}', using default: {AI_CONFIG_PATH}"
+                )
+                resolved_path = str(AI_CONFIG_PATH)
+            else:
+                resolved_path = validated_path
+
+        self.config_path = resolved_path
         self.load_config()
         self._compile_patterns()
 
@@ -130,29 +149,29 @@ class AINewsletterDetector:
         except Exception as e:
             logger.warning(f"Unexpected regex error: {e}")
             return False
-        
+
     def load_config(self):
         """Load configuration from JSON file with fallback to defaults"""
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, encoding='utf-8') as f:
                 config = json.load(f)
-            
+
             self.ai_keywords = set(config.get('ai_keywords', []))
             self.ai_newsletter_domains = set(config.get('ai_newsletter_domains', []))
             self.newsletter_patterns = config.get('newsletter_patterns', [])
             self.unsubscribe_patterns = config.get('unsubscribe_patterns', [])
             self.confidence_weights = config.get('confidence_weights', {})
             self.decision_threshold = config.get('decision_threshold', {})
-            
+
             print(f"✅ Loaded configuration from {self.config_path}")
-            
+
         except FileNotFoundError:
             print(f"⚠️  Config file {self.config_path} not found, using defaults")
             self._load_default_config()
         except json.JSONDecodeError:
             print(f"⚠️  Invalid JSON in {self.config_path}, using defaults")
             self._load_default_config()
-    
+
     def _load_default_config(self):
         """Load default configuration"""
         self.ai_keywords = {
@@ -163,7 +182,7 @@ class AINewsletterDetector:
             'gen ai', 'generative ai', 'foundation models', 'transformer',
             'prompt engineering', 'ai tools', 'ai startup', 'ai industry'
         }
-        
+
         self.ai_newsletter_domains = {
             'deeplearning.ai', 'openai.com', 'anthropic.com', 'huggingface.co',
             'thesequence.substack.com', 'importai.substack.com', 'thebatch.ai',
@@ -173,19 +192,19 @@ class AINewsletterDetector:
             'distill.pub', 'paperswithcode.com', 'towards-data-science',
             'kdnuggets.com', 'analyticsindiamag.com'
         }
-        
+
         self.newsletter_patterns = [
             r'weekly.*ai', r'ai.*weekly', r'daily.*ai', r'ai.*daily',
             r'newsletter.*ai', r'ai.*newsletter', r'digest.*ai', r'ai.*digest',
             r'roundup.*ai', r'ai.*roundup', r'briefing.*ai', r'ai.*briefing',
             r'updates.*ai', r'ai.*updates', r'summary.*ai', r'ai.*summary'
         ]
-        
+
         self.unsubscribe_patterns = [
-            r'unsubscribe', r'opt.?out', r'manage.*subscription', 
+            r'unsubscribe', r'opt.?out', r'manage.*subscription',
             r'email.*preference', r'update.*preference'
         ]
-        
+
         self.confidence_weights = {
             'ai_keywords_subject': 3,
             'ai_keywords_sender': 2,
@@ -194,13 +213,13 @@ class AINewsletterDetector:
             'unsubscribe_link': 1,
             'automated_sender': 1
         }
-        
+
         self.decision_threshold = {
             'minimum_confidence': 4,
             'minimum_reasons': 2
         }
 
-    def is_ai_newsletter(self, email: EmailData) -> Dict[str, any]:
+    def is_ai_newsletter(self, email: EmailData) -> dict[str, any]:
         """
         Determine if email is an AI newsletter.
         Returns dict with decision and reasoning.
@@ -275,13 +294,13 @@ class AINewsletterDetector:
 
 class EmailDataLoader:
     """Loads email data from various formats"""
-    
+
     @staticmethod
-    def load_from_json(file_path: str) -> List[EmailData]:
+    def load_from_json(file_path: str) -> list[EmailData]:
         """Load emails from JSON format"""
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             data = json.load(f)
-            
+
         emails = []
         # Handle different JSON structures
         if isinstance(data, list):
@@ -292,7 +311,7 @@ class EmailDataLoader:
             email_list = data['messages']
         else:
             email_list = [data]
-            
+
         for item in email_list:
             emails.append(EmailData(
                 id=item.get('id', ''),
@@ -303,14 +322,14 @@ class EmailDataLoader:
                 thread_id=item.get('threadId', ''),
                 body_snippet=item.get('snippet', item.get('body', ''))
             ))
-        
+
         return emails
-    
+
     @staticmethod
-    def load_from_csv(file_path: str) -> List[EmailData]:
+    def load_from_csv(file_path: str) -> list[EmailData]:
         """Load emails from CSV format"""
         emails = []
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 emails.append(EmailData(
@@ -322,31 +341,31 @@ class EmailDataLoader:
                     thread_id=row.get('thread_id', ''),
                     body_snippet=row.get('snippet', row.get('body', ''))
                 ))
-        
+
         return emails
 
 class GmailCleaner:
     """Main class for Gmail cleaning operations"""
-    
+
     def __init__(self, dry_run: bool = True, config_path: str = '../config/config.json'):
         self.dry_run = dry_run
         self.detector = AINewsletterDetector(config_path)
         self.deleted_emails = []
         self.log_file = f"gmail_cleanup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        
-    def analyze_emails(self, emails: List[EmailData]) -> Dict[str, List]:
+
+    def analyze_emails(self, emails: list[EmailData]) -> dict[str, list]:
         """Analyze emails and categorize them"""
         ai_newsletters = []
         other_emails = []
-        
+
         print(f"\n🔍 Analyzing {len(emails)} emails...")
-        
+
         for i, email in enumerate(emails):
             if i % 100 == 0:
                 print(f"  Processed {i}/{len(emails)} emails...")
-                
+
             result = self.detector.is_ai_newsletter(email)
-            
+
             if result['is_ai_newsletter']:
                 ai_newsletters.append({
                     'email': email,
@@ -354,32 +373,32 @@ class GmailCleaner:
                 })
             else:
                 other_emails.append(email)
-        
+
         return {
             'ai_newsletters': ai_newsletters,
             'other_emails': other_emails
         }
-    
-    def delete_ai_newsletters(self, ai_newsletters: List[Dict]) -> None:
+
+    def delete_ai_newsletters(self, ai_newsletters: list[dict]) -> None:
         """Delete AI newsletters (or simulate deletion in dry-run mode)"""
-        
+
         if not ai_newsletters:
             print("\n✅ No AI newsletters found to delete.")
             return
-            
+
         print(f"\n{'🔍 DRY RUN MODE' if self.dry_run else '🗑️  DELETION MODE'}: Processing {len(ai_newsletters)} AI newsletters...")
-        
+
         with open(self.log_file, 'w', encoding='utf-8') as log:
             log.write(f"Gmail AI Newsletter Cleanup Log - {datetime.now()}\n")
             log.write(f"Mode: {'DRY RUN' if self.dry_run else 'ACTUAL DELETION'}\n")
             log.write(f"Total AI newsletters identified: {len(ai_newsletters)}\n\n")
-            
+
             for i, item in enumerate(ai_newsletters):
                 email = item['email']
                 analysis = item['analysis']
-                
+
                 action = "WOULD DELETE" if self.dry_run else "DELETED"
-                
+
                 log_entry = f"{action}: {email.id}\n"
                 log_entry += f"  Subject: {email.subject}\n"
                 log_entry += f"  From: {email.sender}\n"
@@ -387,41 +406,41 @@ class GmailCleaner:
                 log_entry += f"  Confidence: {analysis['confidence']}\n"
                 log_entry += f"  Reasons: {', '.join(analysis['reasons'])}\n"
                 log_entry += "-" * 80 + "\n\n"
-                
+
                 log.write(log_entry)
-                
+
                 if not self.dry_run:
                     # Here you would implement actual Gmail API deletion
                     # gmail_service.users().messages().delete(userId='me', id=email.id).execute()
                     pass
-                
+
                 self.deleted_emails.append(email)
-                
+
                 if (i + 1) % 50 == 0:
                     print(f"  Processed {i + 1}/{len(ai_newsletters)} newsletters...")
-        
+
         mode_text = "identified for deletion" if self.dry_run else "deleted"
         print(f"\n✅ {len(ai_newsletters)} AI newsletters {mode_text}")
         print(f"📝 Detailed log saved to: {self.log_file}")
-    
-    def generate_summary(self, analysis_result: Dict) -> None:
+
+    def generate_summary(self, analysis_result: dict) -> None:
         """Generate cleanup summary"""
         ai_count = len(analysis_result['ai_newsletters'])
         other_count = len(analysis_result['other_emails'])
         total = ai_count + other_count
-        
-        print(f"\n📊 CLEANUP SUMMARY")
+
+        print("\n📊 CLEANUP SUMMARY")
         print(f"{'='*50}")
         print(f"Total emails analyzed: {total}")
         print(f"AI newsletters identified: {ai_count} ({ai_count/total*100:.1f}%)")
         print(f"Other emails preserved: {other_count} ({other_count/total*100:.1f}%)")
-        
+
         if self.dry_run:
-            print(f"\n⚠️  DRY RUN MODE - No emails were actually deleted")
-            print(f"🔄 Run with --delete flag to perform actual deletion")
+            print("\n⚠️  DRY RUN MODE - No emails were actually deleted")
+            print("🔄 Run with --delete flag to perform actual deletion")
         else:
-            print(f"\n✅ Deletion completed successfully")
-        
+            print("\n✅ Deletion completed successfully")
+
         print(f"📝 Detailed log: {self.log_file}")
 
 def main():
@@ -430,14 +449,14 @@ def main():
     parser.add_argument('--delete', action='store_true', help='Actually delete emails (default: dry run)')
     parser.add_argument('--format', choices=['json', 'csv'], help='Data format (auto-detected if not specified)')
     parser.add_argument('--config', default='../config/config.json', help='Path to configuration file')
-    
+
     args = parser.parse_args()
-    
+
     # Validate input file
     if not os.path.exists(args.data_file):
         print(f"❌ Error: File '{args.data_file}' not found")
         return
-    
+
     # Auto-detect format if not specified
     if not args.format:
         if args.data_file.endswith('.json'):
@@ -447,36 +466,36 @@ def main():
         else:
             print("❌ Error: Could not detect file format. Please specify --format")
             return
-    
-    print(f"🚀 Gmail AI Newsletter Cleaner")
+
+    print("🚀 Gmail AI Newsletter Cleaner")
     print(f"📁 Loading data from: {args.data_file}")
     print(f"📊 Format: {args.format.upper()}")
     print(f"⚙️  Config: {args.config}")
     print(f"🎯 Mode: {'DELETION' if args.delete else 'DRY RUN'}")
-    
+
     try:
         # Load email data
         if args.format == 'json':
             emails = EmailDataLoader.load_from_json(args.data_file)
         else:
             emails = EmailDataLoader.load_from_csv(args.data_file)
-        
+
         print(f"✅ Loaded {len(emails)} emails")
-        
+
         # Initialize cleaner with config
         cleaner = GmailCleaner(dry_run=not args.delete, config_path=args.config)
-        
+
         # Analyze emails
         analysis_result = cleaner.analyze_emails(emails)
-        
+
         # Delete AI newsletters
         cleaner.delete_ai_newsletters(analysis_result['ai_newsletters'])
-        
+
         # Generate summary
         cleaner.generate_summary(analysis_result)
-        
+
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f"❌ Error: {e!s}")
         return
 
 # Alias for backward compatibility

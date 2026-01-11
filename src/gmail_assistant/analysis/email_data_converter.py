@@ -4,20 +4,17 @@ Email Data Converter
 Converts EML and Markdown email files to Parquet format for daily analysis.
 """
 
-import os
-import json
+import argparse
 import email
 import email.parser
+import email.utils
+import logging
 import re
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-import email.utils
-import argparse
-import logging
+
+import pandas as pd
+
 
 class EmailDataConverter:
     """Convert email files (EML/Markdown) to Parquet format for analysis"""
@@ -38,7 +35,7 @@ class EmailDataConverter:
 
         return logger
 
-    def extract_from_eml(self, eml_path: Path) -> Optional[Dict]:
+    def extract_from_eml(self, eml_path: Path) -> dict | None:
         """Extract data from EML file"""
         try:
             with open(eml_path, 'rb') as f:
@@ -71,10 +68,10 @@ class EmailDataConverter:
             self.logger.error(f"Error processing EML {eml_path}: {e}")
             return None
 
-    def extract_from_markdown(self, md_path: Path) -> Optional[Dict]:
+    def extract_from_markdown(self, md_path: Path) -> dict | None:
         """Extract data from Markdown file"""
         try:
-            with open(md_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(md_path, encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
             # Extract Gmail ID from filename
@@ -110,7 +107,7 @@ class EmailDataConverter:
         # Fallback: use filename without extension
         return Path(filename).stem
 
-    def _parse_email_date(self, date_str: str) -> Optional[datetime]:
+    def _parse_email_date(self, date_str: str) -> datetime | None:
         """Parse email date string to datetime"""
         if not date_str:
             return None
@@ -121,7 +118,7 @@ class EmailDataConverter:
             if parsed_tuple:
                 timestamp = email.utils.mktime_tz(parsed_tuple)
                 return datetime.fromtimestamp(timestamp)
-        except:
+        except (ValueError, TypeError, OverflowError):
             pass
 
         # Try common date formats
@@ -135,7 +132,7 @@ class EmailDataConverter:
         for fmt in formats:
             try:
                 return datetime.strptime(date_str.strip(), fmt)
-            except:
+            except ValueError:
                 continue
 
         self.logger.warning(f"Could not parse date: {date_str}")
@@ -153,7 +150,7 @@ class EmailDataConverter:
                         try:
                             text = payload.decode('utf-8', errors='ignore')
                             plain_text_parts.append(text)
-                        except:
+                        except (UnicodeDecodeError, AttributeError):
                             continue
         else:
             if msg.get_content_type() == 'text/plain':
@@ -162,12 +159,12 @@ class EmailDataConverter:
                     try:
                         text = payload.decode('utf-8', errors='ignore')
                         plain_text_parts.append(text)
-                    except:
+                    except (UnicodeDecodeError, AttributeError):
                         pass
 
         return '\n'.join(plain_text_parts)
 
-    def _parse_markdown_metadata(self, content: str) -> Dict[str, str]:
+    def _parse_markdown_metadata(self, content: str) -> dict[str, str]:
         """Parse metadata from markdown table format"""
         metadata = {}
 
@@ -206,7 +203,7 @@ class EmailDataConverter:
         return content
 
     def convert_directory(self, input_dir: Path, output_file: Path,
-                         date_filter: Optional[str] = None) -> int:
+                         date_filter: str | None = None) -> int:
         """
         Convert all email files in directory to Parquet format
 

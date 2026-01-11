@@ -4,32 +4,37 @@ Gmail Bulk Deletion Tool
 Safely delete emails using Gmail API with rate limiting and safety checks.
 """
 
-import sys
 import io
-import time
-import json
 import logging
+import sys
 
 # Force UTF-8 encoding for Windows to support emojis and special characters
 if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
+import argparse
+
+import pandas as pd
 from googleapiclient.errors import HttpError
+from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
+from rich.table import Table
+
+from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+from gmail_assistant.core.constants import SCOPES_MODIFY
 
 # Local imports
 from gmail_assistant.utils.rate_limiter import GmailRateLimiter, QuotaTracker
-from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
-from gmail_assistant.core.constants import SCOPES_MODIFY
-import pandas as pd
-from typing import List, Dict, Optional
-import os
-import argparse
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn, MofNCompleteColumn
-from rich.panel import Panel
-from rich.table import Table
-from rich.live import Live
-from rich import box
+
 
 class GmailDeleter:
     def __init__(self, credentials_file: str = 'credentials.json'):
@@ -63,7 +68,7 @@ class GmailDeleter:
             self.console.print(f"Error getting email count: {error}", style="red")
             return 0
 
-    def list_emails(self, query: str = '', max_results: int = None) -> List[str]:
+    def list_emails(self, query: str = '', max_results: int = None) -> list[str]:
         """List email IDs matching query with pagination"""
         message_ids = []
 
@@ -101,7 +106,7 @@ class GmailDeleter:
             self.console.print(f"Error listing emails: {error}", style="red")
             return []
 
-    def delete_emails_batch(self, message_ids: List[str], batch_size: int = 100) -> Dict[str, int]:
+    def delete_emails_batch(self, message_ids: list[str], batch_size: int = 100) -> dict[str, int]:
         """Delete emails in batches with rate limiting and beautiful progress display"""
         if not message_ids:
             return {'deleted': 0, 'failed': 0}
@@ -167,7 +172,7 @@ class GmailDeleter:
 
                     # If batch fails, try individual deletes with sub-progress
                     individual_task = progress.add_task(
-                        f"[yellow]Individual deletion fallback",
+                        "[yellow]Individual deletion fallback",
                         total=len(batch)
                     )
 
@@ -197,7 +202,7 @@ class GmailDeleter:
 
         return {'deleted': deleted_count, 'failed': failed_count}
 
-    def delete_by_query(self, query: str, dry_run: bool = True, max_delete: int = None) -> Dict[str, int]:
+    def delete_by_query(self, query: str, dry_run: bool = True, max_delete: int = None) -> dict[str, int]:
         """Delete emails matching a query with safety checks and beautiful display"""
 
         # Create query info panel
@@ -227,7 +232,7 @@ class GmailDeleter:
         # Safety check for large deletions
         if total_count > 1000 and not max_delete:
             self.console.print(f"⚠️  [yellow]Large deletion detected: {total_count:,} emails[/yellow]")
-            response = input(f"Continue with deletion? (yes/no): ")
+            response = input("Continue with deletion? (yes/no): ")
             if response.lower() != 'yes':
                 self.console.print("❌ Deletion cancelled by user", style="red")
                 return {'deleted': 0, 'failed': 0}
@@ -267,7 +272,7 @@ class GmailDeleter:
         )
         self.console.print(confirmation_panel)
 
-        response = input(f"Type 'DELETE' to confirm (case sensitive): ")
+        response = input("Type 'DELETE' to confirm (case sensitive): ")
         if response != 'DELETE':
             self.console.print("❌ Deletion cancelled - confirmation not matched", style="red")
             return {'deleted': 0, 'failed': 0}
@@ -275,7 +280,7 @@ class GmailDeleter:
         # Perform deletion with beautiful progress
         return self.delete_emails_batch(message_ids)
 
-    def delete_from_parquet_data(self, parquet_file: str, dry_run: bool = True) -> Dict[str, int]:
+    def delete_from_parquet_data(self, parquet_file: str, dry_run: bool = True) -> dict[str, int]:
         """Delete emails based on gmail_ids from parquet analysis with beautiful display"""
         try:
             # Load parquet data with status
@@ -316,7 +321,7 @@ class GmailDeleter:
             )
             self.console.print(confirmation_panel)
 
-            response = input(f"Type 'DELETE' to confirm (case sensitive): ")
+            response = input("Type 'DELETE' to confirm (case sensitive): ")
             if response != 'DELETE':
                 self.console.print("❌ Deletion cancelled - confirmation not matched", style="red")
                 return {'deleted': 0, 'failed': 0}
@@ -325,7 +330,7 @@ class GmailDeleter:
 
         except Exception as e:
             error_panel = Panel(
-                f"❌ [red]Error processing parquet file:[/red]\n{str(e)}",
+                f"❌ [red]Error processing parquet file:[/red]\n{e!s}",
                 title="🚨 Error",
                 border_style="red"
             )
@@ -423,7 +428,7 @@ def main():
         console.print("\n⚠️  [yellow]Operation cancelled by user[/yellow]")
     except Exception as e:
         error_panel = Panel(
-            f"❌ [red]Error:[/red] {str(e)}",
+            f"❌ [red]Error:[/red] {e!s}",
             title="🚨 Unexpected Error",
             border_style="red"
         )

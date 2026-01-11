@@ -7,6 +7,7 @@ Security: Prevents sensitive data exposure in logs (M-4 fix)
 
 import logging
 from typing import Any
+
 from .pii_redactor import PIIRedactor
 
 
@@ -59,6 +60,11 @@ class SecureLogger:
     def level(self):
         """Get logging level"""
         return self._logger.level
+
+    @property
+    def logger(self):
+        """Get underlying logger for direct access (e.g., adding handlers)."""
+        return self._logger
 
 
 def get_secure_logger(name: str) -> SecureLogger:

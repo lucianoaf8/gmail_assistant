@@ -5,12 +5,11 @@ Provides secure validation for all user inputs and API parameters.
 H-2 fix: Uses centralized ValidationError from exceptions.py
 """
 
-import re
-import os
 import logging
+import os
+import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urlparse
+from typing import Any
 
 from gmail_assistant.core.exceptions import ValidationError
 
@@ -97,9 +96,9 @@ class InputValidator:
         return query
 
     @staticmethod
-    def validate_file_path(path: Union[str, Path], must_exist: bool = False,
+    def validate_file_path(path: str | Path, must_exist: bool = False,
                           create_dirs: bool = False,
-                          allowed_base: Optional[Path] = None) -> Path:
+                          allowed_base: Path | None = None) -> Path:
         """
         Validate and sanitize file path with enhanced security (M-1 fix).
 
@@ -140,7 +139,7 @@ class InputValidator:
 
         # Check for traversal AFTER resolution (catches symlink attacks)
         if '..' in path.parts:
-            raise ValidationError("Path contains traversal component '..'")
+            raise ValidationError("Path contains dangerous traversal component '..'")
 
         # Validate against allowed base directory (M-1 enhancement)
         if allowed_base is not None:
@@ -229,8 +228,8 @@ class InputValidator:
         return email
 
     @staticmethod
-    def validate_integer(value: Any, min_val: Optional[int] = None,
-                        max_val: Optional[int] = None) -> int:
+    def validate_integer(value: Any, min_val: int | None = None,
+                        max_val: int | None = None) -> int:
         """
         Validate and convert integer value.
 
@@ -263,7 +262,7 @@ class InputValidator:
 
     @staticmethod
     def validate_string(value: Any, min_length: int = 0, max_length: int = 1000,
-                       allowed_chars: Optional[str] = None) -> str:
+                       allowed_chars: str | None = None) -> str:
         """
         Validate string value.
 
@@ -289,7 +288,7 @@ class InputValidator:
             raise ValidationError(f"String too long (max {max_length} chars)")
 
         if allowed_chars and not re.match(allowed_chars, value):
-            raise ValidationError(f"String contains invalid characters")
+            raise ValidationError("String contains invalid characters")
 
         return value
 
@@ -396,7 +395,7 @@ class InputValidator:
         return batch_size
 
     @staticmethod
-    def validate_config_dict(config: Dict[str, Any], required_keys: List[str]) -> Dict[str, Any]:
+    def validate_config_dict(config: dict[str, Any], required_keys: list[str]) -> dict[str, Any]:
         """
         Validate configuration dictionary.
 
@@ -419,3 +418,22 @@ class InputValidator:
             raise ValidationError(f"Missing required configuration keys: {missing_keys}")
 
         return config
+
+
+# Convenience function for easier import
+def validate_file_path(path: str | Path, must_exist: bool = False,
+                       create_dirs: bool = False,
+                       allowed_base: Path | None = None) -> Path:
+    """
+    Validate and sanitize file path. Convenience wrapper for InputValidator.validate_file_path.
+
+    Args:
+        path: File path to validate
+        must_exist: Whether the path must exist
+        create_dirs: Whether to create parent directories
+        allowed_base: If set, path must be under this directory
+
+    Returns:
+        Validated Path object
+    """
+    return InputValidator.validate_file_path(path, must_exist, create_dirs, allowed_base)

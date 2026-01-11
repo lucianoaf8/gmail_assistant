@@ -3,12 +3,12 @@
 gmail_eml_to_markdown_cleaner.py
 
 Purpose
-- Walk C:\Projects\gmail_assistant\backup_unread\2025\**\* for .eml and .md
+- Walk C:\\Projects\\gmail_assistant\backup_unread\2025\\**\\* for .eml and .md
 - Rebuild clean, consistent, professional Markdown with front matter
 - Normalize quotes, lists, spacing, and line-wrapping
 - Preserve links, detect encoding, extract inline CID images, and save attachments
 - Reformat any existing .md files with mdformat to a consistent style
-- Write outputs under a mirrored tree: <base>\_clean\<year>\<month>\*.md
+- Write outputs under a mirrored tree: <base>\\_clean\\<year>\\<month>\\*.md
 - Read-only on sources. No admin needed. Windows-friendly paths.
 
 Requirements
@@ -18,16 +18,13 @@ pip install markdownify mdformat beautifulsoup4 html5lib chardet python-frontmat
 import argparse
 import datetime as dt
 import email
+import logging
+import re
+import sys
 from email import policy
 from email.parser import BytesParser
-from email.utils import parsedate_to_datetime, getaddresses
-import logging
-import os
+from email.utils import getaddresses, parsedate_to_datetime
 from pathlib import Path
-import re
-import shutil
-import sys
-from typing import Optional, Tuple
 
 # Local imports
 from gmail_assistant.utils.input_validator import InputValidator, ValidationError
@@ -90,9 +87,11 @@ def load_bytes(p: Path) -> bytes:
     return p.read_bytes()
 
 def sanitize_filename(name: str) -> str:
-    name = re.sub(r"[\\/:*?\"<>|]", "_", name.strip())
-    name = re.sub(r"\s+", " ", name)
-    return name[:180]
+    """Sanitize filename. Delegates to InputValidator for consistency."""
+    try:
+        return InputValidator.sanitize_filename(name, max_length=180)
+    except ValidationError:
+        return "untitled"
 
 def html_cleanup(html: str) -> str:
     # Remove tracking pixels, scripts, styles. Simplify tables.
@@ -174,7 +173,7 @@ def wrap_paragraphs(md: str, width: int = MAX_LINE) -> str:
             out.append(line)
     return "\n".join(out)
 
-def extract_best_part(msg: email.message.Message) -> Tuple[Optional[str], Optional[str]]:
+def extract_best_part(msg: email.message.Message) -> tuple[str | None, str | None]:
     """
     Return (text_plain, html) as strings if present.
     """
@@ -269,7 +268,7 @@ def compose_markdown(fm: dict, body_md: str) -> str:
     post = frontmatter.Post(body_md, **fm)
     return frontmatter.dumps(post)
 
-def process_eml(eml_path: Path, base_dir: Path, out_root: Path) -> Optional[Path]:
+def process_eml(eml_path: Path, base_dir: Path, out_root: Path) -> Path | None:
     raw = load_bytes(eml_path)
     msg = BytesParser(policy=policy.default).parsebytes(raw)
 
@@ -309,7 +308,7 @@ def process_eml(eml_path: Path, base_dir: Path, out_root: Path) -> Optional[Path
     out_path.write_text(final_md, encoding="utf-8", newline="\n")
     return out_path
 
-def reformat_md(md_path: Path, base_dir: Path, out_root: Path, use_mdformat: bool = True) -> Optional[Path]:
+def reformat_md(md_path: Path, base_dir: Path, out_root: Path, use_mdformat: bool = True) -> Path | None:
     enc = detect_encoding(md_path)
     text = md_path.read_text(encoding=enc, errors="replace")
 

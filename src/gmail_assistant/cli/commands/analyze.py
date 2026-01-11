@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Dict, Any, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 import click
 
@@ -17,9 +17,9 @@ logger = SecureLogger(__name__)
 def analyze_emails(
     input_dir: Path,
     report_type: str = "summary",
-    output_file: Optional[Path] = None,
-    date_filter: Optional[str] = None
-) -> Dict[str, Any]:
+    output_file: Path | None = None,
+    date_filter: str | None = None
+) -> dict[str, Any]:
     """
     Analyze fetched emails (C-2 implementation).
 
@@ -67,9 +67,9 @@ def analyze_emails(
         emails_data = []
         for jf in json_files[:1000]:  # Limit for performance
             try:
-                with open(jf, 'r', encoding='utf-8') as f:
+                with open(jf, encoding='utf-8') as f:
                     emails_data.append(json.load(f))
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 continue
 
         if emails_data:
@@ -87,7 +87,7 @@ def analyze_emails(
     return analysis
 
 
-def _analyze_file_statistics(files: list) -> Dict[str, Any]:
+def _analyze_file_statistics(files: list) -> dict[str, Any]:
     """Analyze file statistics."""
     extensions = {}
     total_size = 0
@@ -107,7 +107,7 @@ def _analyze_file_statistics(files: list) -> Dict[str, Any]:
     }
 
 
-def _analyze_temporal_distribution(files: list) -> Dict[str, Any]:
+def _analyze_temporal_distribution(files: list) -> dict[str, Any]:
     """Analyze temporal distribution based on file organization."""
     years = {}
     months = {}
@@ -127,7 +127,7 @@ def _analyze_temporal_distribution(files: list) -> Dict[str, Any]:
     }
 
 
-def _analyze_senders(emails: list) -> Dict[str, Any]:
+def _analyze_senders(emails: list) -> dict[str, Any]:
     """Analyze sender patterns."""
     senders = {}
 
@@ -150,7 +150,7 @@ def _analyze_senders(emails: list) -> Dict[str, Any]:
     }
 
 
-def _classify_emails(emails: list) -> Dict[str, Any]:
+def _classify_emails(emails: list) -> dict[str, Any]:
     """Simple email classification."""
     categories = {
         'Financial': 0,
@@ -189,7 +189,7 @@ def _classify_emails(emails: list) -> Dict[str, Any]:
     }
 
 
-def _output_summary_report(analysis: Dict[str, Any]) -> None:
+def _output_summary_report(analysis: dict[str, Any]) -> None:
     """Output summary report to console."""
     click.echo("\n" + "=" * 50)
     click.echo("EMAIL ANALYSIS SUMMARY")
@@ -217,7 +217,7 @@ def _output_summary_report(analysis: Dict[str, Any]) -> None:
             click.echo(f"  {sender[:50]}: {count}")
 
 
-def _output_detailed_report(analysis: Dict[str, Any], output_file: Optional[Path]) -> None:
+def _output_detailed_report(analysis: dict[str, Any], output_file: Path | None) -> None:
     """Output detailed report."""
     _output_summary_report(analysis)
 
@@ -244,7 +244,7 @@ def _output_detailed_report(analysis: Dict[str, Any], output_file: Optional[Path
         click.echo(f"\nDetailed report saved to: {output_file}")
 
 
-def _output_json_report(analysis: Dict[str, Any], output_file: Optional[Path]) -> None:
+def _output_json_report(analysis: dict[str, Any], output_file: Path | None) -> None:
     """Output JSON report."""
     if output_file:
         with open(output_file, 'w', encoding='utf-8') as f:

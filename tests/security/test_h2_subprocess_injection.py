@@ -5,6 +5,7 @@ Validates subprocess path validation and safe execution.
 import pytest
 from pathlib import Path
 import tempfile
+from gmail_assistant.core.exceptions import ValidationError
 
 
 class TestSubprocessPathValidation:
@@ -14,10 +15,9 @@ class TestSubprocessPathValidation:
     def incremental_fetcher(self):
         """Create incremental fetcher instance for testing."""
         from gmail_assistant.core.fetch.incremental import IncrementalFetcher
-        from unittest.mock import Mock
 
-        mock_service = Mock()
-        return IncrementalFetcher(mock_service)
+        # IncrementalFetcher takes db_path, not service
+        return IncrementalFetcher(db_path="test_db.db")
 
     def test_path_traversal_blocked(self, incremental_fetcher):
         """Verify path traversal attempts are blocked."""
@@ -65,7 +65,7 @@ class TestSubprocessPathValidation:
         """Verify shell=False is enforced in subprocess calls."""
         from gmail_assistant.core.fetch import incremental
 
-        source = Path(incremental.__file__).read_text()
+        source = Path(incremental.__file__).read_text(encoding='utf-8')
 
         # Should have shell=False in subprocess calls
         assert "shell=False" in source or "'shell': False" in source, \
@@ -79,7 +79,7 @@ class TestSafeSubprocessExecution:
         """Verify subprocess calls have timeout protection."""
         from gmail_assistant.core.fetch import incremental
 
-        source = Path(incremental.__file__).read_text()
+        source = Path(incremental.__file__).read_text(encoding='utf-8')
 
         # Should have timeout in subprocess configuration
         assert "timeout" in source.lower(), \
@@ -89,7 +89,7 @@ class TestSafeSubprocessExecution:
         """Verify no shell expansion vulnerabilities."""
         from gmail_assistant.core.fetch import incremental
 
-        source = Path(incremental.__file__).read_text()
+        source = Path(incremental.__file__).read_text(encoding='utf-8')
 
         # Should not use shell=True anywhere
         lines_with_shell_true = [

@@ -21,11 +21,11 @@ Lazy imports are used to avoid ImportError when dependencies are not installed.
 # Direct imports for core functionality (always available)
 from gmail_assistant.core.config import AppConfig
 from gmail_assistant.core.exceptions import (
-    GmailAssistantError,
-    ConfigError,
-    AuthError,
-    NetworkError,
     APIError,
+    AuthError,
+    ConfigError,
+    GmailAssistantError,
+    NetworkError,
 )
 
 

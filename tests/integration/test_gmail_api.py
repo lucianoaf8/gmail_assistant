@@ -182,7 +182,10 @@ class TestCachePersistence:
             disk_cache_dir=cache_dir,
             enable_persistence=True
         )
-        cache1.put("test_key", {"data": "test_value"})
+
+        # Use large payload (> 1KB) and long TTL (> 1 hour) to trigger persistence
+        large_value = "test_value" * 200  # > 1KB to trigger disk persistence
+        cache1.put("test_key", {"data": large_value}, ttl=7200)  # 2 hour TTL
 
         # Create new cache instance
         cache2 = IntelligentCache(
@@ -195,7 +198,7 @@ class TestCachePersistence:
         result = cache2.get("test_key")
 
         assert result is not None
-        assert result["data"] == "test_value"
+        assert result["data"] == large_value
 
 
 @pytest.mark.integration

@@ -5,11 +5,10 @@ Prevents brute force attacks on authentication.
 Security: Rate limits authentication attempts (L-2 fix)
 """
 
-import time
 import logging
 import threading
-from dataclasses import dataclass, field
-from typing import Dict
+import time
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class AuthRateLimiter:
 
     def __init__(self):
         """Initialize rate limiter with thread-safe state storage"""
-        self._states: Dict[str, RateLimitState] = {}
+        self._states: dict[str, RateLimitState] = {}
         self._lock = threading.Lock()
 
     def check_rate_limit(self, identifier: str) -> bool:

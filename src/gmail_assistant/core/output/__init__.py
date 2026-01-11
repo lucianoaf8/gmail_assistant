@@ -15,17 +15,17 @@ Usage:
 """
 
 from .plugin_manager import (
-    OutputPluginManager,
-    OutputPlugin,
     EMLPlugin,
-    MarkdownPlugin,
     JSONPlugin,
+    MarkdownPlugin,
+    OutputPlugin,
+    OutputPluginManager,
 )
 
 __all__ = [
-    'OutputPluginManager',
-    'OutputPlugin',
     'EMLPlugin',
-    'MarkdownPlugin',
     'JSONPlugin',
+    'MarkdownPlugin',
+    'OutputPlugin',
+    'OutputPluginManager',
 ]

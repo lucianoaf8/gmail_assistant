@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 import click
 
+from gmail_assistant.core.exceptions import APIError
 from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
-from gmail_assistant.core.exceptions import AuthError, APIError
 from gmail_assistant.utils.secure_logger import SecureLogger
 
 logger = SecureLogger(__name__)
@@ -19,7 +19,7 @@ def delete_emails(
     dry_run: bool = True,
     use_trash: bool = True,
     max_delete: int = 1000
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Delete emails matching query (C-2 implementation).
 

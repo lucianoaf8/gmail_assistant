@@ -5,14 +5,15 @@ Implements the Strategy pattern for email output formats.
 Extracts output logic from GmailFetcher to reduce its responsibilities.
 """
 
+import datetime
+import json
+import os
+import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Any, Optional, List
-import json
-import datetime
+from typing import Any
+
 import html2text
-import tempfile
-import os
 
 
 class OutputPlugin(ABC):
@@ -31,7 +32,7 @@ class OutputPlugin(ABC):
         ...
 
     @abstractmethod
-    def generate(self, email_data: Dict[str, Any]) -> str:
+    def generate(self, email_data: dict[str, Any]) -> str:
         """Generate output content from email data."""
         ...
 
@@ -74,7 +75,7 @@ class EMLPlugin(OutputPlugin):
     def extension(self) -> str:
         return ".eml"
 
-    def generate(self, email_data: Dict[str, Any]) -> str:
+    def generate(self, email_data: dict[str, Any]) -> str:
         """Generate EML content from email data."""
         headers = self._extract_headers(email_data.get('headers', []))
         payload = email_data.get('payload', {})
@@ -126,11 +127,11 @@ class EMLPlugin(OutputPlugin):
 
         return "\n".join(eml_lines)
 
-    def _extract_headers(self, headers: List[Dict]) -> Dict[str, str]:
+    def _extract_headers(self, headers: list[dict]) -> dict[str, str]:
         """Extract headers from Gmail API format."""
         return {h.get('name', '').lower(): h.get('value', '') for h in headers}
 
-    def _get_body(self, payload: Dict) -> tuple:
+    def _get_body(self, payload: dict) -> tuple:
         """Extract plain text and HTML body from payload."""
         plain_text = ""
         html_body = ""
@@ -175,7 +176,7 @@ class MarkdownPlugin(OutputPlugin):
     def extension(self) -> str:
         return ".md"
 
-    def generate(self, email_data: Dict[str, Any]) -> str:
+    def generate(self, email_data: dict[str, Any]) -> str:
         """Generate Markdown content from email data."""
         headers = self._extract_headers(email_data.get('headers', []))
         payload = email_data.get('payload', {})
@@ -222,11 +223,11 @@ class MarkdownPlugin(OutputPlugin):
 
         return "\n".join(md_lines)
 
-    def _extract_headers(self, headers: List[Dict]) -> Dict[str, str]:
+    def _extract_headers(self, headers: list[dict]) -> dict[str, str]:
         """Extract headers from Gmail API format."""
         return {h.get('name', '').lower(): h.get('value', '') for h in headers}
 
-    def _get_body(self, payload: Dict) -> tuple:
+    def _get_body(self, payload: dict) -> tuple:
         """Extract plain text and HTML body from payload."""
         return EMLPlugin()._get_body(payload)
 
@@ -242,7 +243,7 @@ class JSONPlugin(OutputPlugin):
     def extension(self) -> str:
         return ".json"
 
-    def generate(self, email_data: Dict[str, Any]) -> str:
+    def generate(self, email_data: dict[str, Any]) -> str:
         """Generate JSON content from email data."""
         return json.dumps(email_data, indent=2, default=str)
 
@@ -255,7 +256,7 @@ class OutputPluginManager:
     """
 
     def __init__(self):
-        self._plugins: Dict[str, OutputPlugin] = {}
+        self._plugins: dict[str, OutputPlugin] = {}
         # Register default plugins
         self.register(EMLPlugin())
         self.register(MarkdownPlugin())
@@ -265,15 +266,15 @@ class OutputPluginManager:
         """Register an output plugin."""
         self._plugins[plugin.name] = plugin
 
-    def get_plugin(self, name: str) -> Optional[OutputPlugin]:
+    def get_plugin(self, name: str) -> OutputPlugin | None:
         """Get a plugin by name."""
         return self._plugins.get(name)
 
-    def get_available_formats(self) -> List[str]:
+    def get_available_formats(self) -> list[str]:
         """Get list of available format names."""
         return list(self._plugins.keys())
 
-    def generate(self, email_data: Dict[str, Any], format_name: str) -> str:
+    def generate(self, email_data: dict[str, Any], format_name: str) -> str:
         """Generate output content using specified format."""
         plugin = self._plugins.get(format_name)
         if not plugin:
@@ -282,7 +283,7 @@ class OutputPluginManager:
 
     def save(
         self,
-        email_data: Dict[str, Any],
+        email_data: dict[str, Any],
         output_dir: Path,
         format_name: str,
         filename_base: str
@@ -310,11 +311,11 @@ class OutputPluginManager:
 
     def save_all(
         self,
-        email_data: Dict[str, Any],
+        email_data: dict[str, Any],
         output_dir: Path,
         filename_base: str,
-        formats: Optional[List[str]] = None
-    ) -> List[Path]:
+        formats: list[str] | None = None
+    ) -> list[Path]:
         """
         Save email in multiple formats.
 

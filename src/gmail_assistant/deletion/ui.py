@@ -4,17 +4,18 @@ Gmail Unread Inbox Cleaner
 Specifically designed to clean unread emails for a fresh start.
 """
 
-import sys
-import io
 
 # UTF-8 support will be handled by Rich Console when needed
 
-from gmail_assistant.deletion.deleter import GmailDeleter
+import argparse
+
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich import box
-import argparse
+
+from gmail_assistant.deletion.deleter import GmailDeleter
+
 
 def clean_unread_inbox(deleter: GmailDeleter, dry_run: bool = True, keep_recent_days: int = 0):
     """Clean unread inbox with options to keep recent emails"""

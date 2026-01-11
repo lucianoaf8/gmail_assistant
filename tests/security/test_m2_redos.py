@@ -14,7 +14,7 @@ class TestReDoSProtection:
         """Verify regex module with timeout is used."""
         from gmail_assistant.core.ai import newsletter_cleaner
 
-        source = Path(newsletter_cleaner.__file__).read_text()
+        source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
         # Should import regex module for timeout support
         assert 'import regex' in source or 'from regex' in source, \
@@ -24,7 +24,7 @@ class TestReDoSProtection:
         """Verify regex timeout is configured."""
         from gmail_assistant.core.ai import newsletter_cleaner
 
-        source = Path(newsletter_cleaner.__file__).read_text()
+        source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
         assert 'REGEX_TIMEOUT' in source, \
             "REGEX_TIMEOUT constant should be defined"
@@ -35,7 +35,7 @@ class TestReDoSProtection:
         """Verify input length limits for regex operations."""
         from gmail_assistant.core.ai import newsletter_cleaner
 
-        source = Path(newsletter_cleaner.__file__).read_text()
+        source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
         assert 'MAX_INPUT_LENGTH' in source, \
             "MAX_INPUT_LENGTH should be defined"
@@ -72,7 +72,7 @@ class TestReDoSProtection:
         """Verify graceful fallback if regex module unavailable."""
         from gmail_assistant.core.ai import newsletter_cleaner
 
-        source = Path(newsletter_cleaner.__file__).read_text()
+        source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
         # Should have fallback handling
         assert 'HAS_REGEX_TIMEOUT' in source, \
@@ -98,7 +98,7 @@ class TestSafeRegexWrapper:
         """Verify input truncation is applied."""
         from gmail_assistant.core.ai import newsletter_cleaner
 
-        source = Path(newsletter_cleaner.__file__).read_text()
+        source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
         # Should truncate input before regex
         assert 'truncate' in source.lower() or 'MAX_INPUT_LENGTH' in source, \

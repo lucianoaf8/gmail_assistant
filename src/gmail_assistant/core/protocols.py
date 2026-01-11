@@ -12,28 +12,20 @@ Using typing.Protocol for structural subtyping allows:
 - Decoupled components
 """
 
-from abc import abstractmethod
+from collections.abc import Callable, Iterator
+from dataclasses import dataclass
+from pathlib import Path
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterator,
-    List,
-    Optional,
     Protocol,
-    Tuple,
     TypeVar,
-    Union,
     runtime_checkable,
 )
-from pathlib import Path
-from dataclasses import dataclass
 
 # Type variables for generic protocols
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
-EmailData = TypeVar('EmailData', bound=Dict[str, Any])
+EmailData = TypeVar('EmailData', bound=dict[str, Any])
 
 
 # =============================================================================
@@ -52,13 +44,13 @@ class EmailMetadata:
     thread_id: str
     subject: str
     sender: str
-    recipients: List[str]
+    recipients: list[str]
     date: str
-    labels: List[str]
+    labels: list[str]
     snippet: str = ""
     size_estimate: int = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         import warnings
         warnings.warn(
             "EmailMetadata is deprecated. Use Email from core.schemas instead.",
@@ -74,7 +66,7 @@ class FetchResult:
     emails_fetched: int
     emails_failed: int
     output_directory: str
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 @dataclass
@@ -83,9 +75,9 @@ class DeleteResult:
     deleted: int
     failed: int
     trashed: int = 0
-    error_messages: List[str] = None
+    error_messages: list[str] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.error_messages is None:
             self.error_messages = []
 
@@ -97,10 +89,10 @@ class ParseResult:
     markdown: str
     strategy: str
     quality: float
-    metadata: Dict[str, Any] = None
-    error_message: Optional[str] = None
+    metadata: dict[str, Any] | None = None
+    error_message: str | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.metadata is None:
             self.metadata = {}
 
@@ -182,7 +174,7 @@ class GmailClientProtocol(Protocol):
         """Check if currently authenticated with the Gmail API."""
         ...
 
-    def get_user_info(self) -> Optional[Dict[str, Any]]:
+    def get_user_info(self) -> dict[str, Any] | None:
         """
         Get information about the authenticated user.
 
@@ -210,7 +202,7 @@ class EmailFetcherProtocol(Protocol):
         self,
         query: str,
         max_results: int = 100
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Search for messages matching the given query.
 
@@ -227,7 +219,7 @@ class EmailFetcherProtocol(Protocol):
         self,
         message_id: str,
         format: str = "full"
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """
         Get a single message by ID.
 
@@ -243,7 +235,7 @@ class EmailFetcherProtocol(Protocol):
     def get_message_metadata(
         self,
         message_id: str
-    ) -> Optional[EmailMetadata]:
+    ) -> EmailMetadata | None:
         """
         Get metadata for a single message.
 
@@ -278,7 +270,7 @@ class EmailFetcherProtocol(Protocol):
         """
         ...
 
-    def get_profile(self) -> Optional[Dict[str, Any]]:
+    def get_profile(self) -> dict[str, Any] | None:
         """
         Get the Gmail profile for the authenticated user.
 
@@ -296,7 +288,7 @@ class StreamingFetcherProtocol(Protocol):
         self,
         query: str,
         batch_size: int = 100
-    ) -> Iterator[Dict[str, Any]]:
+    ) -> Iterator[dict[str, Any]]:
         """
         Stream messages matching query.
 
@@ -342,7 +334,7 @@ class EmailDeleterProtocol(Protocol):
 
     def delete_emails(
         self,
-        email_ids: List[str],
+        email_ids: list[str],
         batch_size: int = 100
     ) -> DeleteResult:
         """
@@ -362,7 +354,7 @@ class EmailDeleterProtocol(Protocol):
 
     def trash_emails(
         self,
-        email_ids: List[str]
+        email_ids: list[str]
     ) -> DeleteResult:
         """
         Move emails to trash.
@@ -397,7 +389,7 @@ class EmailDeleterProtocol(Protocol):
         self,
         query: str,
         dry_run: bool = True,
-        max_delete: Optional[int] = None
+        max_delete: int | None = None
     ) -> DeleteResult:
         """
         Delete emails matching a query.
@@ -428,8 +420,8 @@ class EmailParserProtocol(Protocol):
 
     def parse_eml(
         self,
-        file_path: Union[str, Path]
-    ) -> Dict[str, Any]:
+        file_path: str | Path
+    ) -> dict[str, Any]:
         """
         Parse an EML file and extract its contents.
 
@@ -464,8 +456,8 @@ class EmailParserProtocol(Protocol):
 
     def extract_headers(
         self,
-        headers: List[Dict[str, str]]
-    ) -> Dict[str, str]:
+        headers: list[dict[str, str]]
+    ) -> dict[str, str]:
         """
         Extract and normalize email headers.
 
@@ -484,7 +476,7 @@ class MarkdownConverterProtocol(Protocol):
 
     def to_markdown(
         self,
-        email_data: Dict[str, Any]
+        email_data: dict[str, Any]
     ) -> str:
         """
         Convert email data to Markdown format.
@@ -548,7 +540,7 @@ class OutputPluginProtocol(Protocol):
 
     def generate(
         self,
-        email_data: Dict[str, Any]
+        email_data: dict[str, Any]
     ) -> str:
         """
         Generate output content from email data.
@@ -590,7 +582,7 @@ class OrganizationPluginProtocol(Protocol):
 
     def get_path(
         self,
-        email_data: Dict[str, Any],
+        email_data: dict[str, Any],
         base_dir: Path
     ) -> Path:
         """
@@ -617,8 +609,8 @@ class CacheProtocol(Protocol[T]):
     def get(
         self,
         key: str,
-        default: Optional[T] = None
-    ) -> Optional[T]:
+        default: T | None = None
+    ) -> T | None:
         """Get value from cache."""
         ...
 
@@ -626,7 +618,7 @@ class CacheProtocol(Protocol[T]):
         self,
         key: str,
         value: T,
-        ttl: Optional[int] = None
+        ttl: int | None = None
     ) -> bool:
         """Put value in cache."""
         ...
@@ -656,7 +648,7 @@ class EmailRepositoryProtocol(Protocol):
     Allows swapping between SQLite, file-based, or cloud storage backends.
     """
 
-    def save(self, email: Dict[str, Any]) -> bool:
+    def save(self, email: dict[str, Any]) -> bool:
         """
         Save an email to the repository.
 
@@ -668,7 +660,7 @@ class EmailRepositoryProtocol(Protocol):
         """
         ...
 
-    def get(self, email_id: str) -> Optional[Dict[str, Any]]:
+    def get(self, email_id: str) -> dict[str, Any] | None:
         """
         Get an email by ID.
 
@@ -680,7 +672,7 @@ class EmailRepositoryProtocol(Protocol):
         """
         ...
 
-    def find(self, query: str, limit: int = 100) -> List[Dict[str, Any]]:
+    def find(self, query: str, limit: int = 100) -> list[dict[str, Any]]:
         """
         Find emails matching a query.
 
@@ -705,7 +697,7 @@ class EmailRepositoryProtocol(Protocol):
         """
         ...
 
-    def count(self, query: Optional[str] = None) -> int:
+    def count(self, query: str | None = None) -> int:
         """
         Count emails, optionally filtered by query.
 
@@ -753,7 +745,7 @@ class RateLimiterProtocol(Protocol):
         """
         ...
 
-    def check_quota(self) -> Dict[str, Any]:
+    def check_quota(self) -> dict[str, Any]:
         """
         Check current quota status.
 
@@ -830,7 +822,7 @@ class ValidatorProtocol(Protocol):
 
     def validate_file_path(
         self,
-        path: Union[str, Path],
+        path: str | Path,
         must_exist: bool = False
     ) -> Path:
         """Validate file path."""
@@ -856,7 +848,7 @@ class ErrorHandlerProtocol(Protocol):
     def handle_error(
         self,
         error: Exception,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> None:
         """Handle an error with context."""
         ...
@@ -871,7 +863,7 @@ class ErrorHandlerProtocol(Protocol):
     def get_recovery_action(
         self,
         error: Exception
-    ) -> Optional[Callable[[], bool]]:
+    ) -> Callable[[], bool] | None:
         """Get recovery action for error."""
         ...
 
@@ -883,16 +875,16 @@ class ErrorHandlerProtocol(Protocol):
 # Common callback types
 ProgressCallback = Callable[[int, int], None]  # (current, total)
 ErrorCallback = Callable[[Exception], None]
-SuccessCallback = Callable[[Dict[str, Any]], None]
+SuccessCallback = Callable[[dict[str, Any]], None]
 
 # Email-related type aliases
 MessageId = str
 ThreadId = str
-EmailHeaders = Dict[str, str]
-EmailBody = Dict[str, str]  # {'text': ..., 'html': ...}
+EmailHeaders = dict[str, str]
+EmailBody = dict[str, str]  # {'text': ..., 'html': ...}
 
 # Operation result types
-OperationResult = Dict[str, Union[int, bool, str, List[str]]]
+OperationResult = dict[str, int | bool | str | list[str]]
 
 
 # =============================================================================

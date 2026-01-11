@@ -3,18 +3,20 @@ Secure credential management for Gmail Fetcher using OS keyring.
 Replaces plain text token storage with encrypted OS-level storage.
 """
 
-import os
-import keyring
 import json
-from typing import Optional
+import os
+
+import keyring
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from gmail_assistant.core.constants import KEYRING_SERVICE, KEYRING_USERNAME
+
 # Import centralized constants
-from ..constants import SCOPES_READONLY as SCOPES, KEYRING_SERVICE, KEYRING_USERNAME
-from ...utils.secure_logger import SecureLogger
+from gmail_assistant.core.constants import SCOPES_READONLY as SCOPES
+from gmail_assistant.utils.secure_logger import SecureLogger
 
 logger = SecureLogger(__name__)
 
@@ -31,6 +33,7 @@ class SecureCredentialManager:
         """
         self.credentials_file = credentials_file
         self.service = None
+        self._credentials: Credentials | None = None
 
     def _store_credentials_securely(self, creds: Credentials) -> bool:
         """
@@ -51,7 +54,7 @@ class SecureCredentialManager:
             logger.error(f"Failed to store credentials securely: {e}")
             return False
 
-    def _load_credentials_securely(self) -> Optional[Credentials]:
+    def _load_credentials_securely(self) -> Credentials | None:
         """
         Load credentials from OS keyring.
 
@@ -146,6 +149,7 @@ class SecureCredentialManager:
         # Build Gmail service
         try:
             self.service = build('gmail', 'v1', credentials=creds)
+            self._credentials = creds  # Store for scope validation
             logger.info("Gmail service initialized successfully")
             return True
         except Exception as e:
@@ -175,7 +179,7 @@ class SecureCredentialManager:
         self.service = None
         return self._clear_credentials()
 
-    def get_user_info(self) -> Optional[dict]:
+    def get_user_info(self) -> dict | None:
         """
         Get authenticated user information for validation.
 
@@ -196,3 +200,37 @@ class SecureCredentialManager:
         except Exception as e:
             logger.error(f"Failed to get user info: {e}")
             return None
+
+    def get_granted_scopes(self) -> list[str]:
+        """
+        Get the OAuth scopes granted by the authorization server.
+
+        Returns:
+            List of granted scope strings, empty list if not authenticated
+        """
+        if self._credentials and self._credentials.scopes:
+            return list(self._credentials.scopes)
+        return []
+
+    def validate_scopes(self, required_scopes: list[str]) -> tuple[bool, list[str]]:
+        """
+        Validate that granted scopes include all required scopes.
+
+        Args:
+            required_scopes: List of required OAuth scopes
+
+        Returns:
+            Tuple of (is_valid, missing_scopes)
+        """
+        granted = set(self.get_granted_scopes())
+        required = set(required_scopes)
+        missing = required - granted
+
+        if missing:
+            logger.warning(
+                f"Scope validation failed. Missing scopes: {missing}"
+            )
+            return False, list(missing)
+
+        logger.info("Scope validation successful")
+        return True, []

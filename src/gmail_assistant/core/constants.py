@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import List, Optional
 
 
 def _get_env_path(env_var: str, default: Path) -> Path:
@@ -48,16 +47,16 @@ GMAIL_READONLY_SCOPE: str = "https://www.googleapis.com/auth/gmail.readonly"
 GMAIL_MODIFY_SCOPE: str = "https://www.googleapis.com/auth/gmail.modify"
 
 # Read-only access - for fetching and reading emails
-SCOPES_READONLY: List[str] = [GMAIL_READONLY_SCOPE]
+SCOPES_READONLY: list[str] = [GMAIL_READONLY_SCOPE]
 
 # Modify access - for reading, labeling, and deleting emails
-SCOPES_MODIFY: List[str] = [GMAIL_MODIFY_SCOPE]
+SCOPES_MODIFY: list[str] = [GMAIL_MODIFY_SCOPE]
 
 # Full access - for all operations including sending
-SCOPES_FULL: List[str] = ['https://www.googleapis.com/auth/gmail.modify']
+SCOPES_FULL: list[str] = ['https://www.googleapis.com/auth/gmail.modify']
 
 # Default scope for most operations
-DEFAULT_SCOPES: List[str] = SCOPES_READONLY
+DEFAULT_SCOPES: list[str] = SCOPES_READONLY
 
 
 # =============================================================================
@@ -140,8 +139,8 @@ DEFAULT_LOG_LEVEL: str = 'INFO'
 # Output Formats
 # =============================================================================
 
-SUPPORTED_OUTPUT_FORMATS: List[str] = ['eml', 'markdown', 'both']
+SUPPORTED_OUTPUT_FORMATS: list[str] = ['eml', 'markdown', 'both']
 DEFAULT_OUTPUT_FORMAT: str = 'both'
 
-SUPPORTED_ORGANIZATION_TYPES: List[str] = ['date', 'sender', 'none']
+SUPPORTED_ORGANIZATION_TYPES: list[str] = ['date', 'sender', 'none']
 DEFAULT_ORGANIZATION: str = 'date'

@@ -15,19 +15,17 @@ Usage:
     python src/core/incremental_fetcher.py [--db-path path] [--max-emails n] [--output dir]
 """
 
-import sqlite3
-import sys
-import os
-from pathlib import Path
-from datetime import datetime, timezone
-from typing import Optional, Tuple, List
 import argparse
 import logging
+import sqlite3
 import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
 
+from gmail_assistant.core.fetch.checkpoint import CheckpointManager, SyncCheckpoint
 from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-from gmail_assistant.core.fetch.checkpoint import CheckpointManager, SyncCheckpoint, SyncState
-from gmail_assistant.utils.input_validator import InputValidator, ValidationError
+from gmail_assistant.utils.input_validator import ValidationError
 
 # Setup logging
 logging.basicConfig(
@@ -45,9 +43,9 @@ class IncrementalGmailFetcher:
         self.fetcher = None
         # C-3: Checkpoint manager for resume capability
         self.checkpoint_manager = CheckpointManager()
-        self.current_checkpoint: Optional[SyncCheckpoint] = None
+        self.current_checkpoint: SyncCheckpoint | None = None
 
-    def get_latest_email_date(self) -> Optional[str]:
+    def get_latest_email_date(self) -> str | None:
         """
         Query database for the latest email date to use as starting point.
 
@@ -94,7 +92,7 @@ class IncrementalGmailFetcher:
     def fetch_incremental_emails(self,
                                 max_emails: int = 1000,
                                 output_dir: str = "incremental_backup",
-                                resume: bool = False) -> Tuple[bool, str]:
+                                resume: bool = False) -> tuple[bool, str]:
         """
         Fetch emails since the last stored email date.
 
@@ -256,7 +254,7 @@ class IncrementalGmailFetcher:
 
         # Display results
         print(f"\n{'='*60}")
-        print(f"INCREMENTAL FETCH COMPLETE")
+        print("INCREMENTAL FETCH COMPLETE")
         print(f"{'='*60}")
         print(f"EML files saved to: {eml_dir}")
 

@@ -5,9 +5,8 @@ Provides functions to redact personally identifiable information from logs.
 Security: Prevents sensitive data exposure in logs (M-4 fix)
 """
 
-import re
 import logging
-from typing import Optional
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +16,23 @@ class PIIRedactor:
 
     # Patterns for PII detection
     EMAIL_PATTERN = re.compile(r'[\w.+-]+@[\w.-]+\.\w+')
-    PHONE_PATTERN = re.compile(r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b')
+    # Phone patterns - multiple formats including international
+    PHONE_PATTERN = re.compile(
+        r'(?:\+\d{1,3}[-.\s]?)?'  # International prefix
+        r'(?:\(?\d{3}\)?[-.\s]?)?'  # Area code with optional parens
+        r'\d{3}[-.\s]?\d{4}\b'  # Main number
+    )
     SSN_PATTERN = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
+    # Credit card patterns - common formats
+    CREDIT_CARD_PATTERN = re.compile(
+        r'\b(?:\d{4}[-\s]?){3}\d{4}\b|'  # 4111-1111-1111-1111 or spaces
+        r'\b\d{16}\b'  # 16 digits continuous
+    )
+    # IP address pattern
+    IP_ADDRESS_PATTERN = re.compile(
+        r'\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}'
+        r'(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b'
+    )
 
     @staticmethod
     def redact_email(email: str) -> str:
@@ -104,25 +118,41 @@ class PIIRedactor:
         if not message:
             return message
 
+        # Order matters! Redact longer/more specific patterns first
+
+        # Redact credit card numbers FIRST (before phone which might match parts)
+        message = cls.CREDIT_CARD_PATTERN.sub("[REDACTED_CC]", message)
+
+        # Redact SSN-like patterns (before phone)
+        message = cls.SSN_PATTERN.sub("[REDACTED_SSN]", message)
+
         # Redact email addresses
-        def replace_email(match):
-            return cls.redact_email(match.group(0))
+        message = cls.EMAIL_PATTERN.sub("[REDACTED_EMAIL]", message)
 
-        message = cls.EMAIL_PATTERN.sub(replace_email, message)
+        # Redact phone numbers (after CC and SSN)
+        message = cls.PHONE_PATTERN.sub("[REDACTED_PHONE]", message)
 
-        # Redact phone numbers
-        def replace_phone(match):
-            return cls.redact_phone(match.group(0))
-
-        message = cls.PHONE_PATTERN.sub(replace_phone, message)
-
-        # Redact SSN-like patterns
-        message = cls.SSN_PATTERN.sub("***-**-****", message)
+        # Redact IP addresses
+        message = cls.IP_ADDRESS_PATTERN.sub("[REDACTED_IP]", message)
 
         return message
 
     @classmethod
-    def redact_dict(cls, data: dict, sensitive_keys: Optional[set] = None) -> dict:
+    def redact(cls, text: str) -> str:
+        """
+        Convenience method to redact all PII from text.
+        Alias for redact_log_message.
+
+        Args:
+            text: Text to redact
+
+        Returns:
+            Text with PII redacted
+        """
+        return cls.redact_log_message(text)
+
+    @classmethod
+    def redact_dict(cls, data: dict, sensitive_keys: set | None = None) -> dict:
         """
         Redact sensitive values from a dictionary.
 

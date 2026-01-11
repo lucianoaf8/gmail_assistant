@@ -13,37 +13,41 @@ class TestEnvironmentPathOverrides:
 
     def test_config_dir_override(self):
         """Verify CONFIG_DIR can be overridden via environment."""
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_CONFIG_DIR': '/custom/config'}):
+        test_path = '/custom/config' if os.name != 'nt' else r'\custom\config'
+        with patch.dict(os.environ, {'GMAIL_ASSISTANT_CONFIG_DIR': test_path}):
             # Force reimport to pick up new env var
             import importlib
             from gmail_assistant.core import constants
             importlib.reload(constants)
 
-            assert str(constants.CONFIG_DIR) == '/custom/config'
+            # Normalize path separators for cross-platform comparison
+            assert Path(constants.CONFIG_DIR).parts[-2:] == ('custom', 'config')
 
     def test_data_dir_override(self):
         """Verify DATA_DIR can be overridden via environment."""
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_DATA_DIR': '/custom/data'}):
+        test_path = '/custom/data' if os.name != 'nt' else r'\custom\data'
+        with patch.dict(os.environ, {'GMAIL_ASSISTANT_DATA_DIR': test_path}):
             import importlib
             from gmail_assistant.core import constants
             importlib.reload(constants)
 
-            assert str(constants.DATA_DIR) == '/custom/data'
+            assert Path(constants.DATA_DIR).parts[-2:] == ('custom', 'data')
 
     def test_backup_dir_override(self):
         """Verify BACKUP_DIR can be overridden via environment."""
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_BACKUP_DIR': '/custom/backups'}):
+        test_path = '/custom/backups' if os.name != 'nt' else r'\custom\backups'
+        with patch.dict(os.environ, {'GMAIL_ASSISTANT_BACKUP_DIR': test_path}):
             import importlib
             from gmail_assistant.core import constants
             importlib.reload(constants)
 
-            assert str(constants.BACKUP_DIR) == '/custom/backups'
+            assert Path(constants.BACKUP_DIR).parts[-2:] == ('custom', 'backups')
 
     def test_env_path_function_exists(self):
         """Verify _get_env_path helper function exists."""
         from gmail_assistant.core import constants
 
-        source = Path(constants.__file__).read_text()
+        source = Path(constants.__file__).read_text(encoding='utf-8')
 
         assert '_get_env_path' in source, \
             "_get_env_path helper function should exist"

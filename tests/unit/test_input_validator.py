@@ -90,10 +90,13 @@ class TestValidateFilePath:
     """Test validate_file_path method."""
 
     def test_valid_relative_path(self):
-        """Should accept valid relative paths."""
+        """Should accept valid relative paths and resolve them to absolute."""
         path = Path("test_folder") / "test.txt"
         result = InputValidator.validate_file_path(path)
-        assert result == path
+        # Result is resolved to absolute path for security
+        assert result.is_absolute()
+        assert result.name == "test.txt"
+        assert "test_folder" in str(result)
 
     def test_accepts_string_relative_path(self):
         """Should accept string paths and return Path object."""

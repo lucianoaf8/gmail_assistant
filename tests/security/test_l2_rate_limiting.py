@@ -101,7 +101,7 @@ class TestRateLimiterIntegration:
         """Verify AuthenticationBase uses rate limiter."""
         from gmail_assistant.core.auth import base
 
-        source = Path(base.__file__).read_text()
+        source = Path(base.__file__).read_text(encoding='utf-8')
 
         assert 'rate_limit' in source.lower(), \
             "Auth base should use rate limiting"
@@ -110,7 +110,7 @@ class TestRateLimiterIntegration:
         """Verify rate limit checked before auth attempt."""
         from gmail_assistant.core.auth import base
 
-        source = Path(base.__file__).read_text()
+        source = Path(base.__file__).read_text(encoding='utf-8')
 
         assert 'check_rate_limit' in source, \
             "Should check rate limit before authentication"
@@ -119,7 +119,7 @@ class TestRateLimiterIntegration:
         """Verify attempt recorded after auth result."""
         from gmail_assistant.core.auth import base
 
-        source = Path(base.__file__).read_text()
+        source = Path(base.__file__).read_text(encoding='utf-8')
 
         assert 'record_attempt' in source, \
             "Should record attempt after authentication"

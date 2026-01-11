@@ -16,7 +16,7 @@ class TestPowerShellSanitization:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         assert 'Sanitize' in source or 'sanitize' in source, \
             "PowerShell script should have sanitization functions"
@@ -28,7 +28,7 @@ class TestPowerShellSanitization:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         dangerous_chars = ['`', '$', '(', ')', '{', '}', ';', '|', '&']
 
@@ -43,7 +43,7 @@ class TestPowerShellSanitization:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         assert 'Length' in source or 'Substring' in source, \
             "Should have input length limiting"
@@ -55,7 +55,7 @@ class TestPowerShellSanitization:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         # Should remove control characters
         assert 'x00' in source or 'x1f' in source or 'replace' in source.lower()
@@ -72,7 +72,7 @@ class TestPowerShellInjectionPatterns:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         # Backtick and dollar-paren should be sanitized
         assert '`' in source  # Should be referenced for removal
@@ -85,7 +85,7 @@ class TestPowerShellInjectionPatterns:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         # Pipe should be sanitized from user input
         assert '|' in source  # Should be referenced for removal
@@ -98,7 +98,7 @@ class TestPowerShellInjectionPatterns:
         if not ps_script.exists():
             pytest.skip("PowerShell script not found")
 
-        source = ps_script.read_text()
+        source = ps_script.read_text(encoding='utf-8')
 
         # Semicolon should be sanitized from user input
         assert ';' in source  # Should be referenced for removal

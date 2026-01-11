@@ -4,17 +4,14 @@ Email Analysis System Setup
 Sets up the daily email analysis environment and validates the system.
 """
 
-import os
-import sys
 import json
-import subprocess
-from pathlib import Path
 from datetime import datetime, timedelta
-import shutil
+from pathlib import Path
+
 
 class EmailAnalysisSetup:
     """Setup and validation for email analysis system"""
-    
+
     def __init__(self):
         self.base_dir = Path.cwd()
         self.required_dirs = [
@@ -25,33 +22,33 @@ class EmailAnalysisSetup:
             'config.json',
             'requirements.txt'
         ]
-        
+
     def create_directory_structure(self):
         """Create required directory structure"""
         print("📁 Creating directory structure...")
-        
+
         for dir_name in self.required_dirs:
             dir_path = self.base_dir / dir_name
             dir_path.mkdir(exist_ok=True)
             print(f"   ✓ {dir_name}/")
-        
+
         # Create subdirectories
         (self.base_dir / 'output' / 'daily').mkdir(exist_ok=True)
         (self.base_dir / 'output' / 'reports').mkdir(exist_ok=True)
         (self.base_dir / 'data' / 'raw').mkdir(exist_ok=True)
         (self.base_dir / 'data' / 'processed').mkdir(exist_ok=True)
-        
+
         print("✅ Directory structure created")
-    
+
     def check_dependencies(self):
         """Check if required Python packages are installed"""
         print("\n🔍 Checking dependencies...")
-        
+
         required_packages = [
-            'pandas', 'numpy', 'pyarrow', 'json', 'argparse', 
+            'pandas', 'numpy', 'pyarrow', 'json', 'argparse',
             'logging', 'datetime', 'pathlib', 're', 'collections'
         ]
-        
+
         missing_packages = []
         for package in required_packages:
             try:
@@ -63,74 +60,74 @@ class EmailAnalysisSetup:
             except ImportError:
                 print(f"   ❌ {package} - MISSING")
                 missing_packages.append(package)
-        
+
         if missing_packages:
-            print(f"\n📦 Install missing packages:")
+            print("\n📦 Install missing packages:")
             print(f"pip install {' '.join(missing_packages)}")
             return False
-        
+
         print("✅ All dependencies satisfied")
         return True
-    
+
     def create_requirements_file(self):
         """Create requirements.txt file"""
         requirements = [
             "pandas>=2.0.0",
-            "numpy>=1.24.0", 
+            "numpy>=1.24.0",
             "pyarrow>=13.0.0",
             "tqdm>=4.65.0"
         ]
-        
+
         req_file = self.base_dir / 'requirements.txt'
         with open(req_file, 'w') as f:
             f.write('\n'.join(requirements))
-        
+
         print(f"📄 Created {req_file}")
-    
+
     def validate_config(self):
         """Validate configuration file"""
         print("\n⚙️  Validating configuration...")
-        
+
         config_file = self.base_dir / 'config.json'
         if not config_file.exists():
             print("   ❌ config.json not found")
             return False
-        
+
         try:
-            with open(config_file, 'r') as f:
+            with open(config_file) as f:
                 config = json.load(f)
-            
+
             # Validate required sections
             required_sections = [
-                'quality_thresholds', 'classification_config', 
+                'quality_thresholds', 'classification_config',
                 'temporal_analysis', 'sender_analysis', 'content_analysis'
             ]
-            
+
             for section in required_sections:
                 if section in config:
                     print(f"   ✓ {section}")
                 else:
                     print(f"   ❌ {section} - MISSING")
                     return False
-            
+
             print("✅ Configuration valid")
             return True
-            
+
         except json.JSONDecodeError as e:
             print(f"   ❌ Invalid JSON in config.json: {e}")
             return False
-    
+
     def create_sample_data(self):
         """Create sample data for testing"""
         print("\n📊 Creating sample test data...")
-        
+
         import pandas as pd
-        
+
         # Create sample email data
         sample_data = {
             'gmail_id': [f'id_{i:04d}' for i in range(100)],
             'date_received': [
-                datetime.now() - timedelta(days=i//10, hours=i%24) 
+                datetime.now() - timedelta(days=i//10, hours=i%24)
                 for i in range(100)
             ],
             'subject': [
@@ -150,56 +147,56 @@ class EmailAnalysisSetup:
                 'New assignment has been added to your project.'
             ] * 17 + ['Test content here.', 'Sample email content.']
         }
-        
+
         df = pd.DataFrame(sample_data)
         sample_file = self.base_dir / 'data' / 'sample_emails.parquet'
         df.to_parquet(sample_file, index=False)
-        
+
         print(f"   ✓ Created sample data: {sample_file}")
         print(f"   📧 Sample contains {len(df)} emails")
-        
+
         return sample_file
-    
+
     def test_analysis_pipeline(self, sample_file):
         """Test the analysis pipeline with sample data"""
         print("\n🧪 Testing analysis pipeline...")
-        
+
         try:
             # Import and test the analysis engine
             from gmail_assistant.analysis.daily_email_analysis import EmailAnalysisEngine
-            
+
             # Load config
-            with open(self.base_dir / 'config.json', 'r') as f:
+            with open(self.base_dir / 'config.json') as f:
                 config = json.load(f)
-            
+
             # Initialize engine
             engine = EmailAnalysisEngine(config)
-            
+
             # Load sample data
             import pandas as pd
             df = pd.read_parquet(sample_file)
-            
+
             # Test each component
             print("   🔍 Testing data quality assessment...")
             quality_metrics = engine.analyze_data_quality(df)
             assert quality_metrics['quality_passed'], "Quality assessment failed"
-            
+
             print("   🏷️  Testing email classification...")
             df_classified = engine.classify_emails(df)
             assert 'category' in df_classified.columns, "Classification failed"
-            
+
             print("   📅 Testing temporal analysis...")
             temporal_analysis = engine.analyze_temporal_patterns(df_classified)
             assert 'volume_patterns' in temporal_analysis, "Temporal analysis failed"
-            
+
             print("   👤 Testing sender analysis...")
             sender_analysis = engine.analyze_senders(df_classified)
             assert 'sender_metrics' in sender_analysis, "Sender analysis failed"
-            
+
             print("   📝 Testing content analysis...")
             content_analysis = engine.analyze_content(df_classified)
             assert 'length_statistics' in content_analysis, "Content analysis failed"
-            
+
             print("   💡 Testing insights generation...")
             insights = engine.generate_insights({
                 'classification_summary': df_classified['category'].value_counts().to_dict(),
@@ -209,18 +206,18 @@ class EmailAnalysisSetup:
                 'metadata': {'total_emails': len(df_classified)}
             })
             assert 'recommendations' in insights, "Insights generation failed"
-            
+
             print("✅ Analysis pipeline test passed")
             return True
-            
+
         except Exception as e:
             print(f"   ❌ Pipeline test failed: {e}")
             return False
-    
+
     def create_execution_scripts(self):
         """Create convenient execution scripts"""
         print("\n📜 Creating execution scripts...")
-        
+
         # Daily analysis script
         daily_script = self.base_dir / 'scripts' / 'run_daily_analysis.py'
         daily_script_content = '''#!/usr/bin/env python3
@@ -275,12 +272,12 @@ def main():
 if __name__ == "__main__":
     main()
 '''
-        
+
         daily_script.parent.mkdir(exist_ok=True)
         with open(daily_script, 'w') as f:
             f.write(daily_script_content)
         daily_script.chmod(0o755)
-        
+
         # Batch analysis script
         batch_script = self.base_dir / 'scripts' / 'run_batch_analysis.py'
         batch_script_content = '''#!/usr/bin/env python3
@@ -332,18 +329,18 @@ def main():
 if __name__ == "__main__":
     main()
 '''
-        
+
         with open(batch_script, 'w') as f:
             f.write(batch_script_content)
         batch_script.chmod(0o755)
-        
+
         print(f"   ✓ {daily_script}")
         print(f"   ✓ {batch_script}")
-    
+
     def create_cron_template(self):
         """Create cron job template"""
         print("\n⏰ Creating cron job template...")
-        
+
         cron_template = self.base_dir / 'scripts' / 'cron_template.txt'
         cron_content = f"""# Email Analysis Cron Jobs
 # Add these lines to your crontab (crontab -e)
@@ -357,17 +354,17 @@ if __name__ == "__main__":
 # Monthly summary report at 9:00 AM on the 1st
 0 9 1 * * cd {self.base_dir} && python scripts/monthly_report.py >> logs/reports.log 2>&1
 """
-        
+
         with open(cron_template, 'w') as f:
             f.write(cron_content)
-        
+
         print(f"   ✓ {cron_template}")
         print("   📝 Edit and add to crontab for automated execution")
-    
+
     def generate_usage_guide(self):
         """Generate comprehensive usage guide"""
         print("\n📚 Creating usage guide...")
-        
+
         guide_file = self.base_dir / 'USAGE_GUIDE.md'
         guide_content = """# Email Analysis System - Usage Guide
 
@@ -485,48 +482,48 @@ Adjust quality and alert thresholds in `config.json`:
 
 For detailed methodology, see `EMAIL_ANALYSIS_METHODOLOGY.md`
 """
-        
+
         with open(guide_file, 'w') as f:
             f.write(guide_content)
-        
+
         print(f"   ✓ {guide_file}")
-    
+
     def run_setup(self):
         """Run complete setup process"""
         print("🚀 Email Analysis System Setup")
         print("=" * 50)
-        
+
         success = True
-        
+
         # Create directory structure
         self.create_directory_structure()
-        
+
         # Check dependencies
         if not self.check_dependencies():
             success = False
-        
+
         # Create requirements file
         self.create_requirements_file()
-        
+
         # Validate configuration
         if not self.validate_config():
             success = False
-        
+
         # Create sample data and test
         if success:
             sample_file = self.create_sample_data()
             if not self.test_analysis_pipeline(sample_file):
                 success = False
-        
+
         # Create execution scripts
         self.create_execution_scripts()
-        
+
         # Create cron template
         self.create_cron_template()
-        
+
         # Generate usage guide
         self.generate_usage_guide()
-        
+
         # Final status
         print("\n" + "=" * 50)
         if success:
@@ -540,7 +537,7 @@ For detailed methodology, see `EMAIL_ANALYSIS_METHODOLOGY.md`
         else:
             print("❌ Setup completed with issues")
             print("Please resolve the issues above before proceeding")
-        
+
         return success
 
 def main():

@@ -8,20 +8,21 @@ Usage:
 """
 
 import logging
-from typing import List, Dict, Callable, Optional, Any
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 try:
-    from googleapiclient.http import BatchHttpRequest
     from googleapiclient.errors import HttpError
+    from googleapiclient.http import BatchHttpRequest
     GMAIL_API_AVAILABLE = True
 except ImportError:
     GMAIL_API_AVAILABLE = False
     BatchHttpRequest = None
     HttpError = Exception
 
-from ..schemas import Email, EmailBatch
-from ..exceptions import BatchAPIError  # H-2 fix: Use centralized exception
+from gmail_assistant.core.exceptions import BatchAPIError  # H-2 fix: Use centralized exception
+from gmail_assistant.core.schemas import Email
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class BatchResult:
     """Result of a batch operation."""
     successful: int = 0
     failed: int = 0
-    errors: List[Dict[str, Any]] = field(default_factory=list)
+    errors: list[dict[str, Any]] = field(default_factory=list)
 
 
 class GmailBatchClient:
@@ -52,8 +53,8 @@ class GmailBatchClient:
     def __init__(
         self,
         service,
-        rate_limiter: Optional[Any] = None,
-        on_error: Optional[Callable[[str, Exception], None]] = None
+        rate_limiter: Any | None = None,
+        on_error: Callable[[str, Exception], None] | None = None
     ):
         """
         Initialize batch client.
@@ -74,16 +75,16 @@ class GmailBatchClient:
         self.on_error = on_error
 
         # Internal state for batch callbacks
-        self._results: Dict[str, Any] = {}
-        self._errors: Dict[str, Exception] = {}
+        self._results: dict[str, Any] = {}
+        self._errors: dict[str, Exception] = {}
 
     def batch_get_messages(
         self,
-        message_ids: List[str],
+        message_ids: list[str],
         format: str = 'metadata',
-        metadata_headers: Optional[List[str]] = None,
-        progress_callback: Optional[Callable[[int, int], None]] = None
-    ) -> List[Email]:
+        metadata_headers: list[str] | None = None,
+        progress_callback: Callable[[int, int], None] | None = None
+    ) -> list[Email]:
         """
         Fetch multiple messages in batched requests.
 
@@ -170,9 +171,9 @@ class GmailBatchClient:
 
     def batch_get_messages_raw(
         self,
-        message_ids: List[str],
-        progress_callback: Optional[Callable[[int, int], None]] = None
-    ) -> Dict[str, Dict[str, Any]]:
+        message_ids: list[str],
+        progress_callback: Callable[[int, int], None] | None = None
+    ) -> dict[str, dict[str, Any]]:
         """
         Fetch multiple messages and return raw API responses.
 
@@ -231,8 +232,8 @@ class GmailBatchClient:
 
     def batch_delete_messages(
         self,
-        message_ids: List[str],
-        progress_callback: Optional[Callable[[int, int], None]] = None
+        message_ids: list[str],
+        progress_callback: Callable[[int, int], None] | None = None
     ) -> BatchResult:
         """
         Delete multiple messages in batched requests.
@@ -295,8 +296,8 @@ class GmailBatchClient:
 
     def batch_trash_messages(
         self,
-        message_ids: List[str],
-        progress_callback: Optional[Callable[[int, int], None]] = None
+        message_ids: list[str],
+        progress_callback: Callable[[int, int], None] | None = None
     ) -> BatchResult:
         """
         Move multiple messages to trash in batched requests.
@@ -355,10 +356,10 @@ class GmailBatchClient:
 
     def batch_modify_labels(
         self,
-        message_ids: List[str],
-        add_labels: Optional[List[str]] = None,
-        remove_labels: Optional[List[str]] = None,
-        progress_callback: Optional[Callable[[int, int], None]] = None
+        message_ids: list[str],
+        add_labels: list[str] | None = None,
+        remove_labels: list[str] | None = None,
+        progress_callback: Callable[[int, int], None] | None = None
     ) -> BatchResult:
         """
         Modify labels on multiple messages in batch.
@@ -419,21 +420,21 @@ class GmailBatchClient:
                 result.successful += 1
         return callback
 
-    def batch_mark_read(self, message_ids: List[str]) -> BatchResult:
+    def batch_mark_read(self, message_ids: list[str]) -> BatchResult:
         """Mark multiple messages as read."""
         return self.batch_modify_labels(
             message_ids,
             remove_labels=['UNREAD']
         )
 
-    def batch_mark_unread(self, message_ids: List[str]) -> BatchResult:
+    def batch_mark_unread(self, message_ids: list[str]) -> BatchResult:
         """Mark multiple messages as unread."""
         return self.batch_modify_labels(
             message_ids,
             add_labels=['UNREAD']
         )
 
-    def batch_archive(self, message_ids: List[str]) -> BatchResult:
+    def batch_archive(self, message_ids: list[str]) -> BatchResult:
         """Archive multiple messages (remove from inbox)."""
         return self.batch_modify_labels(
             message_ids,

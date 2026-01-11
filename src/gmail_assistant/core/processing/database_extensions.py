@@ -5,15 +5,16 @@ Provides upsert functionality and additional database utilities
 to ensure data integrity and prevent duplicates.
 """
 
-import sqlite3
 import logging
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
+import sqlite3
 
 # Import canonical schema
 import sys
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class UpsertResult:
     skipped: int = 0
     failed: int = 0
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         return {
             'inserted': self.inserted,
             'updated': self.updated,
@@ -65,7 +66,7 @@ class EmailDatabaseExtensions:
             db_path: Path to SQLite database
         """
         self.db_path = Path(db_path)
-        self.conn: Optional[sqlite3.Connection] = None
+        self.conn: sqlite3.Connection | None = None
 
     def connect(self) -> sqlite3.Connection:
         """Connect to database with optimized settings."""
@@ -134,8 +135,8 @@ class EmailDatabaseExtensions:
     def upsert_email(
         self,
         gmail_id: str,
-        data: Dict[str, Any]
-    ) -> Tuple[bool, str]:
+        data: dict[str, Any]
+    ) -> tuple[bool, str]:
         """
         Insert or update email by gmail_id (idempotent).
 
@@ -233,7 +234,7 @@ class EmailDatabaseExtensions:
 
     def upsert_emails_batch(
         self,
-        emails: List[Dict[str, Any]],
+        emails: list[dict[str, Any]],
         gmail_id_key: str = 'gmail_id'
     ) -> UpsertResult:
         """
@@ -294,7 +295,7 @@ class EmailDatabaseExtensions:
         ).fetchone()
         return result is not None
 
-    def check_exists_batch(self, gmail_ids: List[str]) -> Dict[str, bool]:
+    def check_exists_batch(self, gmail_ids: list[str]) -> dict[str, bool]:
         """
         Check existence of multiple gmail_ids.
 
@@ -363,7 +364,7 @@ class EmailDatabaseExtensions:
 
         return result.rowcount > 0
 
-    def find_duplicates(self) -> List[Dict[str, Any]]:
+    def find_duplicates(self) -> list[dict[str, Any]]:
         """
         Find duplicate emails by gmail_id.
 
@@ -413,7 +414,7 @@ class EmailDatabaseExtensions:
         logger.info(f"Deduplicated {removed} records from {len(duplicates)} duplicate groups")
         return removed
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get database statistics."""
         conn = self.connect()
 

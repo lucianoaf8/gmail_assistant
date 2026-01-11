@@ -6,11 +6,11 @@ Implements streaming and progressive loading for large datasets.
 import gc
 import logging
 import sys
-from typing import Iterator, Dict, Any, Optional, List
-from pathlib import Path
 import tempfile
-import json
+from collections.abc import Callable, Generator, Iterator
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class MemoryTracker:
     """Track memory usage and provide optimization recommendations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.initial_memory = self._get_memory_usage()
         self.peak_memory = self.initial_memory
         self.threshold_warning = 500 * 1024 * 1024  # 500MB
@@ -34,7 +34,7 @@ class MemoryTracker:
             # Fallback to sys.getsizeof for approximate usage
             return sys.getsizeof(gc.get_objects())
 
-    def check_memory(self) -> Dict[str, Any]:
+    def check_memory(self) -> dict[str, Any]:
         """
         Check current memory usage and return status.
 
@@ -78,7 +78,7 @@ class MemoryTracker:
 class StreamingEmailProcessor:
     """Process emails in streaming fashion to minimize memory usage."""
 
-    def __init__(self, temp_dir: Optional[Path] = None, chunk_size: int = 100):
+    def __init__(self, temp_dir: Path | None = None, chunk_size: int = 100):
         """
         Initialize streaming processor.
 
@@ -91,8 +91,8 @@ class StreamingEmailProcessor:
         self.chunk_size = chunk_size
         self.memory_tracker = MemoryTracker()
 
-    def process_emails_streaming(self, email_generator: Iterator[Dict[str, Any]],
-                                processor_func: callable) -> Iterator[Dict[str, Any]]:
+    def process_emails_streaming(self, email_generator: Iterator[dict[str, Any]],
+                                processor_func: Callable[..., Any]) -> Iterator[dict[str, Any]]:
         """
         Process emails in streaming fashion.
 
@@ -122,8 +122,8 @@ class StreamingEmailProcessor:
         if chunk:
             yield from self._process_chunk(chunk, processor_func)
 
-    def _process_chunk(self, chunk: List[Dict[str, Any]],
-                      processor_func: callable) -> Iterator[Dict[str, Any]]:
+    def _process_chunk(self, chunk: list[dict[str, Any]],
+                      processor_func: Callable[..., Any]) -> Iterator[dict[str, Any]]:
         """Process a chunk of emails."""
         for email_data in chunk:
             try:
@@ -144,7 +144,7 @@ class StreamingEmailProcessor:
             logger.info(f"High memory usage: {memory_status['current_mb']:.1f} MB after {processed_count} emails")
 
     @contextmanager
-    def temp_file_storage(self, prefix: str = "gmail_data"):
+    def temp_file_storage(self, prefix: str = "gmail_data") -> Generator[Path, None, None]:
         """Context manager for temporary file storage."""
         temp_file = self.temp_dir / f"{prefix}_{id(self)}.tmp"
         try:
@@ -167,8 +167,8 @@ class ProgressiveLoader:
         self.batch_size = batch_size
         self.memory_tracker = MemoryTracker()
 
-    def load_emails_progressive(self, email_ids: List[str],
-                               fetch_func: callable) -> Iterator[Dict[str, Any]]:
+    def load_emails_progressive(self, email_ids: list[str],
+                               fetch_func: Callable[..., Any]) -> Iterator[dict[str, Any]]:
         """
         Load emails progressively in batches.
 
@@ -266,7 +266,7 @@ class EmailContentStreamer:
             Content chunks
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 while True:
                     chunk = f.read(self.chunk_size)
                     if not chunk:
@@ -291,11 +291,11 @@ class MemoryOptimizedCache:
         """
         self.max_size = max_size
         self.memory_limit_bytes = memory_limit_mb * 1024 * 1024
-        self.cache: Dict[str, Any] = {}
-        self.access_order: List[str] = []
+        self.cache: dict[str, Any] = {}
+        self.access_order: list[str] = []
         self.memory_tracker = MemoryTracker()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get item from cache."""
         if key in self.cache:
             # Move to end (most recently used)
@@ -354,7 +354,7 @@ class MemoryOptimizedCache:
         self.access_order.clear()
         self.memory_tracker.force_gc()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         return {
             'size': len(self.cache),

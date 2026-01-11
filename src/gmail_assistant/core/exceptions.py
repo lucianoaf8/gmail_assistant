@@ -7,22 +7,21 @@ All modules must import exceptions from here, not define their own.
 H-2 fix: Complete exception hierarchy with all domain-specific exceptions.
 """
 from __future__ import annotations
-from typing import List, Optional
 
 __all__ = [
-    "GmailAssistantError",
-    "ConfigError",
-    "AuthError",
-    "NetworkError",
     "APIError",
+    "AuthError",
     "BatchAPIError",
-    "ValidationError",
+    "CircuitBreakerError",
+    "CircularDependencyError",
+    "ConfigError",
+    "ExportError",
+    "GmailAssistantError",
+    "NetworkError",
     "ParseError",
     "RateLimitError",
     "ServiceNotFoundError",
-    "CircularDependencyError",
-    "ExportError",
-    "CircuitBreakerError",
+    "ValidationError",
 ]
 
 
@@ -58,7 +57,7 @@ class BatchAPIError(APIError):
     Tracks failed message IDs for retry handling.
     """
 
-    def __init__(self, message: str, failed_ids: Optional[List[str]] = None):
+    def __init__(self, message: str, failed_ids: list[str] | None = None):
         self.message = message
         self.failed_ids = failed_ids or []
         super().__init__(message)
@@ -77,7 +76,7 @@ class ParseError(GmailAssistantError):
 class RateLimitError(APIError):
     """API rate limit exceeded errors."""
 
-    def __init__(self, message: str, retry_after: Optional[int] = None):
+    def __init__(self, message: str, retry_after: int | None = None):
         self.retry_after = retry_after
         super().__init__(message)
 

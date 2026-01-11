@@ -19,10 +19,11 @@ Usage:
 """
 
 import logging
-from typing import List, Dict, Optional, Tuple, Callable, Any
-from datetime import datetime
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
 try:
     from googleapiclient.errors import HttpError
@@ -31,7 +32,8 @@ except ImportError:
     GMAIL_API_AVAILABLE = False
     HttpError = Exception
 
-from ..schemas import Email
+from gmail_assistant.core.schemas import Email
+
 from .batch_api import GmailBatchClient
 
 logger = logging.getLogger(__name__)
@@ -50,7 +52,7 @@ class HistoryEvent:
     """Single history event from Gmail API."""
     type: HistoryEventType
     message_id: str
-    labels: List[str]
+    labels: list[str]
     history_id: int
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -59,8 +61,8 @@ class HistoryEvent:
 class LabelChange:
     """Represents a label change on a message."""
     message_id: str
-    added_labels: List[str]
-    removed_labels: List[str]
+    added_labels: list[str]
+    removed_labels: list[str]
     history_id: int
 
 
@@ -69,11 +71,11 @@ class HistorySyncResult:
     """Result of history sync operation."""
     success: bool
     new_history_id: int
-    events: List[HistoryEvent] = field(default_factory=list)
-    added_message_ids: List[str] = field(default_factory=list)
-    deleted_message_ids: List[str] = field(default_factory=list)
-    label_changes: List[LabelChange] = field(default_factory=list)
-    error: Optional[str] = None
+    events: list[HistoryEvent] = field(default_factory=list)
+    added_message_ids: list[str] = field(default_factory=list)
+    deleted_message_ids: list[str] = field(default_factory=list)
+    label_changes: list[LabelChange] = field(default_factory=list)
+    error: str | None = None
     pages_processed: int = 0
 
     @property
@@ -85,7 +87,7 @@ class HistorySyncResult:
             len(self.label_changes)
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             'success': self.success,
@@ -130,7 +132,7 @@ class HistorySyncClient:
     def __init__(
         self,
         service,
-        batch_client: Optional[GmailBatchClient] = None
+        batch_client: GmailBatchClient | None = None
     ):
         """
         Initialize history sync client.
@@ -176,7 +178,7 @@ class HistorySyncClient:
     def sync_from_history(
         self,
         start_history_id: int,
-        label_filter: Optional[str] = None,
+        label_filter: str | None = None,
         max_pages: int = 100
     ) -> HistorySyncResult:
         """
@@ -333,9 +335,9 @@ class HistorySyncClient:
 
     def fetch_added_messages(
         self,
-        message_ids: List[str],
+        message_ids: list[str],
         format: str = 'full'
-    ) -> List[Email]:
+    ) -> list[Email]:
         """
         Fetch full message details for added messages.
 
@@ -355,11 +357,11 @@ class HistorySyncClient:
     def perform_incremental_sync(
         self,
         last_history_id: int,
-        on_messages_added: Optional[Callable[[List[Email]], None]] = None,
-        on_messages_deleted: Optional[Callable[[List[str]], None]] = None,
-        on_labels_changed: Optional[Callable[[List[LabelChange]], None]] = None,
+        on_messages_added: Callable[[list[Email]], None] | None = None,
+        on_messages_deleted: Callable[[list[str]], None] | None = None,
+        on_labels_changed: Callable[[list[LabelChange]], None] | None = None,
         fetch_full_messages: bool = True
-    ) -> Tuple[int, Dict[str, Any]]:
+    ) -> tuple[int, dict[str, Any]]:
         """
         Perform complete incremental sync with callbacks.
 
@@ -425,7 +427,7 @@ class HistorySyncClient:
     def check_sync_required(
         self,
         stored_history_id: int
-    ) -> Tuple[bool, int]:
+    ) -> tuple[bool, int]:
         """
         Check if sync is required by comparing history IDs.
 
@@ -473,7 +475,7 @@ class SyncStateManager:
         """)
         self.conn.commit()
 
-    def get_history_id(self, source: str = 'gmail') -> Optional[int]:
+    def get_history_id(self, source: str = 'gmail') -> int | None:
         """
         Get last synced history ID for a source.
 
@@ -516,7 +518,7 @@ class SyncStateManager:
         """, (source, history_id, now, synced_count, now))
         self.conn.commit()
 
-    def get_sync_stats(self, source: str = 'gmail') -> Optional[Dict[str, Any]]:
+    def get_sync_stats(self, source: str = 'gmail') -> dict[str, Any] | None:
         """
         Get sync statistics for a source.
 

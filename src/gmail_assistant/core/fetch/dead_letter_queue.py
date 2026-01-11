@@ -13,18 +13,18 @@ Usage:
         try:
             process(item.message_id)
             dlq.mark_resolved(item.id)
-        except:
+        except Exception:
             pass  # Will auto-retry with backoff
 """
 
 import json
-import sqlite3
 import logging
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
+import sqlite3
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +50,13 @@ class DeadLetterItem:
     message_id: str
     failure_type: FailureType
     error_message: str
-    error_details: Optional[str]
+    error_details: str | None
     attempt_count: int
     first_failure: datetime
     last_failure: datetime
-    next_retry: Optional[datetime]
+    next_retry: datetime | None
     resolved: bool
-    context: Dict[str, Any]
+    context: dict[str, Any]
 
     @property
     def is_retriable(self) -> bool:
@@ -93,7 +93,7 @@ class DeadLetterQueue:
 
     def __init__(
         self,
-        db_path: Optional[Path] = None,
+        db_path: Path | None = None,
         max_retries: int = 5,
         base_retry_delay: int = 300
     ):
@@ -148,8 +148,8 @@ class DeadLetterQueue:
         message_id: str,
         failure_type: FailureType,
         error_message: str,
-        error_details: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        error_details: str | None = None,
+        context: dict[str, Any] | None = None
     ) -> int:
         """
         Add or update a failed operation.
@@ -231,7 +231,7 @@ class DeadLetterQueue:
                 )
                 return cursor.lastrowid
 
-    def _calculate_next_retry(self, attempt: int) -> Optional[datetime]:
+    def _calculate_next_retry(self, attempt: int) -> datetime | None:
         """
         Calculate next retry time with exponential backoff.
 
@@ -248,7 +248,7 @@ class DeadLetterQueue:
         delay = self.base_retry_delay * (2 ** (attempt - 1))
         return datetime.now() + timedelta(seconds=delay)
 
-    def get_ready_for_retry(self, limit: int = 100) -> List[DeadLetterItem]:
+    def get_ready_for_retry(self, limit: int = 100) -> list[DeadLetterItem]:
         """
         Get items ready for retry.
 
@@ -271,7 +271,7 @@ class DeadLetterQueue:
 
             return [self._row_to_item(row) for row in rows]
 
-    def get_by_message_id(self, message_id: str) -> List[DeadLetterItem]:
+    def get_by_message_id(self, message_id: str) -> list[DeadLetterItem]:
         """Get all DLQ items for a message."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -285,7 +285,7 @@ class DeadLetterQueue:
         self,
         failure_type: FailureType,
         resolved: bool = False
-    ) -> List[DeadLetterItem]:
+    ) -> list[DeadLetterItem]:
         """Get DLQ items by failure type."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -347,7 +347,7 @@ class DeadLetterQueue:
             """, (message_id,))
             return cursor.rowcount
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get DLQ statistics."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -391,7 +391,7 @@ class DeadLetterQueue:
                 'avg_attempts_to_resolve': round(avg_attempts, 2)
             }
 
-    def get_exhausted(self, limit: int = 100) -> List[DeadLetterItem]:
+    def get_exhausted(self, limit: int = 100) -> list[DeadLetterItem]:
         """Get items that have exhausted all retries."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row

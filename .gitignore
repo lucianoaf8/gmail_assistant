@@ -89,9 +89,16 @@ Desktop.ini
 # ===================
 .pytest_cache/
 .coverage
+coverage.json
 htmlcov/
 .tox/
 .nox/
+test_output.txt
+test-results.xml
+
+# Test results directory (keep .gitkeep)
+tests/test_results/*
+!tests/test_results/.gitkeep
 
 # ===================
 # Type Checking & Linting

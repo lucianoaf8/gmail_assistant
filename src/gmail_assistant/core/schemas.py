@@ -9,11 +9,12 @@ This module replaces duplicate structures:
 Use Email class for all new code.
 """
 
-from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
-from datetime import datetime
-from typing import List, Optional, Dict, Any
-from enum import Enum
 import warnings
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ParticipantType(str, Enum):
@@ -28,7 +29,7 @@ class EmailParticipant(BaseModel):
     """Email participant with type and parsed domain."""
     address: str = Field(..., description="Email address")
     type: ParticipantType = Field(..., description="Participant type")
-    display_name: Optional[str] = Field(default=None, description="Display name")
+    display_name: str | None = Field(default=None, description="Display name")
 
     model_config = ConfigDict(frozen=True)
 
@@ -62,15 +63,15 @@ class Email(BaseModel):
     # Core metadata
     subject: str = Field(default="", description="Email subject line")
     sender: str = Field(..., description="Sender email address")
-    recipients: List[EmailParticipant] = Field(default_factory=list, description="Recipients")
+    recipients: list[EmailParticipant] = Field(default_factory=list, description="Recipients")
     date: datetime = Field(..., description="Email received timestamp")
 
     # Content
-    body_plain: Optional[str] = Field(default=None, description="Plain text body")
-    body_html: Optional[str] = Field(default=None, description="HTML body")
+    body_plain: str | None = Field(default=None, description="Plain text body")
+    body_html: str | None = Field(default=None, description="HTML body")
 
     # Gmail-specific
-    labels: List[str] = Field(default_factory=list, description="Gmail labels")
+    labels: list[str] = Field(default_factory=list, description="Gmail labels")
     snippet: str = Field(default="", description="Email preview snippet")
     history_id: int = Field(default=0, description="Gmail history ID for sync")
     size_estimate: int = Field(default=0, description="Estimated size in bytes")
@@ -170,12 +171,12 @@ class Email(BaseModel):
             body_snippet=self.snippet
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary representation."""
         return self.model_dump(mode='json')
 
     @classmethod
-    def from_gmail_message(cls, message: Dict[str, Any]) -> 'Email':
+    def from_gmail_message(cls, message: dict[str, Any]) -> 'Email':
         """
         Create Email from Gmail API message response.
 
@@ -240,10 +241,10 @@ class Email(BaseModel):
 
 class EmailBatch(BaseModel):
     """Batch of emails for bulk operations."""
-    emails: List[Email]
+    emails: list[Email]
     total_count: int
-    next_page_token: Optional[str] = None
-    history_id: Optional[int] = None
+    next_page_token: str | None = None
+    history_id: int | None = None
 
 
 # =============================================================================
@@ -259,9 +260,9 @@ class EmailMetadataCompat(BaseModel):
     thread_id: str
     subject: str
     sender: str
-    recipients: List[str]
+    recipients: list[str]
     date: str
-    labels: List[str]
+    labels: list[str]
     snippet: str = ""
     size_estimate: int = 0
 
@@ -300,8 +301,8 @@ class EmailDataCompat(BaseModel):
     subject: str
     sender: str
     date: str
-    labels: Optional[List[str]] = None
-    thread_id: Optional[str] = None
+    labels: list[str] | None = None
+    thread_id: str | None = None
     body_snippet: str = ""
 
     def __init__(self, **data):
@@ -329,7 +330,7 @@ class EmailDataCompat(BaseModel):
 # Factory Functions
 # =============================================================================
 
-def create_email_from_dict(data: Dict[str, Any]) -> Email:
+def create_email_from_dict(data: dict[str, Any]) -> Email:
     """
     Create Email from dictionary with flexible field mapping.
 

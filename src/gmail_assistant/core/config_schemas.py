@@ -4,11 +4,12 @@ Configuration schema validation using Pydantic.
 Provides validated configuration models for all JSON config files.
 """
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from typing import List, Dict, Optional, Any
-from pathlib import Path
 import json
 import logging
+from pathlib import Path
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +20,12 @@ logger = logging.getLogger(__name__)
 
 class AIKeywordsConfig(BaseModel):
     """Configuration for AI newsletter detection."""
-    ai_keywords: List[str] = Field(default_factory=list, description="Keywords indicating AI content")
-    ai_newsletter_domains: List[str] = Field(default_factory=list, description="Known AI newsletter domains")
-    newsletter_patterns: List[str] = Field(default_factory=list, description="Regex patterns for newsletters")
-    unsubscribe_patterns: List[str] = Field(default_factory=list, description="Unsubscribe link patterns")
-    confidence_weights: Dict[str, int] = Field(default_factory=dict, description="Scoring weights")
-    decision_threshold: Dict[str, int] = Field(default_factory=dict, description="Decision thresholds")
+    ai_keywords: list[str] = Field(default_factory=list, description="Keywords indicating AI content")
+    ai_newsletter_domains: list[str] = Field(default_factory=list, description="Known AI newsletter domains")
+    newsletter_patterns: list[str] = Field(default_factory=list, description="Regex patterns for newsletters")
+    unsubscribe_patterns: list[str] = Field(default_factory=list, description="Unsubscribe link patterns")
+    confidence_weights: dict[str, int] = Field(default_factory=dict, description="Scoring weights")
+    decision_threshold: dict[str, int] = Field(default_factory=dict, description="Decision thresholds")
 
     @field_validator('confidence_weights')
     @classmethod
@@ -68,7 +69,7 @@ class GmailAssistantConfig(BaseModel):
     default_format: str = Field(default="both", description="Output format: eml, markdown, both")
     default_organize_by: str = Field(default="date", description="Organization: date, sender, none")
     output_directory: str = Field(default="gmail_backup", description="Default output directory")
-    predefined_queries: Dict[str, str] = Field(default_factory=dict, description="Named queries")
+    predefined_queries: dict[str, str] = Field(default_factory=dict, description="Named queries")
 
     @field_validator('default_format')
     @classmethod
@@ -99,7 +100,7 @@ class DeletionConfig(BaseModel):
     default_dry_run: bool = Field(default=True, description="Default to dry-run mode")
     batch_size: int = Field(default=100, ge=1, le=1000, description="Emails per batch")
     rate_limit_delay: float = Field(default=0.1, ge=0, description="Delay between batches")
-    max_deletions_per_run: Optional[int] = Field(default=None, description="Safety limit")
+    max_deletions_per_run: int | None = Field(default=None, description="Safety limit")
 
 
 # =============================================================================
@@ -108,11 +109,11 @@ class DeletionConfig(BaseModel):
 
 class AnalysisConfig(BaseModel):
     """Analysis pipeline configuration."""
-    quality_thresholds: Dict[str, float] = Field(
+    quality_thresholds: dict[str, float] = Field(
         default_factory=lambda: {'block': 0.0, 'warning': 0.3, 'good': 0.7},
         description="Quality score thresholds"
     )
-    parsing_strategies: List[str] = Field(
+    parsing_strategies: list[str] = Field(
         default_factory=lambda: ['smart', 'readability', 'trafilatura', 'html2text', 'markdownify'],
         description="Parsing strategies in order of preference"
     )
@@ -181,12 +182,12 @@ def load_validated_config(path: Path, model: type[BaseModel]) -> BaseModel:
         FileNotFoundError: If config file doesn't exist
         ValidationError: If config doesn't match schema
     """
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, encoding='utf-8') as f:
         data = json.load(f)
     return model.model_validate(data)
 
 
-def load_config_safe(path: Path, model: type[BaseModel], default: Optional[BaseModel] = None) -> BaseModel:
+def load_config_safe(path: Path, model: type[BaseModel], default: BaseModel | None = None) -> BaseModel:
     """
     Load config with fallback to defaults on error.
 
@@ -211,7 +212,7 @@ def load_config_safe(path: Path, model: type[BaseModel], default: Optional[BaseM
         return default or model()
 
 
-def generate_json_schema(model: type[BaseModel], output_path: Optional[Path] = None) -> Dict[str, Any]:
+def generate_json_schema(model: type[BaseModel], output_path: Path | None = None) -> dict[str, Any]:
     """
     Generate JSON Schema from Pydantic model.
 
@@ -232,7 +233,7 @@ def generate_json_schema(model: type[BaseModel], output_path: Optional[Path] = N
     return schema
 
 
-def validate_all_configs(config_dir: Path) -> Dict[str, bool]:
+def validate_all_configs(config_dir: Path) -> dict[str, bool]:
     """
     Validate all config files in a directory.
 

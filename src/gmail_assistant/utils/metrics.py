@@ -23,16 +23,17 @@ Usage:
     report = get_metrics().report()
 """
 
-import time
+import json
 import logging
 import threading
-import json
-from typing import Dict, Any, Optional, List, Callable
-from dataclasses import dataclass, field, asdict
-from datetime import datetime
+import time
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import contextmanager
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class MetricPoint:
     name: str
     value: float
     timestamp: datetime
-    labels: Dict[str, str] = field(default_factory=dict)
+    labels: dict[str, str] = field(default_factory=dict)
     metric_type: str = "gauge"  # gauge, counter, histogram
 
 
@@ -87,10 +88,10 @@ class MetricsCollector:
         """
         self.name = name
         self._lock = threading.Lock()
-        self._counters: Dict[str, float] = defaultdict(float)
-        self._gauges: Dict[str, float] = {}
-        self._histograms: Dict[str, List[float]] = defaultdict(list)
-        self._labels: Dict[str, Dict[str, str]] = {}
+        self._counters: dict[str, float] = defaultdict(float)
+        self._gauges: dict[str, float] = {}
+        self._histograms: dict[str, list[float]] = defaultdict(list)
+        self._labels: dict[str, dict[str, str]] = {}
         self._start_time = datetime.now()
         self._last_reset = datetime.now()
 
@@ -98,7 +99,7 @@ class MetricsCollector:
         self,
         name: str,
         value: float = 1.0,
-        labels: Optional[Dict[str, str]] = None
+        labels: dict[str, str] | None = None
     ) -> None:
         """
         Increment a counter metric.
@@ -118,7 +119,7 @@ class MetricsCollector:
         self,
         name: str,
         value: float = 1.0,
-        labels: Optional[Dict[str, str]] = None
+        labels: dict[str, str] | None = None
     ) -> None:
         """Decrement a counter (use sparingly - counters should increase)."""
         self.inc_counter(name, -value, labels)
@@ -127,7 +128,7 @@ class MetricsCollector:
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None
+        labels: dict[str, str] | None = None
     ) -> None:
         """
         Set a gauge metric to a specific value.
@@ -147,7 +148,7 @@ class MetricsCollector:
         self,
         name: str,
         value: float,
-        labels: Optional[Dict[str, str]] = None
+        labels: dict[str, str] | None = None
     ) -> None:
         """
         Record a histogram observation.
@@ -167,7 +168,7 @@ class MetricsCollector:
     def timer(
         self,
         name: str,
-        labels: Optional[Dict[str, str]] = None
+        labels: dict[str, str] | None = None
     ):
         """
         Context manager for timing operations.
@@ -196,7 +197,7 @@ class MetricsCollector:
             self.observe_histogram(f"{name}_duration_seconds", duration, timer_labels)
             self.inc_counter(f"{name}_total", labels=timer_labels)
 
-    def _make_key(self, name: str, labels: Optional[Dict[str, str]] = None) -> str:
+    def _make_key(self, name: str, labels: dict[str, str] | None = None) -> str:
         """Create unique key for metric with labels."""
         if not labels:
             return name
@@ -219,7 +220,7 @@ class MetricsCollector:
     def get_counter(
         self,
         name: str,
-        labels: Optional[Dict[str, str]] = None
+        labels: dict[str, str] | None = None
     ) -> float:
         """Get current counter value."""
         key = self._make_key(name, labels)
@@ -229,8 +230,8 @@ class MetricsCollector:
     def get_gauge(
         self,
         name: str,
-        labels: Optional[Dict[str, str]] = None
-    ) -> Optional[float]:
+        labels: dict[str, str] | None = None
+    ) -> float | None:
         """Get current gauge value."""
         key = self._make_key(name, labels)
         with self._lock:
@@ -239,8 +240,8 @@ class MetricsCollector:
     def get_histogram_stats(
         self,
         name: str,
-        labels: Optional[Dict[str, str]] = None
-    ) -> Optional[HistogramStats]:
+        labels: dict[str, str] | None = None
+    ) -> HistogramStats | None:
         """Get histogram statistics."""
         key = self._make_key(name, labels)
         with self._lock:
@@ -249,7 +250,7 @@ class MetricsCollector:
                 return None
             return self._calculate_histogram_stats(values)
 
-    def _calculate_histogram_stats(self, values: List[float]) -> HistogramStats:
+    def _calculate_histogram_stats(self, values: list[float]) -> HistogramStats:
         """Calculate histogram statistics."""
         sorted_values = sorted(values)
         n = len(sorted_values)
@@ -265,7 +266,7 @@ class MetricsCollector:
             p99=sorted_values[int(n * 0.99)] if n > 100 else sorted_values[-1],
         )
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get all current metrics as dictionary.
 
@@ -300,7 +301,7 @@ class MetricsCollector:
             self._last_reset = datetime.now()
             logger.debug("Metrics reset")
 
-    def report(self, output_file: Optional[str] = None) -> str:
+    def report(self, output_file: str | None = None) -> str:
         """
         Generate human-readable metrics report.
 
@@ -366,7 +367,7 @@ class MetricsCollector:
         with open(output_file, 'w') as f:
             json.dump(metrics, f, indent=2, default=str)
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get high-level metrics summary."""
         metrics = self.get_metrics()
 
@@ -396,7 +397,7 @@ class MetricsCollector:
 # Global Instance and Convenience Functions
 # =============================================================================
 
-_metrics: Optional[MetricsCollector] = None
+_metrics: MetricsCollector | None = None
 
 
 def get_metrics() -> MetricsCollector:
@@ -410,7 +411,7 @@ def get_metrics() -> MetricsCollector:
 def inc_counter(
     name: str,
     value: float = 1.0,
-    labels: Optional[Dict[str, str]] = None
+    labels: dict[str, str] | None = None
 ) -> None:
     """Increment counter (convenience function)."""
     get_metrics().inc_counter(name, value, labels)
@@ -419,7 +420,7 @@ def inc_counter(
 def set_gauge(
     name: str,
     value: float,
-    labels: Optional[Dict[str, str]] = None
+    labels: dict[str, str] | None = None
 ) -> None:
     """Set gauge (convenience function)."""
     get_metrics().set_gauge(name, value, labels)
@@ -428,13 +429,13 @@ def set_gauge(
 def observe(
     name: str,
     value: float,
-    labels: Optional[Dict[str, str]] = None
+    labels: dict[str, str] | None = None
 ) -> None:
     """Observe histogram value (convenience function)."""
     get_metrics().observe_histogram(name, value, labels)
 
 
-def timer(name: str, labels: Optional[Dict[str, str]] = None):
+def timer(name: str, labels: dict[str, str] | None = None):
     """Timer context manager (convenience function)."""
     return get_metrics().timer(name, labels)
 
@@ -443,7 +444,7 @@ def timer(name: str, labels: Optional[Dict[str, str]] = None):
 # Decorator for Function Timing
 # =============================================================================
 
-def timed(name: Optional[str] = None, labels: Optional[Dict[str, str]] = None):
+def timed(name: str | None = None, labels: dict[str, str] | None = None):
     """
     Decorator to time function execution.
 

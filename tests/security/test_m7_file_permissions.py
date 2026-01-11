@@ -56,6 +56,7 @@ class TestSecureFileModule:
                 assert mode & stat.S_IRWXG == 0, "Group should have no access"
                 assert mode & stat.S_IRWXO == 0, "Others should have no access"
 
+    @pytest.mark.skipif(os.name == 'nt', reason="Unix permissions not applicable on Windows")
     def test_existing_file_permissions_fixed(self):
         """Verify existing files have permissions corrected."""
         from gmail_assistant.utils.secure_file import secure_write
@@ -65,8 +66,7 @@ class TestSecureFileModule:
             test_file.write_text("initial content")
 
             # Make file world-readable (insecure)
-            if os.name != 'nt':
-                os.chmod(test_file, 0o644)
+            os.chmod(test_file, 0o644)
 
             # Secure write should fix permissions
             secure_write(test_file, "updated content")
@@ -82,7 +82,7 @@ class TestSensitiveFileHandling:
         """Verify credential files use secure permissions."""
         from gmail_assistant.utils import secure_file
 
-        source = Path(secure_file.__file__).read_text()
+        source = Path(secure_file.__file__).read_text(encoding='utf-8')
 
         # Should have restrictive permission constants
         assert '0o600' in source or '0600' in source or \

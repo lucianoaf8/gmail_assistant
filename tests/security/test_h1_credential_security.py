@@ -55,7 +55,7 @@ class TestSecureCredentialManager:
         from gmail_assistant.core.auth import credential_manager
 
         # Module should use keyring for secure storage
-        source = Path(credential_manager.__file__).read_text()
+        source = Path(credential_manager.__file__).read_text(encoding='utf-8')
         assert 'keyring' in source, "Credential manager should use keyring module"
 
 
@@ -66,7 +66,7 @@ class TestGmailAPIClientCredentials:
         """Verify GmailAPIClient uses SecureCredentialManager."""
         from gmail_assistant.core.fetch import gmail_api_client
 
-        source = Path(gmail_api_client.__file__).read_text()
+        source = Path(gmail_api_client.__file__).read_text(encoding='utf-8')
         assert 'SecureCredentialManager' in source, \
             "GmailAPIClient should use SecureCredentialManager"
 
@@ -74,7 +74,7 @@ class TestGmailAPIClientCredentials:
         """Verify no direct token.json file handling in API client."""
         from gmail_assistant.core.fetch import gmail_api_client
 
-        source = Path(gmail_api_client.__file__).read_text()
+        source = Path(gmail_api_client.__file__).read_text(encoding='utf-8')
         # Should not have direct token file operations
         assert 'token.json' not in source or 'legacy' in source.lower() or 'migrate' in source.lower(), \
             "Should not have direct token.json handling except for migration"

@@ -22,11 +22,12 @@ Usage:
 import hashlib
 import json
 import logging
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Generator
-from dataclasses import dataclass, field, asdict
 import threading
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +39,15 @@ class FileEntry:
     size_bytes: int
     sha256: str
     modified_at: str
-    gmail_id: Optional[str] = None
-    content_type: Optional[str] = None  # eml, markdown, etc.
+    gmail_id: str | None = None
+    content_type: str | None = None  # eml, markdown, etc.
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'FileEntry':
+    def from_dict(cls, data: dict[str, Any]) -> 'FileEntry':
         """Create from dictionary."""
         return cls(**data)
 
@@ -60,8 +61,8 @@ class BackupManifest:
     backup_directory: str = ""
     total_files: int = 0
     total_size_bytes: int = 0
-    files: List[FileEntry] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    files: list[FileEntry] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         if not self.created_at:
@@ -69,7 +70,7 @@ class BackupManifest:
         if not self.updated_at:
             self.updated_at = self.created_at
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             'version': self.version,
@@ -83,7 +84,7 @@ class BackupManifest:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BackupManifest':
+    def from_dict(cls, data: dict[str, Any]) -> 'BackupManifest':
         """Create from dictionary."""
         files = [FileEntry.from_dict(f) for f in data.get('files', [])]
         return cls(
@@ -102,17 +103,17 @@ class BackupManifest:
 class VerificationResult:
     """Result of integrity verification."""
     verified: int = 0
-    missing: List[str] = field(default_factory=list)
-    corrupted: List[Dict[str, str]] = field(default_factory=list)
-    extra: List[str] = field(default_factory=list)
-    errors: List[str] = field(default_factory=list)
+    missing: list[str] = field(default_factory=list)
+    corrupted: list[dict[str, str]] = field(default_factory=list)
+    extra: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
     @property
     def is_valid(self) -> bool:
         """Check if backup is fully valid."""
         return not self.missing and not self.corrupted
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'verified': self.verified,
@@ -160,9 +161,9 @@ class ManifestManager:
 
     def create_manifest(
         self,
-        file_patterns: List[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        progress_callback: Optional[callable] = None
+        file_patterns: list[str] = None,
+        metadata: dict[str, Any] | None = None,
+        progress_callback: Callable[..., Any] | None = None
     ) -> BackupManifest:
         """
         Create new manifest for backup directory.
@@ -255,7 +256,7 @@ class ManifestManager:
                 sha256.update(chunk)
         return sha256.hexdigest()
 
-    def _extract_gmail_id(self, filepath: Path) -> Optional[str]:
+    def _extract_gmail_id(self, filepath: Path) -> str | None:
         """
         Extract gmail_id from filename.
 
@@ -285,13 +286,13 @@ class ManifestManager:
 
         logger.debug(f"Saved manifest: {manifest.total_files} files")
 
-    def load_manifest(self) -> Optional[BackupManifest]:
+    def load_manifest(self) -> BackupManifest | None:
         """Load existing manifest."""
         if not self.manifest_path.exists():
             return None
 
         try:
-            with open(self.manifest_path, 'r', encoding='utf-8') as f:
+            with open(self.manifest_path, encoding='utf-8') as f:
                 data = json.load(f)
             return BackupManifest.from_dict(data)
         except Exception as e:
@@ -300,7 +301,7 @@ class ManifestManager:
 
     def verify_integrity(
         self,
-        progress_callback: Optional[callable] = None
+        progress_callback: Callable[..., Any] | None = None
     ) -> VerificationResult:
         """
         Verify backup integrity against manifest.
@@ -349,7 +350,7 @@ class ManifestManager:
                     result.verified += 1
 
             except Exception as e:
-                result.errors.append(f"{entry.path}: {str(e)}")
+                result.errors.append(f"{entry.path}: {e!s}")
 
             if progress_callback and (i + 1) % 100 == 0:
                 progress_callback(i + 1, total)
@@ -372,7 +373,7 @@ class ManifestManager:
 
     def update_manifest(
         self,
-        new_files: Optional[List[Path]] = None
+        new_files: list[Path] | None = None
     ) -> BackupManifest:
         """
         Update manifest with new files.
@@ -425,7 +426,7 @@ class ManifestManager:
 
         return manifest
 
-    def get_file_entry(self, relative_path: str) -> Optional[FileEntry]:
+    def get_file_entry(self, relative_path: str) -> FileEntry | None:
         """Get file entry by relative path."""
         manifest = self.load_manifest()
         if not manifest:
@@ -437,7 +438,7 @@ class ManifestManager:
 
         return None
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get manifest statistics."""
         manifest = self.load_manifest()
         if not manifest:
@@ -483,7 +484,7 @@ class ManifestManager:
 
         return len(manifest.files)
 
-    def find_duplicates(self) -> Dict[str, List[str]]:
+    def find_duplicates(self) -> dict[str, list[str]]:
         """
         Find duplicate files by checksum.
 

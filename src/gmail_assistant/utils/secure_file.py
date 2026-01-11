@@ -5,12 +5,11 @@ Provides atomic writes with restrictive permissions.
 Security: Prevents unauthorized file access (M-7 fix)
 """
 
+import logging
 import os
 import stat
 import tempfile
-import logging
 from pathlib import Path
-from typing import Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class SecureFileWriter:
     SECURE_DIR_MODE = stat.S_IRWXU
 
     @classmethod
-    def write_secure(cls, path: Union[str, Path], content: str,
+    def write_secure(cls, path: str | Path, content: str,
                      encoding: str = 'utf-8') -> None:
         """
         Write file with restrictive permissions using atomic write pattern.
@@ -101,7 +100,7 @@ class SecureFileWriter:
                     pass
 
     @classmethod
-    def write_secure_bytes(cls, path: Union[str, Path], content: bytes) -> None:
+    def write_secure_bytes(cls, path: str | Path, content: bytes) -> None:
         """
         Write binary file with restrictive permissions.
 
@@ -153,7 +152,7 @@ class SecureFileWriter:
                     pass
 
     @classmethod
-    def create_secure_directory(cls, path: Union[str, Path]) -> Path:
+    def create_secure_directory(cls, path: str | Path) -> Path:
         """
         Create directory with restrictive permissions (0o700).
 
@@ -177,7 +176,7 @@ class SecureFileWriter:
         return path
 
     @classmethod
-    def _set_windows_permissions(cls, path: Union[str, Path],
+    def _set_windows_permissions(cls, path: str | Path,
                                   is_directory: bool = False) -> None:
         """
         Set restrictive permissions on Windows.
@@ -187,8 +186,8 @@ class SecureFileWriter:
             is_directory: Whether path is a directory
         """
         try:
-            import win32security
             import ntsecuritycon as con
+            import win32security
 
             # Get current user SID
             user_sid = win32security.GetTokenInformation(
@@ -229,18 +228,21 @@ class SecureFileWriter:
             # pywin32 not available, fall back to basic chmod
             logger.warning(
                 "pywin32 not available for Windows permissions, "
-                "using basic file attributes"
+                "using basic file attributes. Install with: pip install pywin32"
             )
             try:
                 # At minimum, remove world-readable flag
                 os.chmod(str(path), stat.S_IRUSR | stat.S_IWUSR)
-            except OSError:
-                pass
+            except OSError as chmod_err:
+                logger.warning(
+                    f"Failed to set basic permissions on {path}: {chmod_err}. "
+                    f"File may be accessible to other users."
+                )
         except Exception as e:
             logger.warning(f"Failed to set Windows permissions: {e}")
 
     @classmethod
-    def secure_existing_file(cls, path: Union[str, Path]) -> bool:
+    def secure_existing_file(cls, path: str | Path) -> bool:
         """
         Apply secure permissions to an existing file.
 
@@ -270,7 +272,7 @@ class SecureFileWriter:
             return False
 
     @classmethod
-    def verify_permissions(cls, path: Union[str, Path]) -> bool:
+    def verify_permissions(cls, path: str | Path) -> bool:
         """
         Verify file has secure permissions.
 
@@ -300,3 +302,29 @@ class SecureFileWriter:
         except Exception as e:
             logger.error(f"Failed to verify permissions for {path}: {e}")
             return False
+
+
+# Convenience functions for easier access
+def secure_write(path: str | Path, content: str, encoding: str = 'utf-8') -> None:
+    """
+    Write file with restrictive permissions.
+
+    Args:
+        path: File path to write
+        content: Content to write
+        encoding: File encoding (default: utf-8)
+    """
+    SecureFileWriter.write_secure(path, content, encoding)
+
+
+def secure_mkdir(path: str | Path) -> Path:
+    """
+    Create directory with restrictive permissions (0o700).
+
+    Args:
+        path: Directory path to create
+
+    Returns:
+        Created directory path
+    """
+    return SecureFileWriter.create_secure_directory(path)

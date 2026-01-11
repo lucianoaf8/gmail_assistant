@@ -4,22 +4,17 @@ Implements async/await patterns for improved performance.
 """
 
 import asyncio
-import aiohttp
-import logging
-from typing import List, Dict, Any, Optional, AsyncIterator
-from pathlib import Path
-import json
-from concurrent.futures import ThreadPoolExecutor
 import functools
-
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from google.auth.transport.requests import Request
+import logging
+from collections.abc import AsyncIterator
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any
 
 # Local imports
-from ..auth.credential_manager import SecureCredentialManager
-from ...utils.rate_limiter import GmailRateLimiter, retry_on_rate_limit
-from ...utils.memory_manager import MemoryTracker
+from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+from gmail_assistant.utils.memory_manager import MemoryTracker
+from gmail_assistant.utils.rate_limiter import GmailRateLimiter
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +88,7 @@ class AsyncGmailFetcher:
                 functools.partial(self._sync_api_call, func, *args, **kwargs)
             )
 
-    async def fetch_email_ids_async(self, query: str, max_results: int = 1000) -> List[str]:
+    async def fetch_email_ids_async(self, query: str, max_results: int = 1000) -> list[str]:
         """
         Fetch email IDs asynchronously.
 
@@ -150,7 +145,7 @@ class AsyncGmailFetcher:
         self.logger.info(f"Fetched {len(email_ids)} email IDs asynchronously")
         return email_ids
 
-    async def fetch_email_async(self, email_id: str) -> Optional[Dict[str, Any]]:
+    async def fetch_email_async(self, email_id: str) -> dict[str, Any] | None:
         """
         Fetch single email asynchronously.
 
@@ -191,7 +186,7 @@ class AsyncGmailFetcher:
             self.logger.error(f"Error fetching email {email_id}: {e}")
             return None
 
-    async def fetch_emails_batch_async(self, email_ids: List[str]) -> List[Optional[Dict[str, Any]]]:
+    async def fetch_emails_batch_async(self, email_ids: list[str]) -> list[dict[str, Any] | None]:
         """
         Fetch multiple emails concurrently.
 
@@ -232,7 +227,7 @@ class AsyncGmailFetcher:
 
     async def process_emails_async(self, query: str, max_results: int = 1000,
                                   output_dir: str = 'gmail_backup',
-                                  format_type: str = 'eml') -> AsyncIterator[Dict[str, Any]]:
+                                  format_type: str = 'eml') -> AsyncIterator[dict[str, Any]]:
         """
         Process emails asynchronously with streaming results.
 
@@ -284,7 +279,7 @@ class AsyncGmailFetcher:
             # Force garbage collection after each batch
             self.memory_tracker.force_gc()
 
-    async def _save_email_async(self, email_data: Dict[str, Any], output_path: Path,
+    async def _save_email_async(self, email_data: dict[str, Any], output_path: Path,
                                format_type: str) -> bool:
         """
         Save email asynchronously.
@@ -300,8 +295,8 @@ class AsyncGmailFetcher:
         def save_email():
             """Synchronous save operation to run in executor."""
             try:
-                from .gmail_assistant import GmailFetcher
                 from ..utils.memory_manager import EmailContentStreamer
+                from .gmail_assistant import GmailFetcher
 
                 # Create temporary fetcher for utility methods
                 temp_fetcher = GmailFetcher()
@@ -338,7 +333,7 @@ class AsyncGmailFetcher:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(self.executor, save_email)
 
-    async def get_profile_async(self) -> Optional[Dict[str, Any]]:
+    async def get_profile_async(self) -> dict[str, Any] | None:
         """
         Get Gmail profile asynchronously.
 
@@ -364,7 +359,7 @@ class AsyncGmailFetcher:
             self.logger.error(f"Error getting profile: {e}")
             return None
 
-    async def search_emails_async(self, query: str, max_results: int = 100) -> List[Dict[str, Any]]:
+    async def search_emails_async(self, query: str, max_results: int = 100) -> list[dict[str, Any]]:
         """
         Search emails asynchronously with concurrent fetching.
 
@@ -387,7 +382,7 @@ class AsyncGmailFetcher:
         # Return non-None results
         return [email_data for email_data in email_data_list if email_data]
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get performance and memory statistics."""
         memory_stats = self.memory_tracker.check_memory()
         rate_stats = self.rate_limiter.get_stats()

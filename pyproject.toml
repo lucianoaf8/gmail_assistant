@@ -103,7 +103,6 @@ include = [
     "src/gmail_assistant/py.typed",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE",
 ]
 
 # Ensure py.typed is included
@@ -120,6 +119,7 @@ addopts = [
     "-v",
     "--tb=short",
     "--strict-markers",
+    "--junitxml=tests/test_results/test-results.xml",
 ]
 markers = [
     "unit: Unit tests (no external deps)",
@@ -136,7 +136,7 @@ filterwarnings = [
 [tool.coverage.run]
 source = ["src/gmail_assistant"]
 branch = true
-data_file = "tests/.coverage"
+data_file = "tests/test_results/.coverage"
 omit = [
     "*/__pycache__/*",
     "*/tests/*",
@@ -170,7 +170,10 @@ exclude_lines = [
 fail_under = 70
 
 [tool.coverage.html]
-directory = "tests/htmlcov"
+directory = "tests/test_results/htmlcov"
+
+[tool.coverage.json]
+output = "tests/test_results/coverage.json"
 
 [tool.ruff]
 target-version = "py310"

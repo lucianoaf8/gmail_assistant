@@ -4,11 +4,16 @@ Processes emails progressively to handle large datasets efficiently.
 """
 
 import logging
-from typing import Iterator, Dict, Any, List, Optional
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
-from ...utils.memory_manager import StreamingEmailProcessor, ProgressiveLoader, MemoryTracker
-from ..auth.credential_manager import SecureCredentialManager
+from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+from gmail_assistant.utils.memory_manager import (
+    MemoryTracker,
+    ProgressiveLoader,
+    StreamingEmailProcessor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +104,7 @@ class StreamingGmailFetcher:
 
         self.logger.info(f"Fetched {fetched_count} email IDs for query: {query}")
 
-    def fetch_email_streaming(self, email_id: str) -> Optional[Dict[str, Any]]:
+    def fetch_email_streaming(self, email_id: str) -> dict[str, Any] | None:
         """
         Fetch single email with memory optimization.
 
@@ -139,7 +144,7 @@ class StreamingGmailFetcher:
 
     def process_emails_streaming(self, query: str, max_results: int = 1000,
                                 output_dir: str = 'gmail_backup',
-                                format_type: str = 'eml') -> Iterator[Dict[str, Any]]:
+                                format_type: str = 'eml') -> Iterator[dict[str, Any]]:
         """
         Process emails in streaming fashion.
 
@@ -165,7 +170,7 @@ class StreamingGmailFetcher:
         self.logger.info(f"Processing {len(email_ids)} emails in streaming mode")
 
         # Process emails progressively
-        def fetch_email_func(email_id: str) -> Optional[Dict[str, Any]]:
+        def fetch_email_func(email_id: str) -> dict[str, Any] | None:
             return self.fetch_email_streaming(email_id)
 
         # Use progressive loader to manage memory
@@ -174,7 +179,7 @@ class StreamingGmailFetcher:
         )
 
         # Process each email with streaming processor
-        def process_single_email(email_data: Dict[str, Any]) -> Dict[str, Any]:
+        def process_single_email(email_data: dict[str, Any]) -> dict[str, Any]:
             if not email_data:
                 return {"error": "No email data", "success": False}
 
@@ -198,7 +203,7 @@ class StreamingGmailFetcher:
             email_generator, process_single_email
         )
 
-    def _save_email_streaming(self, email_data: Dict[str, Any], output_path: Path,
+    def _save_email_streaming(self, email_data: dict[str, Any], output_path: Path,
                              format_type: str) -> bool:
         """
         Save email using streaming to minimize memory usage.
@@ -253,7 +258,7 @@ class StreamingGmailFetcher:
             self.logger.error(f"Error saving email {email_data.get('id')}: {e}")
             return False
 
-    def get_memory_stats(self) -> Dict[str, Any]:
+    def get_memory_stats(self) -> dict[str, Any]:
         """Get current memory usage statistics."""
         return self.memory_tracker.check_memory()
 

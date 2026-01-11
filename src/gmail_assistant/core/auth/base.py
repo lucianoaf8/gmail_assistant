@@ -8,13 +8,14 @@ H-2 fix: Uses centralized AuthError from exceptions.py
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any, List
 from pathlib import Path
+from typing import Any
+
+from gmail_assistant.core.exceptions import AuthError
+from gmail_assistant.utils.error_handler import ErrorCategory, ErrorContext, ErrorHandler
 
 from .credential_manager import SecureCredentialManager
 from .rate_limiter import get_auth_rate_limiter
-from ...utils.error_handler import ErrorHandler, ErrorContext, ErrorCategory
-from ..exceptions import AuthError
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class AuthenticationBase(ABC):
     """
 
     def __init__(self, credentials_file: str = 'credentials.json',
-                 required_scopes: Optional[List[str]] = None):
+                 required_scopes: list[str] | None = None):
         """
         Initialize authentication base.
 
@@ -62,7 +63,7 @@ class AuthenticationBase(ABC):
         return self._service
 
     @property
-    def user_info(self) -> Optional[Dict[str, Any]]:
+    def user_info(self) -> dict[str, Any] | None:
         """Get cached user information."""
         return self._user_info
 
@@ -99,6 +100,20 @@ class AuthenticationBase(ABC):
                 self._service = self.credential_manager.get_service()
                 self._authenticated = True
 
+                # Validate OAuth scopes match required scopes (M-AUDIT-01 fix)
+                required_scopes = self.get_required_scopes()
+                scope_valid, missing_scopes = self.credential_manager.validate_scopes(
+                    required_scopes
+                )
+                if not scope_valid:
+                    self._handle_auth_failure(
+                        f"OAuth scope mismatch. Missing scopes: {missing_scopes}. "
+                        f"Please re-authenticate with the correct permissions."
+                    )
+                    # Clear invalid credentials
+                    self.credential_manager.reset_credentials()
+                    return False
+
                 # Get user information
                 self._user_info = self._fetch_user_info()
 
@@ -129,7 +144,7 @@ class AuthenticationBase(ABC):
             self._handle_auth_failure(f"Authentication error: {e}")
             return False
 
-    def _fetch_user_info(self) -> Optional[Dict[str, Any]]:
+    def _fetch_user_info(self) -> dict[str, Any] | None:
         """Fetch user information from Gmail API."""
         try:
             if self._service:
@@ -186,7 +201,19 @@ class AuthenticationBase(ABC):
             if not self.is_authenticated:
                 return False
 
-            # For Gmail API, we can test scope access by trying to get profile
+            # Validate granted scopes against required scopes (M-AUDIT-01 fix)
+            required_scopes = self.get_required_scopes()
+            scope_valid, missing_scopes = self.credential_manager.validate_scopes(
+                required_scopes
+            )
+
+            if not scope_valid:
+                self.logger.warning(
+                    f"Scope validation failed - missing scopes: {missing_scopes}"
+                )
+                return False
+
+            # Additionally verify API access works
             user_info = self.credential_manager.get_user_info()
             if user_info:
                 self.logger.info("Scope validation successful")
@@ -199,7 +226,7 @@ class AuthenticationBase(ABC):
             self.logger.error(f"Scope validation error: {e}")
             return False
 
-    def get_authentication_status(self) -> Dict[str, Any]:
+    def get_authentication_status(self) -> dict[str, Any]:
         """
         Get detailed authentication status.
 
@@ -216,7 +243,7 @@ class AuthenticationBase(ABC):
         }
 
     @abstractmethod
-    def get_required_scopes(self) -> List[str]:
+    def get_required_scopes(self) -> list[str]:
         """
         Get list of required OAuth scopes for this implementation.
 
@@ -277,7 +304,7 @@ class AuthenticationBase(ABC):
 class ReadOnlyGmailAuth(AuthenticationBase):
     """Authentication for read-only Gmail operations."""
 
-    def get_required_scopes(self) -> List[str]:
+    def get_required_scopes(self) -> list[str]:
         """Get read-only Gmail scopes."""
         return ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -285,7 +312,7 @@ class ReadOnlyGmailAuth(AuthenticationBase):
 class GmailModifyAuth(AuthenticationBase):
     """Authentication for Gmail operations that modify data (delete, modify labels)."""
 
-    def get_required_scopes(self) -> List[str]:
+    def get_required_scopes(self) -> list[str]:
         """Get Gmail modify scopes."""
         return ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -293,7 +320,7 @@ class GmailModifyAuth(AuthenticationBase):
 class FullGmailAuth(AuthenticationBase):
     """Authentication for full Gmail access."""
 
-    def get_required_scopes(self) -> List[str]:
+    def get_required_scopes(self) -> list[str]:
         """Get full Gmail access scopes."""
         return [
             'https://www.googleapis.com/auth/gmail.readonly',
@@ -338,7 +365,7 @@ class AuthenticationFactory:
         return instance
 
     @staticmethod
-    def get_auth_for_scopes(required_scopes: List[str],
+    def get_auth_for_scopes(required_scopes: list[str],
                            credentials_file: str = 'credentials.json') -> AuthenticationBase:
         """
         Get authentication instance for specific scopes.
@@ -404,7 +431,7 @@ def get_authenticated_service(auth_type: str = 'readonly',
     return auth.service
 
 
-def validate_authentication_setup(credentials_file: str = 'credentials.json') -> Dict[str, Any]:
+def validate_authentication_setup(credentials_file: str = 'credentials.json') -> dict[str, Any]:
     """
     Validate authentication setup and return status.
 
