@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-01-11
+
+### Added
+- **MIT LICENSE file**: Added for PyPI compliance and legal clarity
+
+### Fixed
+- **206 linting violations**: Auto-fixed with ruff + manual corrections
+  - Fixed B904 exception chaining in `batch_api.py`, `history_sync.py`, `input_validator.py`
+  - Fixed B023 loop variable binding in `async_fetcher.py`
+  - Fixed E741 ambiguous variable names (`l` → `label`)
+  - Added `ClassVar` annotations for class attributes in `schemas.py`, `database_extensions.py`, `parquet_exporter.py`, `config_schema.py`, `rate_limiter.py`
+  - Added missing `json` import in `gmail_api_client.py`
+
+### Changed
+- **Documentation**: Updated README.md and CLAUDE.md to reflect CLI commands are fully functional (not stubs)
+- **Package metadata**: Updated author in `pyproject.toml` to "Gmail Assistant Contributors"
+- **Ruff config**: Added `SIM102`, `E402` to ignore list for intentional patterns
+
 ## [2.1.0] - 2026-01-09
 
 ### Added
