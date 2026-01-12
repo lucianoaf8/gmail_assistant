@@ -1,40 +1,49 @@
 """
-Output Plugin Manager for Gmail Assistant (M-1 refactoring).
+Output Plugin Manager for Gmail Assistant (M-1 refactoring, H-5 standardization).
 
 Implements the Strategy pattern for email output formats.
 Extracts output logic from GmailFetcher to reduce its responsibilities.
+
+H-5: Uses Protocol pattern for consistency with EmailParserProtocol.
 """
 
 import datetime
 import json
 import os
 import tempfile
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
 import html2text
 
+# H-5: Import Protocol for plugin validation
+from gmail_assistant.core.protocols import OutputPluginProtocol
 
-class OutputPlugin(ABC):
-    """Abstract base class for output format plugins."""
+
+class OutputPlugin:
+    """
+    Base class for output format plugins (H-5 standardization).
+
+    Provides concrete save() implementation while plugins implement
+    name, extension, and generate() per OutputPluginProtocol.
+
+    Note: This is now a concrete base class, not ABC.
+    Protocol validation happens at registration time.
+    """
 
     @property
-    @abstractmethod
     def name(self) -> str:
-        """Plugin name identifier."""
-        ...
+        """Plugin name identifier - must be overridden."""
+        raise NotImplementedError("Subclasses must implement name property")
 
     @property
-    @abstractmethod
     def extension(self) -> str:
-        """File extension (e.g., '.eml', '.md')."""
-        ...
+        """File extension (e.g., '.eml', '.md') - must be overridden."""
+        raise NotImplementedError("Subclasses must implement extension property")
 
-    @abstractmethod
     def generate(self, email_data: dict[str, Any]) -> str:
-        """Generate output content from email data."""
-        ...
+        """Generate output content from email data - must be overridden."""
+        raise NotImplementedError("Subclasses must implement generate method")
 
     def save(self, content: str, path: Path) -> bool:
         """
@@ -253,17 +262,56 @@ class OutputPluginManager:
     Manages output format plugins.
 
     Implements plugin registration and format selection.
+    H-8: Now accepts optional config for plugin selection.
     """
 
-    def __init__(self):
-        self._plugins: dict[str, OutputPlugin] = {}
-        # Register default plugins
-        self.register(EMLPlugin())
-        self.register(MarkdownPlugin())
-        self.register(JSONPlugin())
+    def __init__(self, config: Any = None):
+        """
+        Initialize plugin manager.
 
-    def register(self, plugin: OutputPlugin) -> None:
-        """Register an output plugin."""
+        Args:
+            config: Optional AppConfig for plugin selection.
+                   If None, all default plugins are registered.
+        """
+        self._plugins: dict[str, OutputPlugin] = {}
+        self._config = config
+        self._register_default_plugins()
+
+    def _register_default_plugins(self) -> None:
+        """Register plugins based on config or defaults."""
+        available_plugins = {
+            'eml': EMLPlugin,
+            'markdown': MarkdownPlugin,
+            'json': JSONPlugin,
+        }
+
+        # Determine which plugins to load
+        if self._config and hasattr(self._config, 'output_plugins'):
+            plugins_to_load = self._config.output_plugins
+        else:
+            # Default: load all plugins
+            plugins_to_load = list(available_plugins.keys())
+
+        for name in plugins_to_load:
+            if name in available_plugins:
+                self._plugins[name] = available_plugins[name]()
+
+    def register(self, plugin: Any) -> None:
+        """
+        Register an output plugin with protocol validation.
+
+        H-5: Validates plugin implements OutputPluginProtocol.
+
+        Args:
+            plugin: Plugin instance to register
+
+        Raises:
+            TypeError: If plugin doesn't implement OutputPluginProtocol
+        """
+        if not isinstance(plugin, OutputPluginProtocol):
+            raise TypeError(
+                f"Plugin must implement OutputPluginProtocol, got {type(plugin).__name__}"
+            )
         self._plugins[plugin.name] = plugin
 
     def get_plugin(self, name: str) -> OutputPlugin | None:

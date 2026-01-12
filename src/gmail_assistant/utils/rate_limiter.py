@@ -3,19 +3,24 @@ Advanced rate limiting with exponential backoff for Gmail API.
 Implements proper quota management and request throttling.
 
 H-2 fix: Uses centralized RateLimitError from exceptions.py
+L-8 fix: Rate limits configurable via AppConfig
 """
+from __future__ import annotations
 
 import logging
 import random
 import threading
 import time
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from googleapiclient.errors import HttpError
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from gmail_assistant.core.exceptions import RateLimitError
+
+if TYPE_CHECKING:
+    from gmail_assistant.core.config import AppConfig
 
 logger = logging.getLogger(__name__)
 
@@ -30,23 +35,33 @@ class GmailRateLimiter:
     - Most operations cost 5-10 quota units
     """
 
-    def __init__(self,
-                 requests_per_second: float = 10.0,
-                 max_retries: int = 5,
-                 base_delay: float = 1.0,
-                 max_delay: float = 300.0,
-                 jitter: bool = True):
+    def __init__(
+        self,
+        requests_per_second: float | None = None,
+        max_retries: int = 5,
+        base_delay: float = 1.0,
+        max_delay: float = 300.0,
+        jitter: bool = True,
+        config: AppConfig | None = None,
+    ):
         """
         Initialize rate limiter.
 
         Args:
-            requests_per_second: Maximum requests per second
+            requests_per_second: Maximum requests per second (overrides config)
             max_retries: Maximum retry attempts
             base_delay: Base delay for exponential backoff
             max_delay: Maximum delay between retries
             jitter: Whether to add random jitter to delays
+            config: Optional AppConfig to read rate_limit_per_second from
         """
-        self.requests_per_second = requests_per_second
+        # L-8: Use config if provided, otherwise use explicit param or default
+        if requests_per_second is not None:
+            self.requests_per_second = requests_per_second
+        elif config is not None:
+            self.requests_per_second = config.rate_limit_per_second
+        else:
+            self.requests_per_second = 10.0  # Default fallback
         self.max_retries = max_retries
         self.base_delay = base_delay
         self.max_delay = max_delay

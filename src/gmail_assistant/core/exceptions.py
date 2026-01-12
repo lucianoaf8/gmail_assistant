@@ -15,10 +15,12 @@ __all__ = [
     "CircuitBreakerError",
     "CircularDependencyError",
     "ConfigError",
+    "ConfigValidationError",
     "ExportError",
     "GmailAssistantError",
     "NetworkError",
     "ParseError",
+    "ParquetExportError",
     "RateLimitError",
     "ServiceNotFoundError",
     "ValidationError",
@@ -93,6 +95,16 @@ class CircularDependencyError(GmailAssistantError):
 
 class ExportError(GmailAssistantError):
     """Data export operation errors."""
+    pass
+
+
+class ParquetExportError(ExportError):
+    """Parquet export operation failed."""
+    pass
+
+
+class ConfigValidationError(ConfigError):
+    """Configuration validation failed."""
     pass
 
 

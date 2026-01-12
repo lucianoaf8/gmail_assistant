@@ -2,16 +2,20 @@
 
 from .base import (
     AuthenticationBase,
-    AuthenticationError,
+    AuthenticationError,  # Deprecated: Use AuthError from gmail_assistant.core.exceptions
     FullGmailAuth,
     GmailModifyAuth,
     ReadOnlyGmailAuth,
 )
 from .credential_manager import SecureCredentialManager
 
+# H-6: Also export AuthError for migration
+from gmail_assistant.core.exceptions import AuthError
+
 __all__ = [
     'AuthenticationBase',
-    'AuthenticationError',
+    'AuthenticationError',  # Deprecated in v2.0.0, removal in v3.0.0
+    'AuthError',  # Preferred - use this instead of AuthenticationError
     'FullGmailAuth',
     'GmailModifyAuth',
     'ReadOnlyGmailAuth',

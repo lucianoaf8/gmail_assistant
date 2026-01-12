@@ -1,18 +1,62 @@
-"""Fetch command implementation (C-2 fix)."""
+"""Fetch command implementation (C-2 fix, H-1 DI integration, L-9 secure writes)."""
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 
+from gmail_assistant.core.container import ServiceContainer, get_global_container
 from gmail_assistant.core.exceptions import AuthError
 from gmail_assistant.core.fetch.checkpoint import CheckpointManager
 from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gmail_assistant.utils.secure_file import secure_write_file, PathValidationError
 from gmail_assistant.utils.secure_logger import SecureLogger
 
+if TYPE_CHECKING:
+    from gmail_assistant.core.container import ServiceContainer
+
 logger = SecureLogger(__name__)
+
+
+def _get_fetcher(
+    credentials_path: Path,
+    container: ServiceContainer | None = None,
+) -> GmailFetcher:
+    """
+    Get a GmailFetcher instance, preferring DI container when available.
+
+    H-1 fix: Enables testability by allowing mock fetcher injection.
+
+    Args:
+        credentials_path: Path to credentials.json
+        container: Optional DI container
+
+    Returns:
+        GmailFetcher instance
+    """
+    # Try provided container first
+    if container is not None:
+        try:
+            fetcher = container.try_resolve(GmailFetcher)
+            if fetcher is not None:
+                return fetcher
+        except Exception:
+            pass  # Fall through to other methods
+
+    # Try global container
+    global_container = get_global_container()
+    if global_container is not None:
+        try:
+            fetcher = global_container.try_resolve(GmailFetcher)
+            if fetcher is not None:
+                return fetcher
+        except Exception:
+            pass  # Fall through to direct instantiation
+
+    # Fall back to direct instantiation (maintains backward compatibility)
+    return GmailFetcher(str(credentials_path))
 
 
 def fetch_emails(
@@ -21,10 +65,11 @@ def fetch_emails(
     output_dir: Path,
     output_format: str,
     credentials_path: Path,
-    resume: bool = False
+    resume: bool = False,
+    container: ServiceContainer | None = None,
 ) -> dict[str, Any]:
     """
-    Fetch emails from Gmail (C-2 implementation).
+    Fetch emails from Gmail (C-2 implementation, H-1 DI integration).
 
     Args:
         query: Gmail search query
@@ -33,6 +78,7 @@ def fetch_emails(
         output_format: json, mbox, or eml
         credentials_path: Path to credentials.json
         resume: Resume from last checkpoint
+        container: Optional DI container for service resolution (H-1 fix)
 
     Returns:
         Dict with fetch statistics
@@ -55,8 +101,8 @@ def fetch_emails(
         else:
             click.echo("No checkpoint found, starting fresh")
 
-    # Initialize fetcher
-    fetcher = GmailFetcher(str(credentials_path))
+    # H-1: Use container for fetcher resolution, or fall back to direct instantiation
+    fetcher = _get_fetcher(credentials_path, container)
     if not fetcher.authenticate():
         raise AuthError("Gmail authentication failed")
 
@@ -127,35 +173,70 @@ def fetch_emails(
 
 
 def _save_email(email_data: dict[str, Any], output_dir: Path, output_format: str, index: int) -> None:
-    """Save email in the specified format."""
-    # Generate safe filename
-    subject = email_data.get('subject', 'no_subject')[:50]
+    """
+    Save email in the specified format.
+
+    L-9 fix: Uses secure_write_file with path validation to prevent
+    path traversal attacks and ensure files stay within output_dir.
+    """
     import re
+
+    # Generate safe filename - extract subject from headers if not at top level
+    subject = email_data.get('subject')
+    if not subject and 'payload' in email_data:
+        headers = email_data.get('payload', {}).get('headers', [])
+        for header in headers:
+            if header.get('name', '').lower() == 'subject':
+                subject = header.get('value', '')
+                break
+    subject = (subject or 'no_subject')[:50]
     safe_subject = re.sub(r'[<>:"/\\|?*]', '_', subject)
     msg_id = email_data.get('id', str(index))[:16]
 
-    if output_format == 'json':
-        filename = f"{index:05d}_{safe_subject}_{msg_id}.json"
-        filepath = output_dir / filename
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(email_data, f, indent=2, default=str)
+    # L-9: Define allowed extensions per format
+    allowed_extensions = {'.json', '.eml', '.mbox'}
 
-    elif output_format == 'eml':
-        filename = f"{index:05d}_{safe_subject}_{msg_id}.eml"
-        filepath = output_dir / filename
-        raw_content = email_data.get('raw_content', '')
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(raw_content)
+    try:
+        if output_format == 'json':
+            filename = f"{index:05d}_{safe_subject}_{msg_id}.json"
+            content = json.dumps(email_data, indent=2, default=str)
+            secure_write_file(
+                output_dir / filename,
+                content,
+                base_dir=output_dir,
+                allowed_extensions={'.json'},
+            )
 
-    elif output_format == 'mbox':
-        # Append to single mbox file
-        mbox_path = output_dir / "emails.mbox"
-        raw_content = email_data.get('raw_content', '')
-        with open(mbox_path, 'a', encoding='utf-8') as f:
-            # mbox format requires From line
-            f.write(f"From {email_data.get('sender', 'unknown')}\n")
-            f.write(raw_content)
-            f.write("\n\n")
+        elif output_format == 'eml':
+            filename = f"{index:05d}_{safe_subject}_{msg_id}.eml"
+            raw_content = email_data.get('raw_content', '')
+            secure_write_file(
+                output_dir / filename,
+                raw_content,
+                base_dir=output_dir,
+                allowed_extensions={'.eml'},
+            )
+
+        elif output_format == 'mbox':
+            # Append to single mbox file - use secure write for initial creation
+            mbox_path = output_dir / "emails.mbox"
+            raw_content = email_data.get('raw_content', '')
+            mbox_entry = f"From {email_data.get('sender', 'unknown')}\n{raw_content}\n\n"
+
+            # For mbox, we need to append - validate path first
+            from gmail_assistant.utils.secure_file import validate_write_path
+            validated_path = validate_write_path(
+                mbox_path,
+                base_dir=output_dir,
+                allowed_extensions={'.mbox'}
+            )
+            # Append mode for mbox
+            with open(validated_path, 'a', encoding='utf-8') as f:
+                f.write(mbox_entry)
+
+    except PathValidationError as e:
+        logger.error(f"L-9 security: Path validation failed: {e}")
+        raise
 
 
 __all__ = ['fetch_emails']

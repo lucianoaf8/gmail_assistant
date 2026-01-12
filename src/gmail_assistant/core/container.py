@@ -29,23 +29,18 @@ from typing import (
     TypeVar,
 )
 
+from .exceptions import (
+    CircularDependencyError,
+    ServiceNotFoundError,
+)
 from .protocols import (
     EmailRepositoryProtocol,  # M-9: Repository pattern
+    implements_protocol,  # M-7: Runtime protocol validation
 )
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
-
-
-class ServiceNotFoundError(Exception):
-    """Raised when a service cannot be resolved."""
-    pass
-
-
-class CircularDependencyError(Exception):
-    """Raised when a circular dependency is detected."""
-    pass
 
 
 class ServiceLifetime:
@@ -135,7 +130,8 @@ class ServiceContainer:
         self,
         service_type: type[T],
         instance: T,
-        lifetime: str = ServiceLifetime.SINGLETON
+        lifetime: str = ServiceLifetime.SINGLETON,
+        validate_protocol: bool = True,
     ) -> 'ServiceContainer':
         """
         Register a service instance.
@@ -144,16 +140,34 @@ class ServiceContainer:
             service_type: The type/interface to register
             instance: The service instance
             lifetime: Service lifetime (default: singleton)
+            validate_protocol: Whether to validate protocol compliance (M-7)
 
         Returns:
             Self for method chaining.
+
+        Raises:
+            TypeError: If validate_protocol=True and instance doesn't implement protocol.
         """
+        # M-7: Runtime protocol validation for Protocol types
+        if validate_protocol and self._is_protocol_type(service_type):
+            if not implements_protocol(instance, service_type):
+                raise TypeError(
+                    f"Instance of {type(instance).__name__} does not implement "
+                    f"{service_type.__name__} protocol"
+                )
+
         with self._lock:
             self._services[service_type] = ServiceDescriptor(
                 service_type, instance, lifetime
             )
             logger.debug(f"Registered service: {service_type.__name__}")
         return self
+
+    @staticmethod
+    def _is_protocol_type(service_type: type) -> bool:
+        """Check if a type is a runtime-checkable Protocol."""
+        # Protocol classes have this attribute set by @runtime_checkable
+        return getattr(service_type, '_is_protocol', False)
 
     def register_factory(
         self,
@@ -345,7 +359,6 @@ def create_default_container() -> ServiceContainer:
     from .constants import (
         CONSERVATIVE_REQUESTS_PER_SECOND,
     )
-    from .processing.database import EmailDatabaseImporter
 
     container = ServiceContainer()
 
@@ -359,12 +372,74 @@ def create_default_container() -> ServiceContainer:
     container.register(ErrorHandler, ErrorHandler())
 
     # M-9: Register email repository for persistence operations
+    # H-3 fix: Use deferred import inside factory to maintain DI abstraction
+    def _create_email_repository():
+        from .processing.database import EmailDatabaseImporter
+        return EmailDatabaseImporter()
+
     container.register_factory(
         EmailRepositoryProtocol,
-        lambda: EmailDatabaseImporter()
+        _create_email_repository
     )
 
     logger.info("Created default container with core utilities")
+    return container
+
+
+def create_container_with_repository(
+    repository_type: str = 'sqlite',
+    repository_path: str | None = None
+) -> ServiceContainer:
+    """
+    Create container with configurable repository type.
+
+    H-3 fix: Supports switching between repository implementations.
+
+    Args:
+        repository_type: 'sqlite' or 'file'
+        repository_path: Path for file-based repository (required if repository_type='file')
+
+    Returns:
+        Configured ServiceContainer.
+
+    Raises:
+        ValueError: If repository_type is unknown.
+    """
+    from ..utils.cache_manager import CacheManager
+    from ..utils.error_handler import ErrorHandler
+    from ..utils.input_validator import InputValidator
+    from ..utils.rate_limiter import GmailRateLimiter
+    from .constants import CONSERVATIVE_REQUESTS_PER_SECOND
+
+    container = ServiceContainer()
+
+    # Register core utilities
+    container.register(CacheManager, CacheManager())
+    container.register_factory(
+        GmailRateLimiter,
+        lambda: GmailRateLimiter(requests_per_second=CONSERVATIVE_REQUESTS_PER_SECOND)
+    )
+    container.register_type(InputValidator, InputValidator, ServiceLifetime.TRANSIENT)
+    container.register(ErrorHandler, ErrorHandler())
+
+    # Register repository based on type
+    if repository_type == 'sqlite':
+        def _create_repo():
+            from .processing.database import EmailDatabaseImporter
+            return EmailDatabaseImporter()
+    elif repository_type == 'file':
+        if repository_path is None:
+            repository_path = './email_storage'
+
+        def _create_repo():
+            from .processing.file_repository import FileEmailRepository
+            return FileEmailRepository(repository_path)
+    else:
+        raise ValueError(f"Unknown repository type: {repository_type}. Use 'sqlite' or 'file'.")
+
+    container.register_factory(EmailRepositoryProtocol, _create_repo)
+
+    logger.info(f"Created container with {repository_type} repository")
     return container
 
 
@@ -384,7 +459,7 @@ def create_readonly_container(
     Returns:
         Configured ServiceContainer.
     """
-    from .auth_base import ReadOnlyGmailAuth
+    from .auth.base import ReadOnlyGmailAuth
     from .gmail_assistant import GmailFetcher
 
     container = create_default_container()
@@ -421,7 +496,7 @@ def create_modify_container(
     Returns:
         Configured ServiceContainer.
     """
-    from .auth_base import GmailModifyAuth
+    from .auth.base import GmailModifyAuth
 
     container = create_default_container()
 
@@ -454,7 +529,7 @@ def create_full_container(
         Configured ServiceContainer.
     """
     from ..parsers.advanced_email_parser import EmailContentParser
-    from .auth_base import FullGmailAuth
+    from .auth.base import FullGmailAuth
     from .gmail_assistant import GmailFetcher
 
     container = create_default_container()
@@ -503,18 +578,45 @@ def inject(service_type: type[T]) -> Callable[[Callable[..., Any]], Callable[...
     return decorator
 
 
-# Global container for convenience (optional usage)
+# =============================================================================
+# Global Container Instance
+# =============================================================================
+#
+# Thread Safety: The global container uses lazy initialization. While the
+# ServiceContainer class itself is thread-safe (uses RLock for operations),
+# the global variable initialization is protected by a separate lock.
+#
+# Recommended patterns:
+# 1. Call set_global_container() at application startup before threads
+# 2. Use explicit container passing for better testability
+# 3. Consider scoped containers for request-based isolation
+
 _global_container: ServiceContainer | None = None
+_global_container_lock = threading.Lock()
 
 
 def set_global_container(container: ServiceContainer) -> None:
-    """Set the global container for convenience methods."""
+    """
+    Set the global container (thread-safe).
+
+    Args:
+        container: ServiceContainer instance to use globally.
+
+    Note:
+        Should be called once at application startup before spawning threads.
+    """
     global _global_container
-    _global_container = container
+    with _global_container_lock:
+        _global_container = container
 
 
 def get_global_container() -> ServiceContainer | None:
-    """Get the global container."""
+    """
+    Get the global container (thread-safe).
+
+    Returns:
+        Global ServiceContainer or None if not set.
+    """
     return _global_container
 
 

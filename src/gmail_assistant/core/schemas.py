@@ -131,10 +131,12 @@ class Email(BaseModel):
         """
         Convert to legacy EmailMetadata for backward compatibility.
 
-        DEPRECATED: Use Email directly instead.
+        .. deprecated:: 2.0.0
+            Use Email directly. Will be removed in version 3.0.0.
         """
         warnings.warn(
-            "to_email_metadata() is deprecated. Use Email directly.",
+            "to_email_metadata() is deprecated since v2.0.0 and will be removed in v3.0.0. "
+            "Use Email directly instead.",
             DeprecationWarning,
             stacklevel=2
         )
@@ -154,10 +156,12 @@ class Email(BaseModel):
         """
         Convert to legacy EmailData for backward compatibility.
 
-        DEPRECATED: Use Email directly instead.
+        .. deprecated:: 2.0.0
+            Use Email directly. Will be removed in version 3.0.0.
         """
         warnings.warn(
-            "to_email_data() is deprecated. Use Email directly.",
+            "to_email_data() is deprecated since v2.0.0 and will be removed in v3.0.0. "
+            "Use Email directly instead.",
             DeprecationWarning,
             stacklevel=2
         )
@@ -248,13 +252,15 @@ class EmailBatch(BaseModel):
 
 
 # =============================================================================
-# Backward Compatibility Classes (DEPRECATED)
+# Backward Compatibility Classes (DEPRECATED - Will be removed in v3.0.0)
 # =============================================================================
 
 class EmailMetadataCompat(BaseModel):
     """
-    DEPRECATED: Legacy EmailMetadata for backward compatibility.
-    Use Email class instead.
+    Legacy EmailMetadata for backward compatibility.
+
+    .. deprecated:: 2.0.0
+        Use :class:`Email` instead. Will be removed in version 3.0.0.
     """
     id: str
     thread_id: str
@@ -268,7 +274,8 @@ class EmailMetadataCompat(BaseModel):
 
     def __init__(self, **data):
         warnings.warn(
-            "EmailMetadataCompat is deprecated. Use Email class instead.",
+            "EmailMetadataCompat is deprecated since v2.0.0 and will be removed in v3.0.0. "
+            "Use Email class instead.",
             DeprecationWarning,
             stacklevel=2
         )
@@ -294,8 +301,10 @@ class EmailMetadataCompat(BaseModel):
 
 class EmailDataCompat(BaseModel):
     """
-    DEPRECATED: Legacy EmailData for backward compatibility.
-    Use Email class instead.
+    Legacy EmailData for backward compatibility.
+
+    .. deprecated:: 2.0.0
+        Use :class:`Email` instead. Will be removed in version 3.0.0.
     """
     id: str
     subject: str
@@ -307,7 +316,8 @@ class EmailDataCompat(BaseModel):
 
     def __init__(self, **data):
         warnings.warn(
-            "EmailDataCompat is deprecated. Use Email class instead.",
+            "EmailDataCompat is deprecated since v2.0.0 and will be removed in v3.0.0. "
+            "Use Email class instead.",
             DeprecationWarning,
             stacklevel=2
         )

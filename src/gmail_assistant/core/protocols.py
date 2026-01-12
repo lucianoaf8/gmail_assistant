@@ -37,8 +37,11 @@ class EmailMetadata:
     """
     Metadata for a single email message.
 
-    DEPRECATED (H-1): Use Email from gmail_assistant.core.schemas instead.
-    This class is kept for backward compatibility.
+    .. deprecated:: 2.0.0
+        Use :class:`Email` from :mod:`gmail_assistant.core.schemas` instead.
+        Will be removed in version 3.0.0.
+
+    This class is kept for backward compatibility only.
     """
     id: str
     thread_id: str
@@ -53,7 +56,8 @@ class EmailMetadata:
     def __post_init__(self) -> None:
         import warnings
         warnings.warn(
-            "EmailMetadata is deprecated. Use Email from core.schemas instead.",
+            "EmailMetadata is deprecated since v2.0.0 and will be removed in v3.0.0. "
+            "Use Email from gmail_assistant.core.schemas instead.",
             DeprecationWarning,
             stacklevel=2
         )

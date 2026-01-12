@@ -7,10 +7,13 @@ from unittest.mock import patch
 import pytest
 
 from gmail_assistant.core.auth.rate_limiter import (
-    AuthRateLimiter,
+    AuthenticationThrottler,
     RateLimitState,
-    get_auth_rate_limiter,
+    get_auth_throttler,
 )
+
+# Backward compatibility alias for tests
+AuthRateLimiter = AuthenticationThrottler
 
 
 @pytest.fixture
@@ -42,8 +45,8 @@ class TestRateLimitState:
 
 
 @pytest.mark.unit
-class TestAuthRateLimiterInit:
-    """Test AuthRateLimiter initialization."""
+class TestAuthenticationThrottlerInit:
+    """Test AuthenticationThrottler initialization."""
 
     def test_init_creates_empty_states(self):
         """Should initialize with empty state storage."""
@@ -349,21 +352,21 @@ class TestThreadSafety:
 
 
 @pytest.mark.unit
-class TestGetAuthRateLimiter:
-    """Test get_auth_rate_limiter function."""
+class TestGetAuthThrottler:
+    """Test get_auth_throttler function."""
 
-    def test_get_auth_rate_limiter_returns_instance(self):
-        """Should return AuthRateLimiter instance."""
-        limiter = get_auth_rate_limiter()
+    def test_get_auth_throttler_returns_instance(self):
+        """Should return AuthenticationThrottler instance."""
+        throttler = get_auth_throttler()
 
-        assert isinstance(limiter, AuthRateLimiter)
+        assert isinstance(throttler, AuthenticationThrottler)
 
-    def test_get_auth_rate_limiter_singleton(self):
+    def test_get_auth_throttler_singleton(self):
         """Should return same instance on multiple calls."""
-        limiter1 = get_auth_rate_limiter()
-        limiter2 = get_auth_rate_limiter()
+        throttler1 = get_auth_throttler()
+        throttler2 = get_auth_throttler()
 
-        assert limiter1 is limiter2
+        assert throttler1 is throttler2
 
 
 @pytest.mark.unit

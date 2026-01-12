@@ -1,8 +1,11 @@
 """
-Authentication rate limiting for Gmail Assistant.
+Authentication throttling for Gmail Assistant.
 Prevents brute force attacks on authentication.
 
-Security: Rate limits authentication attempts (L-2 fix)
+Security: Throttles authentication attempts (L-2 fix)
+
+Note: This is AuthenticationThrottler (brute-force protection), NOT the same as
+GmailRateLimiter in utils/rate_limiter.py (API quota management).
 """
 
 import logging
@@ -21,11 +24,12 @@ class RateLimitState:
     locked_until: float = 0.0
 
 
-class AuthRateLimiter:
+class AuthenticationThrottler:
     """
-    Rate limiter for authentication attempts (L-2 security fix).
+    Authentication attempt throttler (L-2 security fix).
 
     Prevents brute force attacks by limiting failed authentication attempts.
+    NOT the same as GmailRateLimiter which handles API quota management.
     """
 
     # Configuration
@@ -179,10 +183,30 @@ class AuthRateLimiter:
                 logger.debug(f"Reset rate limit state for {identifier}")
 
 
-# Global rate limiter instance
-_auth_rate_limiter = AuthRateLimiter()
+# Global throttler instance
+_auth_throttler = AuthenticationThrottler()
 
 
-def get_auth_rate_limiter() -> AuthRateLimiter:
-    """Get the global authentication rate limiter instance"""
-    return _auth_rate_limiter
+def get_auth_throttler() -> AuthenticationThrottler:
+    """Get the global authentication throttler instance."""
+    return _auth_throttler
+
+
+# Backward compatibility alias (deprecated)
+def get_auth_rate_limiter() -> AuthenticationThrottler:
+    """
+    Deprecated: Use get_auth_throttler() instead.
+
+    This alias exists for backward compatibility.
+    """
+    import warnings
+    warnings.warn(
+        "get_auth_rate_limiter() is deprecated. Use get_auth_throttler() instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return _auth_throttler
+
+
+# Type alias for backward compatibility
+AuthRateLimiter = AuthenticationThrottler

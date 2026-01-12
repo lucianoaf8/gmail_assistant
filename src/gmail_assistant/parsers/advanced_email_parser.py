@@ -555,21 +555,149 @@ class EmailContentParser:
 
         return min(score, 1.0)
 
-    def parse_email_content(self, html_content: str, plain_text: str = "",
-                          sender: str = "", subject: str = "") -> dict[str, str | float]:
+    def _validate_parse_inputs(
+        self,
+        html_content: str,
+        plain_text: str,
+        sender: str,
+        subject: str
+    ) -> tuple[str, str, str, str]:
         """
-        Main parsing method that tries multiple strategies and returns the best result
+        Validate and sanitize parse inputs.
+
+        Args:
+            html_content: HTML email content
+            plain_text: Plain text alternative
+            sender: Email sender
+            subject: Email subject
+
+        Returns:
+            Tuple of validated (html_content, plain_text, sender, subject)
+
+        Raises:
+            ValidationError: If input validation fails
         """
+        if html_content:
+            html_content = self.validator.validate_string(html_content, max_length=5000000)
+        if plain_text:
+            plain_text = self.validator.validate_string(plain_text, max_length=1000000)
+        if sender:
+            sender = self.validator.validate_string(sender, max_length=500)
+        if subject:
+            subject = self.validator.validate_string(subject, max_length=1000)
+        return html_content, plain_text, sender, subject
+
+    def _execute_strategy(
+        self,
+        strategy: str,
+        html_content: str,
+        sender: str
+    ) -> tuple[str, float]:
+        """
+        Execute a single parsing strategy.
+
+        Args:
+            strategy: Strategy name
+            html_content: HTML content to parse
+            sender: Email sender for context
+
+        Returns:
+            Tuple of (markdown, quality_score)
+        """
+        strategy_map = {
+            "smart": lambda: self.parse_with_smart_strategy(html_content, sender),
+            "readability": lambda: self.parse_with_readability(html_content),
+            "trafilatura": lambda: self.parse_with_trafilatura(html_content),
+            "html2text": lambda: self.parse_with_html2text(html_content),
+            "markdownify": lambda: self.parse_with_markdownify(html_content),
+        }
+        executor = strategy_map.get(strategy)
+        if executor:
+            return executor()
+        return "", 0.0
+
+    def _execute_parsing_strategies(
+        self,
+        html_content: str,
+        sender: str
+    ) -> list[dict[str, any]]:
+        """
+        Execute all configured parsing strategies.
+
+        Args:
+            html_content: HTML content to parse
+            sender: Email sender for context
+
+        Returns:
+            List of result dicts with markdown, strategy, quality, length
+        """
+        results = []
+        for strategy in self.config["strategies"]:
+            logger.info(f"Trying strategy: {strategy}")
+            markdown, quality = self._execute_strategy(strategy, html_content, sender)
+            if markdown and quality > 0:
+                results.append({
+                    "markdown": markdown,
+                    "strategy": strategy,
+                    "quality": quality,
+                    "length": len(markdown)
+                })
+        return results
+
+    def _select_best_result(
+        self,
+        results: list[dict[str, any]],
+        html_content: str,
+        sender: str,
+        subject: str
+    ) -> dict[str, any]:
+        """
+        Select best parsing result and add metadata.
+
+        Args:
+            results: List of parsing results
+            html_content: Original HTML for type detection
+            sender: Email sender
+            subject: Email subject
+
+        Returns:
+            Best result dict with metadata added
+        """
+        best_result = max(results, key=lambda x: x["quality"])
+        best_result["metadata"] = {
+            "email_type": self.detect_email_type(html_content, sender),
+            "sender": sender,
+            "subject": subject,
+            "strategies_tried": len(results),
+            "alternative_results": len(results) - 1
+        }
+        logger.info(f"Best strategy: {best_result['strategy']} (quality: {best_result['quality']:.2f})")
+        return best_result
+
+    def parse_email_content(
+        self,
+        html_content: str,
+        plain_text: str = "",
+        sender: str = "",
+        subject: str = ""
+    ) -> dict[str, str | float]:
+        """
+        Main parsing method - coordinates strategies and returns best result.
+
+        Args:
+            html_content: HTML email content
+            plain_text: Plain text alternative
+            sender: Email sender
+            subject: Email subject
+
+        Returns:
+            Dict with markdown, strategy, quality, and metadata
+        """
+        # Validate inputs
         try:
-            # Validate inputs
-            if html_content:
-                html_content = self.validator.validate_string(html_content, max_length=5000000)  # 5MB limit
-            if plain_text:
-                plain_text = self.validator.validate_string(plain_text, max_length=1000000)  # 1MB limit
-            if sender:
-                sender = self.validator.validate_string(sender, max_length=500)
-            if subject:
-                subject = self.validator.validate_string(subject, max_length=1000)
+            html_content, plain_text, sender, subject = self._validate_parse_inputs(
+                html_content, plain_text, sender, subject
+            )
         except ValidationError as e:
             logger.error(f"Input validation failed: {e}")
             return {
@@ -579,6 +707,7 @@ class EmailContentParser:
                 "metadata": {"error": f"Input validation failed: {e}"}
             }
 
+        # Handle empty content
         if not html_content and not plain_text:
             return {
                 "markdown": "",
@@ -587,7 +716,7 @@ class EmailContentParser:
                 "metadata": {"error": "No content provided"}
             }
 
-        # If only plain text is available, return it formatted
+        # Plain text only
         if plain_text and not html_content:
             return {
                 "markdown": plain_text,
@@ -596,36 +725,11 @@ class EmailContentParser:
                 "metadata": {"type": "plain_text"}
             }
 
-        results = []
+        # Execute strategies
+        results = self._execute_parsing_strategies(html_content, sender)
 
-        # Try each strategy
-        for strategy in self.config["strategies"]:
-            logger.info(f"Trying strategy: {strategy}")
-
-            if strategy == "smart":
-                markdown, quality = self.parse_with_smart_strategy(html_content, sender)
-            elif strategy == "readability":
-                markdown, quality = self.parse_with_readability(html_content)
-            elif strategy == "trafilatura":
-                markdown, quality = self.parse_with_trafilatura(html_content)
-            elif strategy == "html2text":
-                markdown, quality = self.parse_with_html2text(html_content)
-            elif strategy == "markdownify":
-                markdown, quality = self.parse_with_markdownify(html_content)
-            else:
-                continue
-
-            if markdown and quality > 0:
-                results.append({
-                    "markdown": markdown,
-                    "strategy": strategy,
-                    "quality": quality,
-                    "length": len(markdown)
-                })
-
-        # Choose best result
+        # Handle no results
         if not results:
-            # Fallback to plain text if available
             if plain_text:
                 return {
                     "markdown": plain_text,
@@ -633,29 +737,15 @@ class EmailContentParser:
                     "quality": 0.6,
                     "metadata": {"type": "fallback"}
                 }
-            else:
-                return {
-                    "markdown": "*(Content could not be parsed)*",
-                    "strategy": "failed",
-                    "quality": 0.0,
-                    "metadata": {"error": "All parsing strategies failed"}
-                }
+            return {
+                "markdown": "*(Content could not be parsed)*",
+                "strategy": "failed",
+                "quality": 0.0,
+                "metadata": {"error": "All parsing strategies failed"}
+            }
 
-        # Sort by quality score and return best
-        best_result = max(results, key=lambda x: x["quality"])
-
-        # Add metadata
-        best_result["metadata"] = {
-            "email_type": self.detect_email_type(html_content, sender),
-            "sender": sender,
-            "subject": subject,
-            "strategies_tried": len(results),
-            "alternative_results": len(results) - 1
-        }
-
-        logger.info(f"Best strategy: {best_result['strategy']} (quality: {best_result['quality']:.2f})")
-
-        return best_result
+        # Select and return best result
+        return self._select_best_result(results, html_content, sender, subject)
 
 def main():
     """Test the parser with sample content"""

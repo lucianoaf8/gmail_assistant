@@ -16,13 +16,76 @@ logger = logging.getLogger(__name__)
 
 
 class MemoryTracker:
-    """Track memory usage and provide optimization recommendations."""
+    """Track memory usage with configurable percentage-based thresholds.
 
-    def __init__(self) -> None:
+    Thresholds are calculated as percentages of available system RAM,
+    with configurable minimum values to ensure reasonable behavior
+    on systems with limited memory.
+
+    Thread Safety: This class is safe for concurrent usage. Each instance
+    tracks its own state independently.
+    """
+
+    def __init__(
+        self,
+        warning_percent: float = 50.0,
+        critical_percent: float = 75.0,
+        min_warning_mb: int = 256,
+        min_critical_mb: int = 512,
+        warning_bytes: int | None = None,
+        critical_bytes: int | None = None,
+    ) -> None:
+        """
+        Initialize memory tracker with configurable thresholds.
+
+        Args:
+            warning_percent: Warning threshold as % of available RAM (default: 50%)
+            critical_percent: Critical threshold as % of available RAM (default: 75%)
+            min_warning_mb: Minimum warning threshold in MB (default: 256MB)
+            min_critical_mb: Minimum critical threshold in MB (default: 512MB)
+            warning_bytes: Override warning threshold in bytes (for testing)
+            critical_bytes: Override critical threshold in bytes (for testing)
+        """
         self.initial_memory = self._get_memory_usage()
         self.peak_memory = self.initial_memory
-        self.threshold_warning = 500 * 1024 * 1024  # 500MB
-        self.threshold_critical = 1024 * 1024 * 1024  # 1GB
+
+        # Calculate thresholds
+        if warning_bytes is not None:
+            self.threshold_warning = warning_bytes
+        else:
+            available = self._get_available_memory()
+            self.threshold_warning = max(
+                int(available * warning_percent / 100),
+                min_warning_mb * 1024 * 1024
+            )
+
+        if critical_bytes is not None:
+            self.threshold_critical = critical_bytes
+        else:
+            available = self._get_available_memory()
+            self.threshold_critical = max(
+                int(available * critical_percent / 100),
+                min_critical_mb * 1024 * 1024
+            )
+
+        logger.debug(
+            f"Memory thresholds: warning={self.threshold_warning / 1024 / 1024:.0f}MB, "
+            f"critical={self.threshold_critical / 1024 / 1024:.0f}MB"
+        )
+
+    def _get_available_memory(self) -> int:
+        """Get total available system memory in bytes.
+
+        Returns:
+            Total system RAM in bytes, or 4GB fallback if psutil unavailable.
+        """
+        try:
+            import psutil
+            return psutil.virtual_memory().total
+        except ImportError:
+            # Fallback to 4GB assumption if psutil unavailable
+            logger.warning("psutil not available, assuming 4GB system RAM")
+            return 4 * 1024 * 1024 * 1024
 
     def _get_memory_usage(self) -> int:
         """Get current memory usage in bytes."""

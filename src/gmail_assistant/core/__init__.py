@@ -15,10 +15,16 @@ Key exports:
 - GmailAssistantError: Base exception
 - ConfigError, AuthError, NetworkError, APIError: Domain exceptions
 
-Lazy imports are used to avoid ImportError when dependencies are not installed.
+C-3 fix: Uses explicit conditional imports instead of __getattr__ for
+better static analysis and clearer error messages.
 """
 
-# Direct imports for core functionality (always available)
+from typing import TYPE_CHECKING
+
+# =============================================================================
+# Core Imports (Always Available)
+# =============================================================================
+
 from gmail_assistant.core.config import AppConfig
 from gmail_assistant.core.exceptions import (
     APIError,
@@ -28,110 +34,218 @@ from gmail_assistant.core.exceptions import (
     NetworkError,
 )
 
+# =============================================================================
+# Auth Sub-package (Conditional)
+# =============================================================================
 
-# Use lazy imports to avoid import errors when dependencies are not installed
-def __getattr__(name):
-    """Lazy import handler for backwards compatibility."""
-    # Auth sub-package
-    if name == 'ReadOnlyGmailAuth':
-        from .auth.base import ReadOnlyGmailAuth
-        return ReadOnlyGmailAuth
-    elif name == 'GmailModifyAuth':
-        from .auth.base import GmailModifyAuth
-        return GmailModifyAuth
-    elif name == 'FullGmailAuth':
-        from .auth.base import FullGmailAuth
-        return FullGmailAuth
-    elif name == 'AuthenticationBase':
-        from .auth.base import AuthenticationBase
-        return AuthenticationBase
-    elif name == 'AuthenticationError':
-        from .auth.base import AuthenticationError
-        return AuthenticationError
-    elif name == 'SecureCredentialManager':
+try:
+    from .auth.base import (
+        AuthenticationBase,
+        FullGmailAuth,
+        GmailModifyAuth,
+        ReadOnlyGmailAuth,
+    )
+    from .auth.credential_manager import SecureCredentialManager
+    _AUTH_AVAILABLE = True
+except ImportError as _auth_err:
+    _AUTH_AVAILABLE = False
+    _auth_import_error = str(_auth_err)
+    # Type stubs for static analysis
+    if TYPE_CHECKING:
+        from .auth.base import (
+            AuthenticationBase,
+            FullGmailAuth,
+            GmailModifyAuth,
+            ReadOnlyGmailAuth,
+        )
         from .auth.credential_manager import SecureCredentialManager
-        return SecureCredentialManager
+    else:
+        ReadOnlyGmailAuth = None  # type: ignore[misc, assignment]
+        GmailModifyAuth = None  # type: ignore[misc, assignment]
+        FullGmailAuth = None  # type: ignore[misc, assignment]
+        AuthenticationBase = None  # type: ignore[misc, assignment]
+        SecureCredentialManager = None  # type: ignore[misc, assignment]
 
-    # Fetch sub-package
-    elif name == 'GmailFetcher':
+# H-6: Deprecated AuthenticationError alias
+AuthenticationError = AuthError  # Deprecated: Use AuthError directly
+
+# =============================================================================
+# Fetch Sub-package (Conditional)
+# =============================================================================
+
+try:
+    from .fetch.gmail_assistant import GmailFetcher
+    from .fetch.gmail_api_client import GmailAPIClient
+    _FETCH_AVAILABLE = True
+except ImportError as _fetch_err:
+    _FETCH_AVAILABLE = False
+    _fetch_import_error = str(_fetch_err)
+    if TYPE_CHECKING:
         from .fetch.gmail_assistant import GmailFetcher
-        return GmailFetcher
-    elif name == 'GmailAPIClient':
         from .fetch.gmail_api_client import GmailAPIClient
-        return GmailAPIClient
-    elif name == 'StreamingGmailFetcher':
-        from .fetch.streaming import StreamingGmailFetcher
-        return StreamingGmailFetcher
-    elif name == 'AsyncGmailFetcher':
+    else:
+        GmailFetcher = None  # type: ignore[misc, assignment]
+        GmailAPIClient = None  # type: ignore[misc, assignment]
+
+# Optional async fetchers
+try:
+    from .fetch.async_fetcher import AsyncGmailFetcher
+    from .fetch.streaming import StreamingGmailFetcher
+    from .fetch.incremental import IncrementalFetcher
+    _ASYNC_AVAILABLE = True
+except ImportError:
+    _ASYNC_AVAILABLE = False
+    if TYPE_CHECKING:
         from .fetch.async_fetcher import AsyncGmailFetcher
-        return AsyncGmailFetcher
-    elif name == 'IncrementalFetcher':
+        from .fetch.streaming import StreamingGmailFetcher
         from .fetch.incremental import IncrementalFetcher
-        return IncrementalFetcher
+    else:
+        AsyncGmailFetcher = None  # type: ignore[misc, assignment]
+        StreamingGmailFetcher = None  # type: ignore[misc, assignment]
+        IncrementalFetcher = None  # type: ignore[misc, assignment]
 
-    # Processing sub-package
-    elif name == 'EmailClassifier':
+# =============================================================================
+# Processing Sub-package (Conditional)
+# =============================================================================
+
+try:
+    from .processing.classifier import EmailClassifier
+    from .processing.extractor import EmailDataExtractor
+    from .processing.plaintext import EmailPlaintextProcessor
+    from .processing.database import EmailDatabaseImporter
+    _PROCESSING_AVAILABLE = True
+except ImportError:
+    _PROCESSING_AVAILABLE = False
+    if TYPE_CHECKING:
         from .processing.classifier import EmailClassifier
-        return EmailClassifier
-    elif name == 'EmailDataExtractor':
         from .processing.extractor import EmailDataExtractor
-        return EmailDataExtractor
-    elif name == 'EmailPlaintextProcessor':
         from .processing.plaintext import EmailPlaintextProcessor
-        return EmailPlaintextProcessor
-    elif name == 'EmailDatabaseImporter':
         from .processing.database import EmailDatabaseImporter
-        return EmailDatabaseImporter
+    else:
+        EmailClassifier = None  # type: ignore[misc, assignment]
+        EmailDataExtractor = None  # type: ignore[misc, assignment]
+        EmailPlaintextProcessor = None  # type: ignore[misc, assignment]
+        EmailDatabaseImporter = None  # type: ignore[misc, assignment]
 
-    # AI sub-package
-    elif name == 'AINewsletterDetector':
-        from .ai.newsletter_cleaner import AINewsletterDetector
-        return AINewsletterDetector
-    elif name == 'AINewsletterCleaner':
-        from .ai.newsletter_cleaner import AINewsletterCleaner
-        return AINewsletterCleaner
-    elif name == 'GmailAnalysisIntegration':
+# =============================================================================
+# AI Sub-package (Conditional)
+# =============================================================================
+
+try:
+    from .ai.newsletter_cleaner import AINewsletterDetector, AINewsletterCleaner
+    from .ai.analysis_integration import GmailAnalysisIntegration
+    _AI_AVAILABLE = True
+except ImportError:
+    _AI_AVAILABLE = False
+    if TYPE_CHECKING:
+        from .ai.newsletter_cleaner import AINewsletterDetector, AINewsletterCleaner
         from .ai.analysis_integration import GmailAnalysisIntegration
-        return GmailAnalysisIntegration
+    else:
+        AINewsletterDetector = None  # type: ignore[misc, assignment]
+        AINewsletterCleaner = None  # type: ignore[misc, assignment]
+        GmailAnalysisIntegration = None  # type: ignore[misc, assignment]
 
-    # Top-level modules
-    elif name == 'ServiceContainer':
+# =============================================================================
+# Container (Conditional)
+# =============================================================================
+
+try:
+    from .container import ServiceContainer
+    _CONTAINER_AVAILABLE = True
+except ImportError:
+    _CONTAINER_AVAILABLE = False
+    if TYPE_CHECKING:
         from .container import ServiceContainer
-        return ServiceContainer
+    else:
+        ServiceContainer = None  # type: ignore[misc, assignment]
 
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
+# =============================================================================
+# Availability Status
+# =============================================================================
+
+def get_availability_status() -> dict[str, bool]:
+    """
+    Get availability status of optional components.
+
+    Returns:
+        Dictionary mapping component names to availability status.
+
+    Example:
+        >>> from gmail_assistant.core import get_availability_status
+        >>> status = get_availability_status()
+        >>> if status['auth']:
+        ...     from gmail_assistant.core import ReadOnlyGmailAuth
+    """
+    return {
+        'auth': _AUTH_AVAILABLE,
+        'fetch': _FETCH_AVAILABLE,
+        'async': _ASYNC_AVAILABLE,
+        'processing': _PROCESSING_AVAILABLE,
+        'ai': _AI_AVAILABLE,
+        'container': _CONTAINER_AVAILABLE,
+    }
+
+
+def require_component(component_name: str) -> None:
+    """
+    Raise ImportError with helpful message if component unavailable.
+
+    Args:
+        component_name: Name of the component to check
+
+    Raises:
+        ImportError: If component is not available
+
+    Example:
+        >>> from gmail_assistant.core import require_component, AsyncGmailFetcher
+        >>> require_component('async')  # Raises if async deps missing
+    """
+    status = get_availability_status()
+    if not status.get(component_name, False):
+        raise ImportError(
+            f"Component '{component_name}' is not available. "
+            f"Install with: pip install gmail-assistant[{component_name}]"
+        )
+
+
+# =============================================================================
+# Public API
+# =============================================================================
 
 __all__ = [
-    'AINewsletterCleaner',
-    # AI
-    'AINewsletterDetector',
-    "APIError",
-    # Core - Configuration and Exceptions
+    # Core - Configuration and Exceptions (always available)
     "AppConfig",
-    'AsyncGmailFetcher',
-    "AuthError",
-    'AuthenticationBase',
-    'AuthenticationError',
-    "ConfigError",
-    # Processing
-    'EmailClassifier',
-    'EmailDataExtractor',
-    'EmailDatabaseImporter',
-    'EmailPlaintextProcessor',
-    'FullGmailAuth',
-    'GmailAPIClient',
-    'GmailAnalysisIntegration',
     "GmailAssistantError",
-    # Fetch
-    'GmailFetcher',
-    'GmailModifyAuth',
-    'IncrementalFetcher',
+    "ConfigError",
+    "AuthError",
     "NetworkError",
-    # Auth
-    'ReadOnlyGmailAuth',
-    'SecureCredentialManager',
-    # Top-level
-    'ServiceContainer',
-    'StreamingGmailFetcher',
+    "APIError",
+    # Auth (conditional)
+    "ReadOnlyGmailAuth",
+    "GmailModifyAuth",
+    "FullGmailAuth",
+    "AuthenticationBase",
+    "AuthenticationError",  # Deprecated in v2.0.0, removal in v3.0.0
+    "SecureCredentialManager",
+    # Fetch (conditional)
+    "GmailFetcher",
+    "GmailAPIClient",
+    "AsyncGmailFetcher",
+    "StreamingGmailFetcher",
+    "IncrementalFetcher",
+    # Processing (conditional)
+    "EmailClassifier",
+    "EmailDataExtractor",
+    "EmailPlaintextProcessor",
+    "EmailDatabaseImporter",
+    # AI (conditional)
+    "AINewsletterDetector",
+    "AINewsletterCleaner",
+    "GmailAnalysisIntegration",
+    # Container (conditional)
+    "ServiceContainer",
+    # Utility
+    "get_availability_status",
+    "require_component",
 ]

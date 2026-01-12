@@ -19,15 +19,26 @@ logger = logging.getLogger(__name__)
 
 
 class StreamingGmailFetcher:
-    """Gmail fetcher optimized for large-scale operations with memory streaming."""
+    """Gmail fetcher optimized for large-scale operations with memory streaming.
 
-    def __init__(self, credentials_file: str = 'credentials.json', batch_size: int = 100):
+    M-10: Includes backpressure support to prevent consumer overwhelm.
+    """
+
+    def __init__(
+        self,
+        credentials_file: str = 'credentials.json',
+        batch_size: int = 100,
+        max_buffer_size: int = 1000,
+        backpressure_threshold: float = 0.8,
+    ):
         """
         Initialize streaming Gmail fetcher.
 
         Args:
             credentials_file: Path to OAuth credentials
             batch_size: Number of emails to process in each batch
+            max_buffer_size: Maximum items before applying backpressure (M-10)
+            backpressure_threshold: Pause at this fraction of buffer (M-10)
         """
         self.credential_manager = SecureCredentialManager(credentials_file)
         self.memory_tracker = MemoryTracker()
@@ -35,6 +46,55 @@ class StreamingGmailFetcher:
         self.progressive_loader = ProgressiveLoader(batch_size=batch_size)
         self.batch_size = batch_size
         self.logger = logging.getLogger(__name__)
+
+        # M-10: Backpressure configuration
+        self.max_buffer_size = max_buffer_size
+        self.backpressure_threshold = backpressure_threshold
+        self._pending_count = 0
+
+    def _check_backpressure(self) -> bool:
+        """
+        Check if backpressure should be applied.
+
+        M-10: Prevents consumer overwhelm by monitoring pending items.
+
+        Returns:
+            True if should pause/slow down, False otherwise.
+        """
+        threshold = int(self.max_buffer_size * self.backpressure_threshold)
+        if self._pending_count >= threshold:
+            self.logger.warning(
+                f"Backpressure: {self._pending_count} items pending "
+                f"(threshold: {threshold})"
+            )
+            return True
+        return False
+
+    def _apply_backpressure(self) -> None:
+        """Apply backpressure by waiting and running GC."""
+        import time
+        threshold = int(self.max_buffer_size * self.backpressure_threshold)
+        while self._pending_count >= threshold:
+            time.sleep(0.1)
+            # Force GC during backpressure
+            memory_status = self.memory_tracker.check_memory()
+            if memory_status['status'] == 'critical':
+                self.memory_tracker.force_gc()
+
+    def acknowledge(self, count: int = 1) -> None:
+        """
+        Acknowledge that consumer has processed items.
+
+        M-10: Call this to release backpressure when items are consumed.
+
+        Args:
+            count: Number of items consumed
+        """
+        self._pending_count = max(0, self._pending_count - count)
+
+    def increment_pending(self, count: int = 1) -> None:
+        """Increment pending count when yielding items."""
+        self._pending_count += count
 
     @property
     def service(self):

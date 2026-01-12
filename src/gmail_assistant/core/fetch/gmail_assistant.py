@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """
-Gmail Email Fetcher and Backup Tool
-Downloads emails as EML files and optionally converts to markdown
+Gmail Email Fetcher and Backup Tool.
+
+Downloads emails as EML files and optionally converts to markdown.
+
+H-2 refactoring: This class now supports composition with extracted components:
+- EmailSearcher: Query execution and pagination
+- EmailDownloader: Content retrieval
+- EmailWriter: Output file creation
+- EmailOrganizer: File organization
+
+The original methods are preserved for backward compatibility, but new code
+should consider using the extracted components directly for better testability.
 """
+
+from __future__ import annotations
 
 import base64
 import binascii
@@ -11,6 +23,7 @@ import logging
 import os
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import html2text
 
@@ -26,9 +39,47 @@ from gmail_assistant.utils.memory_manager import (
     StreamingEmailProcessor,
 )
 
+if TYPE_CHECKING:
+    from gmail_assistant.core.fetch.email_downloader import EmailDownloader
+    from gmail_assistant.core.fetch.email_organizer import EmailOrganizer
+    from gmail_assistant.core.fetch.email_searcher import EmailSearcher
+    from gmail_assistant.core.fetch.email_writer import EmailWriter
+
 
 class GmailFetcher:
-    def __init__(self, credentials_file: str = 'credentials.json'):
+    """
+    Coordinates email fetching operations.
+
+    H-2 refactoring: This class can optionally delegate to specialized components:
+    - EmailSearcher for search operations
+    - EmailDownloader for content retrieval
+    - EmailWriter for file output
+    - EmailOrganizer for file organization
+
+    For backward compatibility, the original methods are preserved. New code
+    can inject the specialized components via constructor or access them
+    after authentication via the component properties.
+    """
+
+    def __init__(
+        self,
+        credentials_file: str = 'credentials.json',
+        *,
+        searcher: EmailSearcher | None = None,
+        downloader: EmailDownloader | None = None,
+        writer: EmailWriter | None = None,
+        organizer: EmailOrganizer | None = None,
+    ):
+        """
+        Initialize GmailFetcher.
+
+        Args:
+            credentials_file: Path to OAuth credentials file
+            searcher: Optional EmailSearcher component (H-2 composition)
+            downloader: Optional EmailDownloader component (H-2 composition)
+            writer: Optional EmailWriter component (H-2 composition)
+            organizer: Optional EmailOrganizer component (H-2 composition)
+        """
         self.auth = ReadOnlyGmailAuth(credentials_file)
         self.memory_tracker = MemoryTracker()
         self.streaming_processor = StreamingEmailProcessor()
@@ -38,12 +89,80 @@ class GmailFetcher:
         self.html_converter.ignore_images = False
         self.logger = logging.getLogger(__name__)
 
+        # H-2: Optional component injection for composition
+        self._searcher = searcher
+        self._downloader = downloader
+        self._writer = writer
+        self._organizer = organizer
+
     def authenticate(self):
         """Authenticate with Gmail API using secure credential storage"""
         result = self.auth.authenticate()
         if result:
             self.logger.info("Successfully authenticated with Gmail API")
+            # H-2: Initialize components after authentication if not injected
+            self._initialize_components()
         return result
+
+    def _initialize_components(self) -> None:
+        """
+        Initialize extracted components after authentication (H-2 refactoring).
+
+        Creates components only if they weren't injected and service is available.
+        """
+        service = self.auth.service
+        if service is None:
+            return
+
+        # Lazy import to avoid circular dependencies
+        from gmail_assistant.core.fetch.email_downloader import EmailDownloader
+        from gmail_assistant.core.fetch.email_searcher import EmailSearcher
+
+        if self._searcher is None:
+            self._searcher = EmailSearcher(service)
+
+        if self._downloader is None:
+            self._downloader = EmailDownloader(service)
+
+    @property
+    def searcher(self) -> EmailSearcher | None:
+        """
+        Get the EmailSearcher component (H-2 composition).
+
+        Returns:
+            EmailSearcher instance or None if not authenticated
+        """
+        return self._searcher
+
+    @property
+    def downloader(self) -> EmailDownloader | None:
+        """
+        Get the EmailDownloader component (H-2 composition).
+
+        Returns:
+            EmailDownloader instance or None if not authenticated
+        """
+        return self._downloader
+
+    @property
+    def writer(self) -> EmailWriter | None:
+        """
+        Get the EmailWriter component (H-2 composition).
+
+        Returns:
+            EmailWriter instance or None if not configured
+        """
+        return self._writer
+
+    @property
+    def organizer(self) -> EmailOrganizer | None:
+        """
+        Get the EmailOrganizer component (H-2 composition).
+
+        Returns:
+            EmailOrganizer instance or None if not configured
+        """
+        return self._organizer
 
     @property
     def service(self):
@@ -330,8 +449,9 @@ class GmailFetcher:
         """Sanitize filename for filesystem. Delegates to InputValidator."""
         try:
             return InputValidator.sanitize_filename(filename, max_length=200)
-        except Exception:
-            # Fallback for edge cases
+        except (ValueError, TypeError, AttributeError) as e:
+            # Fallback for edge cases (invalid input types, None values)
+            self.logger.debug(f"Filename sanitization fallback: {e}")
             return "untitled"
 
     def atomic_write(self, path: Path, content: str, encoding: str = 'utf-8') -> None:
@@ -356,8 +476,9 @@ class GmailFetcher:
                 os.fsync(tmp_file.fileno())  # Ensure data written to disk
             # Atomic rename (on POSIX; best-effort on Windows)
             os.replace(tmp_path, path)
-        except Exception:
-            # Clean up temp file on failure
+        except OSError as e:
+            # Clean up temp file on failure (disk full, permission denied, etc.)
+            self.logger.error(f"Atomic write failed: {e}")
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
             raise

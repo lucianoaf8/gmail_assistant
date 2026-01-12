@@ -11,6 +11,8 @@ from enum import Enum
 from functools import wraps
 from typing import Any
 
+from gmail_assistant.core.exceptions import CircuitBreakerError
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,13 +21,6 @@ class CircuitState(Enum):
     CLOSED = "closed"      # Normal operation - requests pass through
     OPEN = "open"          # Failing - requests are rejected
     HALF_OPEN = "half_open"  # Testing recovery - limited requests allowed
-
-
-class CircuitBreakerError(Exception):
-    """Exception raised when circuit breaker is open."""
-    def __init__(self, message: str = "Circuit breaker is open"):
-        self.message = message
-        super().__init__(self.message)
 
 
 class CircuitBreaker:

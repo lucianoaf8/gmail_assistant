@@ -1,7 +1,21 @@
 """
 Asynchronous Gmail fetcher for concurrent operations.
+
 Implements async/await patterns for improved performance.
+
+H-4 refactoring: This module now supports two async operation modes:
+1. Native async using httpx (recommended) - True async HTTP operations
+2. Sync-over-async fallback - Uses ThreadPoolExecutor when httpx unavailable
+
+M-9 fix: Concurrency settings now configurable via AppConfig:
+- max_concurrent_requests: Controls semaphore limit
+- max_worker_threads: Controls ThreadPoolExecutor size
+- async_batch_size: Controls batch processing size
+
+To use native async mode, install httpx: pip install gmail-assistant[async]
 """
+
+from __future__ import annotations
 
 import asyncio
 import functools
@@ -9,50 +23,145 @@ import logging
 from collections.abc import AsyncIterator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 # Local imports
 from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+from gmail_assistant.core.config import AppConfig
 from gmail_assistant.utils.memory_manager import MemoryTracker
 from gmail_assistant.utils.rate_limiter import GmailRateLimiter
+
+# H-4: Check for native async client availability
+from gmail_assistant.core.fetch.async_gmail_client import (
+    AsyncGmailClient,
+    is_async_client_available,
+)
+
+if TYPE_CHECKING:
+    from google.oauth2.credentials import Credentials
 
 logger = logging.getLogger(__name__)
 
 
 class AsyncGmailFetcher:
-    """Asynchronous Gmail fetcher with concurrent operations."""
+    """
+    Asynchronous Gmail fetcher with concurrent operations.
 
-    def __init__(self, credentials_file: str = 'credentials.json',
-                 max_concurrent: int = 10, max_workers: int = 4):
+    H-4 refactoring: Supports two operation modes:
+    1. Native async (requires httpx) - Best performance, true async HTTP
+    2. Sync-over-async fallback - Uses ThreadPoolExecutor with sync API client
+
+    The mode is automatically selected based on httpx availability and
+    the `use_native_async` constructor parameter.
+    """
+
+    def __init__(
+        self,
+        credentials_file: str = 'credentials.json',
+        max_concurrent: int = 10,
+        max_workers: int = 4,
+        use_native_async: bool | None = None,
+    ):
         """
         Initialize async Gmail fetcher.
 
         Args:
             credentials_file: Path to OAuth credentials
             max_concurrent: Maximum concurrent operations
-            max_workers: Maximum thread pool workers
+            max_workers: Maximum thread pool workers (sync-over-async fallback)
+            use_native_async: Force native async mode (None = auto-detect based on httpx availability)
         """
         self.credential_manager = SecureCredentialManager(credentials_file)
         self.rate_limiter = GmailRateLimiter(requests_per_second=8.0)
         self.memory_tracker = MemoryTracker()
         self.max_concurrent = max_concurrent
         self.max_workers = max_workers
-        self.executor = ThreadPoolExecutor(max_workers=max_workers)
         self.semaphore = asyncio.Semaphore(max_concurrent)
         self.logger = logging.getLogger(__name__)
+
+        # H-4: Determine async mode
+        if use_native_async is None:
+            use_native_async = is_async_client_available()
+
+        self._use_native_async = use_native_async
+        self._native_client: AsyncGmailClient | None = None
+        self._credentials: Credentials | None = None
+
+        # Fallback: ThreadPoolExecutor for sync-over-async
+        if not self._use_native_async:
+            self.executor = ThreadPoolExecutor(max_workers=max_workers)
+            self.logger.info(
+                "Using sync-over-async mode. Install httpx for better performance: "
+                "pip install gmail-assistant[async]"
+            )
+        else:
+            self.executor = None  # type: ignore[assignment]
+            self.logger.info("Using native async mode with httpx")
+
+    @classmethod
+    def from_config(
+        cls,
+        config: AppConfig,
+        credentials_file: str | None = None,
+        use_native_async: bool | None = None,
+    ) -> 'AsyncGmailFetcher':
+        """
+        M-9 fix: Create AsyncGmailFetcher from AppConfig concurrency settings.
+
+        This factory method wires AppConfig's concurrency settings to the fetcher,
+        allowing users to configure performance via config files or environment.
+
+        Args:
+            config: AppConfig instance with concurrency settings
+            credentials_file: Override credentials path (default: from config)
+            use_native_async: Force async mode (None = auto-detect)
+
+        Returns:
+            Configured AsyncGmailFetcher instance
+
+        Example:
+            config = AppConfig.load()
+            async with AsyncGmailFetcher.from_config(config) as fetcher:
+                emails = await fetcher.fetch_batch(query="is:unread")
+        """
+        creds = credentials_file or str(config.credentials_path)
+        return cls(
+            credentials_file=creds,
+            max_concurrent=config.max_concurrent_requests,
+            max_workers=config.max_worker_threads,
+            use_native_async=use_native_async,
+        )
 
     @property
     def service(self):
         """Get Gmail service with authentication."""
         return self.credential_manager.get_service()
 
+    @property
+    def is_native_async(self) -> bool:
+        """Check if using native async mode."""
+        return self._use_native_async
+
     async def __aenter__(self):
         """Async context manager entry."""
+        # H-4: Initialize native client if in native async mode
+        if self._use_native_async:
+            self._credentials = self.credential_manager._load_credentials_securely()
+            if self._credentials:
+                self._native_client = AsyncGmailClient(self._credentials)
+                await self._native_client.__aenter__()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
-        self.executor.shutdown(wait=True)
+        # H-4: Close native client if used
+        if self._native_client:
+            await self._native_client.__aexit__(exc_type, exc_val, exc_tb)
+            self._native_client = None
+
+        # Shutdown sync executor if used
+        if self.executor is not None:
+            self.executor.shutdown(wait=True)
 
     def _sync_api_call(self, func, *args, **kwargs):
         """
@@ -149,25 +258,33 @@ class AsyncGmailFetcher:
         """
         Fetch single email asynchronously.
 
+        H-4: Uses native async client if available, otherwise falls back
+        to sync-over-async pattern.
+
         Args:
             email_id: Email ID to fetch
 
         Returns:
             Email data or None if failed
         """
-        service = self.service
-        if not service:
-            return None
-
         try:
-            def get_message():
-                return service.users().messages().get(
-                    userId='me',
-                    id=email_id,
-                    format='full'
-                ).execute()
+            # H-4: Use native async client if available
+            if self._native_client is not None:
+                message = await self._native_client.get_message(email_id, format='full')
+            else:
+                # Fallback: sync-over-async
+                service = self.service
+                if not service:
+                    return None
 
-            message = await self._async_api_call(get_message)
+                def get_message():
+                    return service.users().messages().get(
+                        userId='me',
+                        id=email_id,
+                        format='full'
+                    ).execute()
+
+                message = await self._async_api_call(get_message)
 
             # Extract essential data
             email_data = {

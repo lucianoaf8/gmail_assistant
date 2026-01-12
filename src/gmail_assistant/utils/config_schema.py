@@ -8,12 +8,9 @@ Security: Prevents unsafe configuration injection (M-5 fix)
 import logging
 from typing import Any, ClassVar
 
+from gmail_assistant.core.exceptions import ConfigValidationError
+
 logger = logging.getLogger(__name__)
-
-
-class ConfigValidationError(Exception):
-    """Custom exception for configuration validation errors"""
-    pass
 
 
 class ConfigSchema:

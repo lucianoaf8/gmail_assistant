@@ -20,6 +20,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, ClassVar
 
+from gmail_assistant.core.exceptions import ParquetExportError
+
 logger = logging.getLogger(__name__)
 
 # Check for PyArrow availability
@@ -33,11 +35,6 @@ except ImportError:
     pq = None
     logger.info("PyArrow not installed - Parquet export unavailable. "
                 "Install with: pip install pyarrow")
-
-
-class ParquetExportError(Exception):
-    """Error during Parquet export."""
-    pass
 
 
 class ParquetExporter:

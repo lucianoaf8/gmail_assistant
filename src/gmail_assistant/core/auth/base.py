@@ -15,12 +15,26 @@ from gmail_assistant.core.exceptions import AuthError
 from gmail_assistant.utils.error_handler import ErrorCategory, ErrorContext, ErrorHandler
 
 from .credential_manager import SecureCredentialManager
-from .rate_limiter import get_auth_rate_limiter
+from .rate_limiter import get_auth_throttler
 
 logger = logging.getLogger(__name__)
 
-# H-2: Backward compatibility alias
-AuthenticationError = AuthError
+# H-6 fix: AuthenticationError deprecated - import from exceptions.py directly
+# Backward compatibility alias with deprecation warning
+def _get_authentication_error():
+    """Get AuthenticationError with deprecation warning."""
+    import warnings
+    warnings.warn(
+        "AuthenticationError from auth.base is deprecated. "
+        "Use AuthError from gmail_assistant.core.exceptions instead.",
+        DeprecationWarning,
+        stacklevel=3
+    )
+    return AuthError
+
+
+# Direct alias for backward compatibility (will be removed in v3.0.0)
+AuthenticationError = AuthError  # Type alias for static analysis
 
 
 class AuthenticationBase(ABC):
@@ -58,7 +72,7 @@ class AuthenticationBase(ABC):
     def service(self):
         """Get authenticated Gmail service."""
         if not self.is_authenticated and not self.authenticate():
-            raise AuthenticationError("Failed to authenticate with Gmail API")
+            raise AuthError("Failed to authenticate with Gmail API")
         return self._service
 
     @property
@@ -73,12 +87,12 @@ class AuthenticationBase(ABC):
         Returns:
             True if authentication successful, False otherwise
         """
-        # Get rate limiter (L-2 fix)
-        rate_limiter = get_auth_rate_limiter()
+        # Get authentication throttler (L-2 fix)
+        throttler = get_auth_throttler()
 
-        # Check rate limit before attempting authentication
-        if not rate_limiter.check_rate_limit(self.credentials_file):
-            remaining = rate_limiter.get_lockout_remaining(self.credentials_file)
+        # Check throttle before attempting authentication
+        if not throttler.check_rate_limit(self.credentials_file):
+            remaining = throttler.get_lockout_remaining(self.credentials_file)
             self._handle_auth_failure(
                 f"Authentication rate limited. Try again in {remaining} seconds."
             )
@@ -117,14 +131,14 @@ class AuthenticationBase(ABC):
                 self._user_info = self._fetch_user_info()
 
                 # Record successful attempt (L-2 fix)
-                rate_limiter.record_attempt(self.credentials_file, success=True)
+                throttler.record_attempt(self.credentials_file, success=True)
 
                 self.logger.info(f"Authentication successful for {self._user_info.get('email', 'unknown user')}")
                 return True
             else:
                 # Record failed attempt (L-2 fix)
-                rate_limiter.record_attempt(self.credentials_file, success=False)
-                remaining = rate_limiter.get_remaining_attempts(self.credentials_file)
+                throttler.record_attempt(self.credentials_file, success=False)
+                remaining = throttler.get_remaining_attempts(self.credentials_file)
                 self._handle_auth_failure(
                     f"Credential manager authentication failed. "
                     f"{remaining} attempts remaining."
@@ -133,7 +147,7 @@ class AuthenticationBase(ABC):
 
         except Exception as e:
             # Record failed attempt (L-2 fix)
-            rate_limiter.record_attempt(self.credentials_file, success=False)
+            throttler.record_attempt(self.credentials_file, success=False)
 
             context = ErrorContext(
                 operation="authenticate",
@@ -419,12 +433,12 @@ def get_authenticated_service(auth_type: str = 'readonly',
         Authenticated Gmail service
 
     Raises:
-        AuthenticationError: If authentication fails
+        AuthError: If authentication fails
     """
     auth = AuthenticationFactory.create_auth(auth_type, credentials_file)
 
     if not auth.authenticate():
-        raise AuthenticationError(f"Failed to authenticate for {auth_type} access")
+        raise AuthError(f"Failed to authenticate for {auth_type} access")
 
     return auth.service
 

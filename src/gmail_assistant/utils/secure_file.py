@@ -180,12 +180,13 @@ class SecureFileWriter:
         """
         try:
             import ntsecuritycon as con
+            import win32api
             import win32security
 
             # Get current user SID
             user_sid = win32security.GetTokenInformation(
                 win32security.OpenProcessToken(
-                    win32security.GetCurrentProcess(),
+                    win32api.GetCurrentProcess(),
                     win32security.TOKEN_QUERY
                 ),
                 win32security.TokenUser
@@ -319,3 +320,161 @@ def secure_mkdir(path: str | Path) -> Path:
         Created directory path
     """
     return SecureFileWriter.create_secure_directory(path)
+
+
+# =============================================================================
+# Path Validation Utilities (L-9 Security Hardening)
+# =============================================================================
+
+class PathValidationError(ValueError):
+    """Raised when path validation fails."""
+    pass
+
+
+def validate_write_path(
+    path: Path | str,
+    base_dir: Path | str,
+    allowed_extensions: set[str] | None = None,
+    create_parents: bool = True,
+) -> Path:
+    """
+    Validate a file path is safe for writing.
+
+    Prevents path traversal attacks by ensuring the resolved path
+    stays within the specified base directory.
+
+    Args:
+        path: Target file path
+        base_dir: Must be within this directory (security boundary)
+        allowed_extensions: Allowed file extensions (e.g., {'.json', '.eml'})
+        create_parents: Create parent directories if they don't exist
+
+    Returns:
+        Validated absolute path
+
+    Raises:
+        PathValidationError: If path is outside base directory or extension not allowed
+
+    Example:
+        >>> validate_write_path("email.json", "/tmp/output", {".json", ".eml"})
+        PosixPath('/tmp/output/email.json')
+    """
+    path = Path(path).resolve()
+    base_dir = Path(base_dir).resolve()
+
+    # Check path traversal
+    try:
+        path.relative_to(base_dir)
+    except ValueError as e:
+        raise PathValidationError(
+            f"Path '{path}' is outside base directory '{base_dir}'. "
+            "This may indicate a path traversal attack."
+        ) from e
+
+    # Check extension
+    if allowed_extensions and path.suffix.lower() not in allowed_extensions:
+        raise PathValidationError(
+            f"Extension '{path.suffix}' not allowed. "
+            f"Allowed extensions: {sorted(allowed_extensions)}"
+        )
+
+    # Create parent directories if needed
+    if create_parents and not path.parent.exists():
+        SecureFileWriter.create_secure_directory(path.parent)
+
+    return path
+
+
+def secure_write_file(
+    path: Path | str,
+    content: str | bytes,
+    base_dir: Path | str,
+    allowed_extensions: set[str] | None = None,
+    encoding: str = 'utf-8',
+) -> Path:
+    """
+    Write file with path validation and secure permissions.
+
+    Combines path validation with atomic secure write.
+
+    Args:
+        path: Target file path
+        content: Content to write (str or bytes)
+        base_dir: Security boundary directory
+        allowed_extensions: Allowed file extensions (optional)
+        encoding: File encoding for string content (default: utf-8)
+
+    Returns:
+        Path to written file
+
+    Raises:
+        PathValidationError: If path validation fails
+        OSError: If file write fails
+
+    Example:
+        >>> secure_write_file(
+        ...     "data/email.json",
+        ...     '{"id": "123"}',
+        ...     "/tmp/output",
+        ...     {".json"}
+        ... )
+        PosixPath('/tmp/output/data/email.json')
+    """
+    validated_path = validate_write_path(path, base_dir, allowed_extensions)
+
+    if isinstance(content, str):
+        SecureFileWriter.write_secure(validated_path, content, encoding)
+    else:
+        SecureFileWriter.write_secure_bytes(validated_path, content)
+
+    return validated_path
+
+
+def validate_read_path(
+    path: Path | str,
+    base_dir: Path | str,
+    allowed_extensions: set[str] | None = None,
+) -> Path:
+    """
+    Validate a file path is safe for reading.
+
+    Ensures the path exists and is within the security boundary.
+
+    Args:
+        path: Target file path
+        base_dir: Must be within this directory (security boundary)
+        allowed_extensions: Allowed file extensions (optional)
+
+    Returns:
+        Validated absolute path
+
+    Raises:
+        PathValidationError: If path is invalid, outside base directory, or doesn't exist
+    """
+    path = Path(path).resolve()
+    base_dir = Path(base_dir).resolve()
+
+    # Check path traversal
+    try:
+        path.relative_to(base_dir)
+    except ValueError as e:
+        raise PathValidationError(
+            f"Path '{path}' is outside base directory '{base_dir}'."
+        ) from e
+
+    # Check exists
+    if not path.exists():
+        raise PathValidationError(f"Path '{path}' does not exist.")
+
+    # Check is file
+    if not path.is_file():
+        raise PathValidationError(f"Path '{path}' is not a file.")
+
+    # Check extension
+    if allowed_extensions and path.suffix.lower() not in allowed_extensions:
+        raise PathValidationError(
+            f"Extension '{path.suffix}' not allowed. "
+            f"Allowed extensions: {sorted(allowed_extensions)}"
+        )
+
+    return path

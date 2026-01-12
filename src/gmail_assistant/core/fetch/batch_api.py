@@ -2,13 +2,17 @@
 Gmail Batch API implementation for high-performance bulk operations.
 Reduces API latency by 80-90% compared to sequential calls.
 
+M-12: Added parallel request preparation using ThreadPoolExecutor.
+
 Usage:
     client = GmailBatchClient(service)
     emails = client.batch_get_messages(message_ids)
 """
+from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -77,6 +81,78 @@ class GmailBatchClient:
         # Internal state for batch callbacks
         self._results: dict[str, Any] = {}
         self._errors: dict[str, Exception] = {}
+
+        # M-12: Parallel request preparation configuration
+        self._max_workers = 4  # Threads for parallel request preparation
+
+    def _prepare_request(
+        self,
+        msg_id: str,
+        format: str,
+        metadata_headers: list[str] | None,
+    ) -> tuple[str, Any]:
+        """
+        Prepare a single request object (M-12: can be parallelized).
+
+        Args:
+            msg_id: Message ID
+            format: Message format
+            metadata_headers: Headers to include for metadata format
+
+        Returns:
+            Tuple of (msg_id, request_object)
+        """
+        request = self.service.users().messages().get(
+            userId='me',
+            id=msg_id,
+            format=format,
+            metadataHeaders=metadata_headers if format == 'metadata' else None
+        )
+        return msg_id, request
+
+    def _prepare_requests_parallel(
+        self,
+        msg_ids: list[str],
+        format: str,
+        metadata_headers: list[str] | None,
+    ) -> list[tuple[str, Any]]:
+        """
+        M-12: Prepare batch requests in parallel using ThreadPoolExecutor.
+
+        This speeds up request object creation for large batches.
+
+        Args:
+            msg_ids: List of message IDs
+            format: Message format
+            metadata_headers: Headers for metadata format
+
+        Returns:
+            List of (msg_id, request) tuples
+        """
+        # For small batches, sequential is faster due to thread overhead
+        if len(msg_ids) <= 10:
+            return [
+                self._prepare_request(msg_id, format, metadata_headers)
+                for msg_id in msg_ids
+            ]
+
+        # Parallel preparation for larger batches
+        prepared = []
+        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
+            futures = {
+                executor.submit(
+                    self._prepare_request, msg_id, format, metadata_headers
+                ): msg_id
+                for msg_id in msg_ids
+            }
+            for future in as_completed(futures):
+                try:
+                    prepared.append(future.result())
+                except Exception as e:
+                    msg_id = futures[future]
+                    logger.warning(f"Failed to prepare request for {msg_id}: {e}")
+
+        return prepared
 
     def batch_get_messages(
         self,

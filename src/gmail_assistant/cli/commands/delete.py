@@ -1,16 +1,59 @@
-"""Delete command implementation (C-2 fix)."""
+"""Delete command implementation (C-2 fix, H-1 DI integration)."""
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 
+from gmail_assistant.core.container import ServiceContainer, get_global_container
 from gmail_assistant.core.exceptions import APIError
 from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
 from gmail_assistant.utils.secure_logger import SecureLogger
 
+if TYPE_CHECKING:
+    from gmail_assistant.core.container import ServiceContainer
+
 logger = SecureLogger(__name__)
+
+
+def _get_api_client(
+    credentials_path: Path,
+    container: ServiceContainer | None = None,
+) -> GmailAPIClient:
+    """
+    Get a GmailAPIClient instance, preferring DI container when available.
+
+    H-1 fix: Enables testability by allowing mock client injection.
+
+    Args:
+        credentials_path: Path to credentials.json
+        container: Optional DI container
+
+    Returns:
+        GmailAPIClient instance
+    """
+    # Try provided container first
+    if container is not None:
+        try:
+            client = container.try_resolve(GmailAPIClient)
+            if client is not None:
+                return client
+        except Exception:
+            pass
+
+    # Try global container
+    global_container = get_global_container()
+    if global_container is not None:
+        try:
+            client = global_container.try_resolve(GmailAPIClient)
+            if client is not None:
+                return client
+        except Exception:
+            pass
+
+    # Fall back to direct instantiation
+    return GmailAPIClient(str(credentials_path))
 
 
 def delete_emails(
@@ -18,10 +61,11 @@ def delete_emails(
     credentials_path: Path,
     dry_run: bool = True,
     use_trash: bool = True,
-    max_delete: int = 1000
+    max_delete: int = 1000,
+    container: ServiceContainer | None = None,
 ) -> dict[str, Any]:
     """
-    Delete emails matching query (C-2 implementation).
+    Delete emails matching query (C-2 implementation, H-1 DI integration).
 
     Args:
         query: Gmail search query for emails to delete
@@ -29,6 +73,7 @@ def delete_emails(
         dry_run: If True, only show what would be deleted
         use_trash: If True, move to trash instead of permanent delete
         max_delete: Maximum emails to delete
+        container: Optional DI container for service resolution (H-1 fix)
 
     Returns:
         Dict with deletion statistics
@@ -37,8 +82,8 @@ def delete_emails(
         AuthError: If authentication fails
         APIError: If Gmail API returns error
     """
-    # Initialize Gmail client
-    client = GmailAPIClient(str(credentials_path))
+    # H-1: Use container for client resolution, or fall back to direct instantiation
+    client = _get_api_client(credentials_path, container)
 
     click.echo(f"Query: {query}")
     click.echo(f"Mode: {'DRY RUN' if dry_run else 'TRASH' if use_trash else 'PERMANENT DELETE'}")
@@ -117,9 +162,23 @@ def delete_emails(
         raise APIError(f"Delete operation failed: {e}") from e
 
 
-def get_email_count(query: str, credentials_path: Path) -> int:
-    """Get count of emails matching query."""
-    client = GmailAPIClient(str(credentials_path))
+def get_email_count(
+    query: str,
+    credentials_path: Path,
+    container: ServiceContainer | None = None,
+) -> int:
+    """
+    Get count of emails matching query.
+
+    Args:
+        query: Gmail search query
+        credentials_path: Path to credentials.json
+        container: Optional DI container for service resolution (H-1 fix)
+
+    Returns:
+        Estimated count of matching emails
+    """
+    client = _get_api_client(credentials_path, container)
 
     try:
         results = client.service.users().messages().list(

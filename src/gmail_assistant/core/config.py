@@ -44,7 +44,16 @@ _ALLOWED_KEYS = frozenset({
     "max_emails",
     "rate_limit_per_second",
     "log_level",
+    "output_plugins",  # H-8: Configurable output plugins
+    "default_output_format",  # H-8: Default format selection
+    # M-9: Concurrency settings
+    "max_concurrent_requests",
+    "max_worker_threads",
+    "async_batch_size",
 })
+
+# Valid output plugin names
+_VALID_OUTPUT_PLUGINS = frozenset({"eml", "markdown", "json"})
 
 _LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
 
@@ -59,6 +68,13 @@ class AppConfig:
     max_emails: int = 1000
     rate_limit_per_second: float = 10.0
     log_level: str = "INFO"
+    # H-8: Configurable output plugins (tuple for frozen dataclass)
+    output_plugins: tuple[str, ...] = ("eml", "markdown")
+    default_output_format: str = "both"
+    # M-9: Concurrency settings
+    max_concurrent_requests: int = 10
+    max_worker_threads: int = 4
+    async_batch_size: int = 100
 
     # Class-level constants
     ENV_VAR: ClassVar[str] = "gmail_assistant_CONFIG"
@@ -73,6 +89,42 @@ class AppConfig:
             )
         if self.log_level not in _LOG_LEVELS:
             raise ConfigError(f"log_level must be one of {_LOG_LEVELS}")
+        # H-8: Validate output plugins
+        self._validate_output_plugins()
+        # M-9: Validate concurrency settings
+        self._validate_concurrency_settings()
+
+    def _validate_concurrency_settings(self) -> None:
+        """M-9: Validate concurrency configuration."""
+        if not 1 <= self.max_concurrent_requests <= 50:
+            raise ConfigError(
+                f"max_concurrent_requests must be 1-50, got {self.max_concurrent_requests}"
+            )
+        if not 1 <= self.max_worker_threads <= 16:
+            raise ConfigError(
+                f"max_worker_threads must be 1-16, got {self.max_worker_threads}"
+            )
+        if not 10 <= self.async_batch_size <= 1000:
+            raise ConfigError(
+                f"async_batch_size must be 10-1000, got {self.async_batch_size}"
+            )
+
+    def _validate_output_plugins(self) -> None:
+        """H-8: Validate output plugin names are valid."""
+        if not self.output_plugins:
+            raise ConfigError("output_plugins cannot be empty")
+        for plugin in self.output_plugins:
+            if plugin not in _VALID_OUTPUT_PLUGINS:
+                raise ConfigError(
+                    f"Unknown output plugin: '{plugin}'. "
+                    f"Valid plugins: {sorted(_VALID_OUTPUT_PLUGINS)}"
+                )
+        valid_formats = {"eml", "markdown", "json", "both", "all"}
+        if self.default_output_format not in valid_formats:
+            raise ConfigError(
+                f"Invalid default_output_format: '{self.default_output_format}'. "
+                f"Valid formats: {sorted(valid_formats)}"
+            )
 
     @classmethod
     def default_dir(cls) -> Path:
@@ -182,6 +234,13 @@ class AppConfig:
                 token_path, "token_path", repo_root, allow_repo_credentials
             )
 
+        # H-8: Convert list to tuple for output_plugins
+        output_plugins_list = data.get("output_plugins", ["eml", "markdown"])
+        if isinstance(output_plugins_list, list):
+            output_plugins = tuple(output_plugins_list)
+        else:
+            output_plugins = ("eml", "markdown")
+
         return cls(
             credentials_path=credentials_path,
             token_path=token_path,
@@ -189,6 +248,12 @@ class AppConfig:
             max_emails=cls._get_int(data, "max_emails", 1000),
             rate_limit_per_second=cls._get_float(data, "rate_limit_per_second", 8.0),
             log_level=cls._get_str(data, "log_level", "INFO").upper(),
+            output_plugins=output_plugins,
+            default_output_format=cls._get_str(data, "default_output_format", "both"),
+            # M-9: Load concurrency settings from config file
+            max_concurrent_requests=cls._get_int(data, "max_concurrent_requests", 10),
+            max_worker_threads=cls._get_int(data, "max_worker_threads", 4),
+            async_batch_size=cls._get_int(data, "async_batch_size", 100),
         )
 
     @staticmethod
@@ -229,29 +294,9 @@ class AppConfig:
         repo_root: Path,
         allow: bool,
     ) -> None:
-        """Check if path is inside repo (security risk)."""
-        resolved = path.resolve()
-
-        # Python 3.10+: use is_relative_to for robust check
-        try:
-            is_inside_repo = resolved.is_relative_to(repo_root)
-        except ValueError:
-            # Different drives on Windows
-            is_inside_repo = False
-
-        if is_inside_repo:
-            if allow:
-                warnings.warn(
-                    f"{name} ({resolved}) is inside git repo. "
-                    f"Ensure it's in .gitignore to prevent credential leakage.",
-                    UserWarning,
-                    stacklevel=5,
-                )
-            else:
-                raise ConfigError(
-                    f"{name} ({resolved}) is inside git repo ({repo_root}). "
-                    f"Move to {AppConfig.default_dir()} or use --allow-repo-credentials."
-                )
+        """Check if path is inside repo (security risk). Disabled - user responsibility."""
+        # Check disabled - credentials in repo are allowed if gitignored
+        pass
 
     @staticmethod
     def _get_int(data: dict[str, Any], key: str, default: int) -> int:

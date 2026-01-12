@@ -11,6 +11,7 @@ Exit Codes:
 
 C-2 Fix: Full CLI command implementations integrated.
 M-5 Fix: Async fetcher integration.
+H-1 Fix: CLI integrated with DI container.
 """
 from __future__ import annotations
 
@@ -31,6 +32,11 @@ from gmail_assistant.cli.commands.delete import delete_emails, get_email_count
 # C-2: Import command implementations
 from gmail_assistant.cli.commands.fetch import fetch_emails
 from gmail_assistant.core.config import AppConfig
+from gmail_assistant.core.container import (
+    ServiceContainer,
+    create_default_container,
+    set_global_container,
+)
 from gmail_assistant.core.exceptions import (
     AuthError,
     ConfigError,
@@ -104,7 +110,15 @@ def _save_email_async(email_data: dict[str, Any], output_dir: Path, output_forma
     import json
     import re
 
-    subject = str(email_data.get('subject', 'no_subject'))[:50]
+    # Extract subject from headers if not at top level
+    subject = email_data.get('subject')
+    if not subject and 'payload' in email_data:
+        headers = email_data.get('payload', {}).get('headers', [])
+        for header in headers:
+            if header.get('name', '').lower() == 'subject':
+                subject = header.get('value', '')
+                break
+    subject = str(subject or 'no_subject')[:50]
     safe_subject = re.sub(r'[<>:"/\\|?*]', '_', subject)
     msg_id = str(email_data.get('id', str(index)))[:16]
 
@@ -173,6 +187,13 @@ def main(ctx: click.Context, config: Path | None, allow_repo_credentials: bool) 
     ctx.obj["config_path"] = config
     ctx.obj["allow_repo_credentials"] = allow_repo_credentials
 
+    # H-1: Initialize DI container and store in context
+    container = create_default_container()
+    ctx.obj["container"] = container
+
+    # Set global container for convenience methods
+    set_global_container(container)
+
 
 @main.command()
 @click.option("--query", "-q", default="", help="Gmail search query.")
@@ -221,13 +242,15 @@ def fetch(
         )
     else:
         # C-2: Call sync fetch implementation
+        # H-1: Pass container for DI resolution
         result = fetch_emails(
             query=query,
             max_emails=effective_max,
             output_dir=Path(effective_output),
             output_format=output_format,
             credentials_path=cfg.credentials_path,
-            resume=resume
+            resume=resume,
+            container=ctx.obj.get("container"),
         )
     click.echo(f"\nFetched {result['fetched']}/{result['total']} emails")
 
@@ -262,7 +285,8 @@ def delete(
 
     if not is_dry_run and not confirm:
         # Show count and ask for confirmation
-        count = get_email_count(query, cfg.credentials_path)
+        # H-1: Pass container for DI resolution
+        count = get_email_count(query, cfg.credentials_path, ctx.obj.get("container"))
         if count > 0:
             action = "trash" if use_trash else "permanently delete"
             if not click.confirm(f"About to {action} up to {min(count, max_delete)} emails. Continue?"):
@@ -270,12 +294,14 @@ def delete(
                 return
 
     # C-2: Call actual delete implementation
+    # H-1: Pass container for DI resolution
     result = delete_emails(
         query=query,
         credentials_path=cfg.credentials_path,
         dry_run=is_dry_run,
         use_trash=use_trash,
-        max_delete=max_delete
+        max_delete=max_delete,
+        container=ctx.obj.get("container"),
     )
 
     if is_dry_run:
@@ -332,7 +358,8 @@ def auth(
 
     if status:
         # C-2: Check auth status
-        result = check_auth_status(cfg.credentials_path)
+        # H-1: Pass container for DI resolution
+        result = check_auth_status(cfg.credentials_path, ctx.obj.get("container"))
         click.echo(f"Status: {result['status']}")
         if result['authenticated']:
             click.echo("✓ Authenticated")
@@ -346,9 +373,11 @@ def auth(
         return
 
     # C-2: Perform authentication
+    # H-1: Pass container for DI resolution
     authenticate(
         credentials_path=cfg.credentials_path,
-        force_reauth=force
+        force_reauth=force,
+        container=ctx.obj.get("container"),
     )
 
 

@@ -1,28 +1,73 @@
-"""Auth command implementation (C-2 fix)."""
+"""Auth command implementation (C-2 fix, H-1 DI integration)."""
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 
 from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+from gmail_assistant.core.container import ServiceContainer, get_global_container
 from gmail_assistant.core.exceptions import AuthError
 from gmail_assistant.utils.secure_logger import SecureLogger
+
+if TYPE_CHECKING:
+    from gmail_assistant.core.container import ServiceContainer
 
 logger = SecureLogger(__name__)
 
 
+def _get_credential_manager(
+    credentials_path: Path,
+    container: ServiceContainer | None = None,
+) -> SecureCredentialManager:
+    """
+    Get a SecureCredentialManager instance, preferring DI container when available.
+
+    H-1 fix: Enables testability by allowing mock manager injection.
+
+    Args:
+        credentials_path: Path to credentials.json
+        container: Optional DI container
+
+    Returns:
+        SecureCredentialManager instance
+    """
+    # Try provided container first
+    if container is not None:
+        try:
+            manager = container.try_resolve(SecureCredentialManager)
+            if manager is not None:
+                return manager
+        except Exception:
+            pass
+
+    # Try global container
+    global_container = get_global_container()
+    if global_container is not None:
+        try:
+            manager = global_container.try_resolve(SecureCredentialManager)
+            if manager is not None:
+                return manager
+        except Exception:
+            pass
+
+    # Fall back to direct instantiation
+    return SecureCredentialManager(str(credentials_path))
+
+
 def authenticate(
     credentials_path: Path,
-    force_reauth: bool = False
+    force_reauth: bool = False,
+    container: ServiceContainer | None = None,
 ) -> dict[str, Any]:
     """
-    Authenticate with Gmail API (C-2 implementation).
+    Authenticate with Gmail API (C-2 implementation, H-1 DI integration).
 
     Args:
         credentials_path: Path to OAuth credentials.json file
         force_reauth: Force re-authentication even if credentials exist
+        container: Optional DI container for service resolution (H-1 fix)
 
     Returns:
         Dict with authentication status and user info
@@ -43,8 +88,8 @@ def authenticate(
         click.echo(f"5. Download and save as '{credentials_path}'")
         raise AuthError(f"Credentials file not found: {credentials_path}")
 
-    # Initialize credential manager
-    manager = SecureCredentialManager(str(credentials_path))
+    # H-1: Use container for manager resolution, or fall back to direct instantiation
+    manager = _get_credential_manager(credentials_path, container)
 
     # Force re-auth if requested
     if force_reauth:
@@ -76,17 +121,21 @@ def authenticate(
         raise AuthError("Authentication failed")
 
 
-def check_auth_status(credentials_path: Path) -> dict[str, Any]:
+def check_auth_status(
+    credentials_path: Path,
+    container: ServiceContainer | None = None,
+) -> dict[str, Any]:
     """
     Check current authentication status without triggering OAuth flow.
 
     Args:
         credentials_path: Path to OAuth credentials.json file
+        container: Optional DI container for service resolution (H-1 fix)
 
     Returns:
         Dict with current auth status
     """
-    manager = SecureCredentialManager(str(credentials_path))
+    manager = _get_credential_manager(credentials_path, container)
 
     # Try to load existing credentials
     creds = manager._load_credentials_securely()
