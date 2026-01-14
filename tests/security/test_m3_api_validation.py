@@ -5,7 +5,7 @@ Validates Gmail API response validation.
 import pytest
 from pathlib import Path
 from unittest.mock import Mock
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 
 @pytest.fixture
@@ -19,9 +19,9 @@ class TestAPIResponseValidation:
 
     def test_validation_method_exists(self):
         """Verify _validate_api_response method exists."""
-        from gmail_assistant.core.fetch import gmail_assistant
+        from gman.core.fetch import gman
 
-        source = Path(gmail_assistant.__file__).read_text(encoding='utf-8')
+        source = Path(gman.__file__).read_text(encoding='utf-8')
 
         assert '_validate_api_response' in source, \
             "_validate_api_response method should exist"
@@ -94,9 +94,9 @@ class TestAPIValidationIntegration:
 
     def test_list_messages_validates_response(self):
         """Verify list messages validates API response."""
-        from gmail_assistant.core.fetch import gmail_assistant
+        from gman.core.fetch import gman
 
-        source = Path(gmail_assistant.__file__).read_text(encoding='utf-8')
+        source = Path(gman.__file__).read_text(encoding='utf-8')
 
         # Should validate message list responses
         assert '_validate_api_response' in source, \
@@ -104,9 +104,9 @@ class TestAPIValidationIntegration:
 
     def test_get_message_validates_response(self):
         """Verify get message validates API response."""
-        from gmail_assistant.core.fetch import gmail_assistant
+        from gman.core.fetch import gman
 
-        source = Path(gmail_assistant.__file__).read_text(encoding='utf-8')
+        source = Path(gman.__file__).read_text(encoding='utf-8')
 
         # Validation should be called in message retrieval
         assert 'validate' in source.lower()

@@ -15,12 +15,12 @@ import os
 from datetime import datetime, timedelta
 
 try:
-    from gmail_assistant.core.processing.classifier import EmailClassifier
+    from gman.core.processing.classifier import EmailClassifier
 except ImportError:
     EmailClassifier = None
 
 try:
-    from gmail_assistant.core.processing.database import EmailDatabaseImporter
+    from gman.core.processing.database import EmailDatabaseImporter
 except ImportError:
     EmailDatabaseImporter = None
 

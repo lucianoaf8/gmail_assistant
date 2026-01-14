@@ -17,7 +17,7 @@ def run_test_category(category_path, category_name):
     cmd = [
         sys.executable, '-m', 'pytest',
         category_path,
-        '--cov=gmail_assistant',
+        '--cov=gman',
         '--cov-report=json',
         '--cov-report=term',
         '-v',
@@ -84,7 +84,7 @@ def run_test_category(category_path, category_name):
 def main():
     """Run all test categories and aggregate results."""
     print("=" * 80)
-    print("Gmail Assistant - Comprehensive Test Suite Report")
+    print("Gman - Comprehensive Test Suite Report")
     print("=" * 80)
 
     categories = [

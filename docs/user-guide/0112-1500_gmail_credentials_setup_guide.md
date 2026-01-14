@@ -4,7 +4,7 @@
 **Last Updated**: 2026-01-12
 **Status**: Production
 
-Complete step-by-step guide for creating Gmail API credentials and configuring them for Gmail Assistant.
+Complete step-by-step guide for creating Gmail API credentials and configuring them for Gman.
 
 ---
 
@@ -22,7 +22,7 @@ Complete step-by-step guide for creating Gmail API credentials and configuring t
 ## Prerequisites
 
 - [ ] Google account (Gmail)
-- [ ] Gmail Assistant installed (`pip install -e .`)
+- [ ] Gman installed (`pip install -e .`)
 - [ ] Python 3.10+
 
 ---
@@ -35,7 +35,7 @@ Complete step-by-step guide for creating Gmail API credentials and configuring t
 2. Sign in with your Google account (same as Gmail you want to access)
 3. Click project dropdown (top left, next to "Google Cloud")
 4. Click **"New Project"**
-   - **Project name**: `Gmail Assistant` (or any name)
+   - **Project name**: `Gman` (or any name)
    - **Organization**: Leave default or select yours
 5. Click **"Create"**
 6. Wait for project creation notification
@@ -70,7 +70,7 @@ This step is required before creating credentials.
    - Click **"Create"**
 
 3. **App Information** (Step 1 of 4):
-   - **App name**: `Gmail Assistant`
+   - **App name**: `Gman`
    - **User support email**: Select your email from dropdown
    - **App logo**: Skip (optional)
    - **App domain**: Skip all (optional)
@@ -113,7 +113,7 @@ This step is required before creating credentials.
 
 4. **Configure OAuth client**:
    - **Application type**: Select **"Desktop app"**
-   - **Name**: `Gmail Assistant Desktop` (or any descriptive name)
+   - **Name**: `Gman Desktop` (or any descriptive name)
 
 5. Click **"Create"**
 
@@ -150,34 +150,34 @@ This step is required before creating credentials.
 #### Windows (PowerShell):
 ```powershell
 # Create config directory
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gmail-assistant"
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gman"
 
 # Move credentials (adjust source path as needed)
-Move-Item -Path "$env:USERPROFILE\Downloads\credentials.json" -Destination "$env:USERPROFILE\.gmail-assistant\credentials.json"
+Move-Item -Path "$env:USERPROFILE\Downloads\credentials.json" -Destination "$env:USERPROFILE\.gman\credentials.json"
 
 # Verify
-Get-Item "$env:USERPROFILE\.gmail-assistant\credentials.json"
+Get-Item "$env:USERPROFILE\.gman\credentials.json"
 ```
 
 #### Windows (Command Prompt):
 ```cmd
-mkdir %USERPROFILE%\.gmail-assistant
-move %USERPROFILE%\Downloads\credentials.json %USERPROFILE%\.gmail-assistant\credentials.json
+mkdir %USERPROFILE%\.gman
+move %USERPROFILE%\Downloads\credentials.json %USERPROFILE%\.gman\credentials.json
 ```
 
 #### Linux/macOS:
 ```bash
 # Create config directory
-mkdir -p ~/.gmail-assistant
+mkdir -p ~/.gman
 
 # Move credentials (adjust source path as needed)
-mv ~/Downloads/credentials.json ~/.gmail-assistant/credentials.json
+mv ~/Downloads/credentials.json ~/.gman/credentials.json
 
 # Verify
-ls -la ~/.gmail-assistant/credentials.json
+ls -la ~/.gman/credentials.json
 ```
 
-**Checkpoint**: File exists at `~/.gmail-assistant/credentials.json`
+**Checkpoint**: File exists at `~/.gman/credentials.json`
 
 ---
 
@@ -187,7 +187,7 @@ You can either use the CLI to initialize config or create it manually.
 
 #### Option A: Use CLI (Recommended)
 ```bash
-gmail-assistant config --init
+gman config --init
 ```
 
 #### Option B: Create Manually
@@ -196,21 +196,21 @@ gmail-assistant config --init
 ```powershell
 @"
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "output_dir": "~/.gmail-assistant/backups",
+  "credentials_path": "~/.gman/credentials.json",
+  "output_dir": "~/.gman/backups",
   "max_emails": 1000,
   "rate_limit_per_second": 10.0,
   "log_level": "INFO"
 }
-"@ | Out-File -FilePath "$env:USERPROFILE\.gmail-assistant\config.json" -Encoding UTF8
+"@ | Out-File -FilePath "$env:USERPROFILE\.gman\config.json" -Encoding UTF8
 ```
 
 **Linux/macOS**:
 ```bash
-cat > ~/.gmail-assistant/config.json << 'EOF'
+cat > ~/.gman/config.json << 'EOF'
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "output_dir": "~/.gmail-assistant/backups",
+  "credentials_path": "~/.gman/credentials.json",
+  "output_dir": "~/.gman/backups",
   "max_emails": 1000,
   "rate_limit_per_second": 10.0,
   "log_level": "INFO"
@@ -220,10 +220,10 @@ EOF
 
 #### Verify Config
 ```bash
-gmail-assistant config --show
+gman config --show
 ```
 
-**Checkpoint**: Config file exists and `gmail-assistant config --show` displays your settings.
+**Checkpoint**: Config file exists and `gman config --show` displays your settings.
 
 ---
 
@@ -232,7 +232,7 @@ gmail-assistant config --show
 ### Step 7: Run Authentication
 
 ```bash
-gmail-assistant auth
+gman auth
 ```
 
 **What happens**:
@@ -245,11 +245,11 @@ gmail-assistant auth
 
 4. **If you see "Google hasn't verified this app" warning**:
    - Click **"Advanced"** (small link at bottom left)
-   - Click **"Go to Gmail Assistant (unsafe)"**
+   - Click **"Go to Gman (unsafe)"**
    - This is normal for personal/unverified apps
 
 5. **Review permissions**:
-   - The page shows what access Gmail Assistant is requesting
+   - The page shows what access Gman is requesting
    - Click **"Continue"** to grant permissions
 
 6. **Browser shows success**: "The authentication flow has completed. You may close this window."
@@ -271,14 +271,14 @@ gmail-assistant auth
 Run auth command again to verify stored credentials:
 
 ```bash
-gmail-assistant auth
+gman auth
 ```
 
 Should immediately show success without opening browser (credentials loaded from OS keyring).
 
 **Test with a fetch**:
 ```bash
-gmail-assistant fetch --query "is:unread" --max-emails 5
+gman fetch --query "is:unread" --max-emails 5
 ```
 
 **Checkpoint**: Fetch completes without authentication prompts.
@@ -291,9 +291,9 @@ gmail-assistant fetch --query "is:unread" --max-emails 5
 
 | Item | Windows | Linux/macOS |
 |------|---------|-------------|
-| Credentials | `%USERPROFILE%\.gmail-assistant\credentials.json` | `~/.gmail-assistant/credentials.json` |
-| Config | `%USERPROFILE%\.gmail-assistant\config.json` | `~/.gmail-assistant/config.json` |
-| Backups | `%USERPROFILE%\.gmail-assistant\backups\` | `~/.gmail-assistant/backups/` |
+| Credentials | `%USERPROFILE%\.gman\credentials.json` | `~/.gman/credentials.json` |
+| Config | `%USERPROFILE%\.gman\config.json` | `~/.gman/config.json` |
+| Backups | `%USERPROFILE%\.gman\backups\` | `~/.gman/backups/` |
 | Token storage | Windows Credential Manager | macOS Keychain / Linux Secret Service |
 
 ### OAuth Scopes Used
@@ -307,25 +307,25 @@ gmail-assistant fetch --query "is:unread" --max-emails 5
 
 ```bash
 # Authenticate (first time or refresh)
-gmail-assistant auth
+gman auth
 
 # Force re-authentication (clear stored credentials)
-gmail-assistant auth --force
+gman auth --force
 
 # Initialize configuration
-gmail-assistant config --init
+gman config --init
 
 # Show current configuration
-gmail-assistant config --show
+gman config --show
 
 # Validate configuration
-gmail-assistant config --validate
+gman config --validate
 
 # Test fetch (5 unread emails)
-gmail-assistant fetch --query "is:unread" --max-emails 5
+gman fetch --query "is:unread" --max-emails 5
 
 # Fetch with specific output
-gmail-assistant fetch --query "after:2025/01/01" --output-dir ./my-backup
+gman fetch --query "after:2025/01/01" --output-dir ./my-backup
 ```
 
 ---
@@ -337,8 +337,8 @@ gmail-assistant fetch --query "after:2025/01/01" --output-dir ./my-backup
 **Cause**: `credentials.json` not in expected location.
 
 **Solution**:
-1. Verify file exists: `ls ~/.gmail-assistant/credentials.json`
-2. Check config points to correct path: `gmail-assistant config --show`
+1. Verify file exists: `ls ~/.gman/credentials.json`
+2. Check config points to correct path: `gman config --show`
 3. Re-download from Google Cloud Console if missing
 
 ---
@@ -355,7 +355,7 @@ gmail-assistant fetch --query "after:2025/01/01" --output-dir ./my-backup
 
 ---
 
-### Error: "Access blocked: Gmail Assistant has not completed the Google verification process"
+### Error: "Access blocked: Gman has not completed the Google verification process"
 
 **Cause**: Your email not added as test user.
 
@@ -374,7 +374,7 @@ gmail-assistant fetch --query "after:2025/01/01" --output-dir ./my-backup
 
 **Solution**:
 ```bash
-gmail-assistant auth --force
+gman auth --force
 ```
 This clears stored credentials and initiates fresh OAuth flow.
 
@@ -389,7 +389,7 @@ This clears stored credentials and initiates fresh OAuth flow.
 2. Edit scopes to include required scope (e.g., `gmail.modify` for delete)
 3. Force re-authentication:
    ```bash
-   gmail-assistant auth --force
+   gman auth --force
    ```
 4. Accept the new permissions in browser
 
@@ -413,10 +413,10 @@ This clears stored credentials and initiates fresh OAuth flow.
 
 **Solution**:
 1. Clear keyring entry manually:
-   - **Windows**: Credential Manager → Windows Credentials → Find `gmail_assistant` → Remove
-   - **macOS**: Keychain Access → Find `gmail_assistant` → Delete
-   - **Linux**: `secret-tool clear service gmail_assistant`
-2. Re-authenticate: `gmail-assistant auth`
+   - **Windows**: Credential Manager → Windows Credentials → Find `gman` → Remove
+   - **macOS**: Keychain Access → Find `gman` → Delete
+   - **Linux**: `secret-tool clear service gman`
+2. Re-authenticate: `gman auth`
 
 ---
 
@@ -428,4 +428,4 @@ This clears stored credentials and initiates fresh OAuth flow.
 
 ---
 
-**Setup complete!** You're ready to use Gmail Assistant.
+**Setup complete!** You're ready to use Gman.

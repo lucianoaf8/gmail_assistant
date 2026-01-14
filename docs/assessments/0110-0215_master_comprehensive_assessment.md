@@ -1,4 +1,4 @@
-# Gmail Assistant - Master Comprehensive Assessment Report
+# Gman - Master Comprehensive Assessment Report
 
 **Document ID**: 0110-0215_master_comprehensive_assessment.md
 **Date**: 2026-01-10
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-This master assessment consolidates findings from three specialized review agents analyzing the Gmail Assistant project:
+This master assessment consolidates findings from three specialized review agents analyzing the Gman project:
 
 | Domain | Grade | Status |
 |--------|-------|--------|
@@ -45,12 +45,12 @@ This master assessment consolidates findings from three specialized review agent
 
 | ID | Finding | Domain | Location |
 |----|---------|--------|----------|
-| **M-1** | God Object pattern | Architecture | `gmail_assistant.py` (18+ responsibilities) |
+| **M-1** | God Object pattern | Architecture | `gman.py` (18+ responsibilities) |
 | **M-2** | Deep relative imports (`...utils`) | Architecture | 5+ core modules |
 | **M-3** | Type hints gaps (`callable` instead of `Callable`) | Code Quality | Multiple utils modules |
 | **M-4** | Coverage gaps (fetch/deletion modules omitted) | Code Quality | `pyproject.toml` exclude list |
 | **M-5** | Async fetcher not integrated into CLI | Architecture | `core/fetch/async_fetcher.py` |
-| **M-6** | Email content stored in plaintext | Security | `gmail_assistant.py:454` |
+| **M-6** | Email content stored in plaintext | Security | `gman.py:454` |
 | **M-7** | Verbose error disclosure in logs | Security | `error_handler.py:184` |
 | **M-8** | Config files lack integrity validation | Security | `config/*.json` |
 | **M-9** | Repository pattern incomplete | Architecture | `processing/database.py` lacks protocol |
@@ -141,15 +141,15 @@ This master assessment consolidates findings from three specialized review agent
 ### Critical Files Requiring Immediate Attention
 
 ```
-src/gmail_assistant/core/fetch/gmail_api_client.py:95-124
+src/gman/core/fetch/gmail_api_client.py:95-124
   → Sequential API calls causing 80-90% performance loss
   → Action: Implement batch_api.py (already scaffolded)
 
-src/gmail_assistant/cli/commands/*.py
+src/gman/cli/commands/*.py
   → All commands print "deferred to v2.1.0" stubs
   → Action: Connect CLI commands to core functionality
 
-src/gmail_assistant/core/fetch/incremental.py
+src/gman/core/fetch/incremental.py
   → No state persistence for resumable fetches
   → Action: Implement checkpoint.py (already scaffolded)
 ```
@@ -157,18 +157,18 @@ src/gmail_assistant/core/fetch/incremental.py
 ### High Priority Files
 
 ```
-src/gmail_assistant/core/protocols.py:43-55
-src/gmail_assistant/core/ai/newsletter_cleaner.py:21-29
+src/gman/core/protocols.py:43-55
+src/gman/core/ai/newsletter_cleaner.py:21-29
   → Duplicate EmailMetadata vs EmailData structures
   → Action: Create unified schemas.py
 
-src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py
+src/gman/parsers/gmail_eml_to_markdown_cleaner.py
   → 11 bare except: handlers (lines 39, 43, 47, 51, 55, 61, 85, 191, 255, 305, 373)
   → Action: Replace with specific exception types
 
-src/gmail_assistant/analysis/daily_email_analysis.py (850 lines)
-src/gmail_assistant/analysis/daily_email_analyzer.py (1119 lines)
-src/gmail_assistant/analysis/email_analyzer.py (850 lines)
+src/gman/analysis/daily_email_analysis.py (850 lines)
+src/gman/analysis/daily_email_analyzer.py (1119 lines)
+src/gman/analysis/email_analyzer.py (850 lines)
   → ~70% code overlap
   → Action: Consolidate into single EmailAnalyzer with strategy pattern
 ```

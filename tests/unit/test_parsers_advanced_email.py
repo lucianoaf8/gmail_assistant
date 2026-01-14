@@ -14,7 +14,7 @@ import email
 import os
 
 try:
-    from gmail_assistant.parsers.advanced_email_parser import EmailContentParser
+    from gman.parsers.advanced_email_parser import EmailContentParser
 except ImportError:
     EmailContentParser = None
 

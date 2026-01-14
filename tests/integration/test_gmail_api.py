@@ -20,13 +20,13 @@ class TestGmailAuthentication:
 
     def test_authenticate_with_credentials(self, mock_credentials_file, mock_gmail_service_full):
         """Should authenticate successfully with valid credentials."""
-        from gmail_assistant.core.auth.base import ReadOnlyGmailAuth
+        from gman.core.auth.base import ReadOnlyGmailAuth
 
         auth = ReadOnlyGmailAuth(str(mock_credentials_file))
 
         # Mock the service building in credential_manager where it's imported
-        with mock.patch('gmail_assistant.core.auth.credential_manager.build', return_value=mock_gmail_service_full):
-            with mock.patch('gmail_assistant.core.auth.credential_manager.InstalledAppFlow.from_client_secrets_file') as mock_flow:
+        with mock.patch('gman.core.auth.credential_manager.build', return_value=mock_gmail_service_full):
+            with mock.patch('gman.core.auth.credential_manager.InstalledAppFlow.from_client_secrets_file') as mock_flow:
                 # Mock credentials
                 mock_creds = mock.MagicMock()
                 mock_creds.valid = True
@@ -36,7 +36,7 @@ class TestGmailAuthentication:
                 mock_flow.return_value.run_local_server.return_value = mock_creds
 
                 # Mock Credentials.from_authorized_user_file
-                with mock.patch('gmail_assistant.core.auth.credential_manager.Credentials') as mock_creds_class:
+                with mock.patch('gman.core.auth.credential_manager.Credentials') as mock_creds_class:
                     mock_creds_class.from_authorized_user_file.return_value = mock_creds
 
                     result = auth.authenticate()
@@ -46,7 +46,7 @@ class TestGmailAuthentication:
 
     def test_get_user_profile(self, mock_credentials_file, mock_gmail_service_full):
         """Should fetch user profile after authentication."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 
@@ -67,7 +67,7 @@ class TestGmailFetching:
 
     def test_search_emails(self, mock_credentials_file, mock_gmail_service_full):
         """Should search emails with query."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 
@@ -83,7 +83,7 @@ class TestGmailFetching:
 
     def test_fetch_email_by_id(self, mock_credentials_file, mock_gmail_service_full):
         """Should fetch email by message ID."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 
@@ -100,7 +100,7 @@ class TestGmailFetching:
 
     def test_download_emails_to_directory(self, mock_credentials_file, mock_gmail_service_full, temp_dir: Path):
         """Should download emails to specified directory."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
         output_dir = temp_dir / "downloads"
@@ -133,7 +133,7 @@ class TestGmailDeletion:
 
     def test_trash_email_dry_run(self, mock_credentials_file, mock_gmail_service_full):
         """Should perform dry run without deleting."""
-        from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
+        from gman.core.fetch.gmail_api_client import GmailAPIClient
 
         client = GmailAPIClient(str(mock_credentials_file))
 
@@ -150,7 +150,7 @@ class TestGmailDeletion:
 
     def test_delete_by_query_dry_run(self, mock_credentials_file, mock_gmail_service_full):
         """Should list emails to delete without deleting."""
-        from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
+        from gman.core.fetch.gmail_api_client import GmailAPIClient
 
         client = GmailAPIClient(str(mock_credentials_file))
 
@@ -174,7 +174,7 @@ class TestGmailAnalysis:
 
     def test_analyze_email_content(self, mock_credentials_file, mock_gmail_service_full):
         """Should analyze email content."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 
@@ -196,7 +196,7 @@ class TestGmailAnalysis:
 
     def test_classify_newsletters(self, mock_credentials_file, mock_gmail_service_full):
         """Should classify emails as newsletters."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 
@@ -225,7 +225,7 @@ class TestRateLimiting:
 
     def test_rate_limiter_throttles_requests(self):
         """Rate limiter should throttle rapid requests."""
-        from gmail_assistant.utils.rate_limiter import GmailRateLimiter
+        from gman.utils.rate_limiter import GmailRateLimiter
 
         limiter = GmailRateLimiter(requests_per_second=10.0)
 
@@ -243,7 +243,7 @@ class TestRateLimiting:
 
     def test_quota_tracker_accumulates(self):
         """Quota tracker should accumulate usage."""
-        from gmail_assistant.utils.rate_limiter import QuotaTracker
+        from gman.utils.rate_limiter import QuotaTracker
 
         tracker = QuotaTracker(daily_quota_limit=1000)
 
@@ -261,7 +261,7 @@ class TestCachePersistence:
 
     def test_cache_survives_restart(self, temp_dir: Path):
         """Cache should persist data across restarts."""
-        from gmail_assistant.utils.cache_manager import IntelligentCache
+        from gman.utils.cache_manager import IntelligentCache
 
         cache_dir = temp_dir / "cache"
 
@@ -296,7 +296,7 @@ class TestCircuitBreakerRecovery:
 
     def test_circuit_breaker_recovery_timing(self):
         """Circuit breaker should recover after timeout."""
-        from gmail_assistant.utils.circuit_breaker import (
+        from gman.utils.circuit_breaker import (
             CircuitBreaker,
             CircuitState,
         )

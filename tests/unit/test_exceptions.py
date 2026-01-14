@@ -1,9 +1,9 @@
-"""Unit tests for exception hierarchy in gmail_assistant.core.exceptions."""
+"""Unit tests for exception hierarchy in gman.core.exceptions."""
 from __future__ import annotations
 
 import pytest
 
-from gmail_assistant.core.exceptions import (
+from gman.core.exceptions import (
     GmailAssistantError,
     ConfigError,
     AuthError,
@@ -15,7 +15,7 @@ from gmail_assistant.core.exceptions import (
 class TestExceptionHierarchy:
     """Test exception class hierarchy and inheritance."""
 
-    def test_gmail_assistant_error_is_base_exception(self):
+    def test_gman_error_is_base_exception(self):
         """GmailAssistantError should inherit from Exception."""
         assert issubclass(GmailAssistantError, Exception)
 
@@ -39,7 +39,7 @@ class TestExceptionHierarchy:
 class TestExceptionInstantiation:
     """Test that exceptions can be instantiated with messages."""
 
-    def test_gmail_assistant_error_with_message(self):
+    def test_gman_error_with_message(self):
         """GmailAssistantError should preserve message."""
         error = GmailAssistantError("test message")
         assert str(error) == "test message"

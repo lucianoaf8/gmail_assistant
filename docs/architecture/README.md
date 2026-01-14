@@ -14,7 +14,7 @@ System design and architectural decisions.
 ## Package Structure
 
 ```
-src/gmail_assistant/
+src/gman/
 ├── cli/          # Click-based CLI
 ├── core/         # Core functionality (auth, fetch, config)
 ├── parsers/      # Email parsing and conversion

@@ -1,4 +1,4 @@
-# Gmail Assistant - Comprehensive Architecture Review
+# Gman - Comprehensive Architecture Review
 
 **Document ID**: 0109-2330_comprehensive_architecture_review.md
 **Date**: 2026-01-09
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-The Gmail Assistant project demonstrates a **mature v2.0 architecture** with strong foundations in clean architecture principles, dependency injection, and protocol-oriented design. The project successfully transitioned from a script collection to a proper Python package with src-layout, achieving 90.60% test coverage.
+The Gman project demonstrates a **mature v2.0 architecture** with strong foundations in clean architecture principles, dependency injection, and protocol-oriented design. The project successfully transitioned from a script collection to a proper Python package with src-layout, achieving 90.60% test coverage.
 
 **Overall Architecture Grade**: B+ (Good with room for optimization)
 
@@ -53,7 +53,7 @@ The Gmail Assistant project demonstrates a **mature v2.0 architecture** with str
 **Grade**: A- (Excellent with minor issues)
 
 ```
-src/gmail_assistant/           # ✅ Proper src-layout (ADR-0001)
+src/gman/           # ✅ Proper src-layout (ADR-0001)
 ├── cli/                       # ✅ Command-line interface
 │   ├── commands/              # ✅ Command separation
 │   └── main.py                # ✅ Click-based CLI
@@ -72,12 +72,12 @@ src/gmail_assistant/           # ✅ Proper src-layout (ADR-0001)
 - **src-layout** prevents accidental imports from development directory
 - Clear domain separation (auth, fetch, processing, analysis)
 - Proper separation of CLI, core logic, and utilities
-- Configuration security: defaults to `~/.gmail-assistant/` outside repos
+- Configuration security: defaults to `~/.gman/` outside repos
 
 **Issues**:
 
 **Issue 1.1**: Deep nesting in `core/` (Medium)
-- **Location**: `src/gmail_assistant/core/fetch/` has 8 modules
+- **Location**: `src/gman/core/fetch/` has 8 modules
 - **Impact**: Deep relative imports (`from ...utils.memory_manager`)
 - **Severity**: Medium
 - **Recommendation**: Consider flattening `fetch/` or introducing sub-packages with clearer boundaries
@@ -95,7 +95,7 @@ src/gmail_assistant/           # ✅ Proper src-layout (ADR-0001)
 
 **Protocol-Based Design**:
 ```python
-# src/gmail_assistant/core/protocols.py (833 lines)
+# src/gman/core/protocols.py (833 lines)
 - 14 protocol definitions
 - 4 dataclass DTOs (EmailMetadata, FetchResult, DeleteResult, ParseResult)
 - Clear interface contracts
@@ -117,7 +117,7 @@ src/gmail_assistant/           # ✅ Proper src-layout (ADR-0001)
 - **Reference**: See `docs/0109-2145_remediation_plan.md` Phase 1
 
 **Issue 1.4**: Cross-layer coupling (Medium)
-- **Location**: `core/fetch/gmail_assistant.py:30` imports `...utils.memory_manager`
+- **Location**: `core/fetch/gman.py:30` imports `...utils.memory_manager`
 - **Impact**: Core domain depends on infrastructure utilities
 - **Severity**: Medium
 - **Recommendation**: Introduce adapter pattern or dependency injection for utilities
@@ -160,7 +160,7 @@ src/gmail_assistant/           # ✅ Proper src-layout (ADR-0001)
 **Issues**:
 
 **Issue 2.1**: Incomplete domain isolation (Medium)
-- **Location**: `core/fetch/gmail_assistant.py:24-25` imports Google API directly
+- **Location**: `core/fetch/gman.py:24-25` imports Google API directly
 - **Impact**: Domain layer coupled to external API library
 - **Severity**: Medium
 - **Recommendation**: Introduce `GmailApiAdapter` in infrastructure layer
@@ -212,7 +212,7 @@ class ServiceContainer:
 
 **Issue 2.3**: Container not used consistently (Medium)
 - **Location**: Direct instantiation in many modules instead of container resolution
-- **Example**: `gmail_assistant.py:34` - `self.auth = ReadOnlyGmailAuth(credentials_file)`
+- **Example**: `gman.py:34` - `self.auth = ReadOnlyGmailAuth(credentials_file)`
 - **Impact**: Harder to test, bypasses dependency injection benefits
 - **Severity**: Medium
 - **Recommendation**: Enforce container usage through constructor injection pattern
@@ -292,7 +292,7 @@ GmailAssistantError (base exception)
 ### 3.2 Anti-Patterns Detected
 
 **Issue 3.3**: God Object pattern (Medium)
-- **Location**: `core/fetch/gmail_assistant.py` - `GmailFetcher` class has 18+ responsibilities
+- **Location**: `core/fetch/gman.py` - `GmailFetcher` class has 18+ responsibilities
 - **Responsibilities**: Auth, search, fetch, parse, convert, organize, write files
 - **Severity**: Medium
 - **Recommendation**: Extract into focused classes:
@@ -303,7 +303,7 @@ GmailAssistantError (base exception)
 
 **Issue 3.4**: Feature Envy (Low)
 - **Location**: Multiple modules reaching into `utils/memory_manager`
-- **Example**: `fetch/gmail_assistant.py:30` imports 3 classes from memory manager
+- **Example**: `fetch/gman.py:30` imports 3 classes from memory manager
 - **Severity**: Low
 - **Recommendation**: Consider facade pattern for memory management
 
@@ -475,9 +475,9 @@ security = [...]      # keyring, regex (ReDoS protection)
 
 **Configuration Resolution Order**:
 1. CLI arguments (`--config`)
-2. Environment variable (`gmail_assistant_CONFIG`)
-3. Project config (`./gmail-assistant.json`)
-4. User config (`~/.gmail-assistant/config.json`)
+2. Environment variable (`gman_CONFIG`)
+3. Project config (`./gman.json`)
+4. User config (`~/.gman/config.json`)
 5. Built-in defaults
 
 **Strengths**:
@@ -574,8 +574,8 @@ for msg_id in message_ids:
 **Grade**: B- (Needs documentation and stability)
 
 **Public APIs**:
-1. **CLI**: `gmail-assistant` command (Click-based)
-2. **Python API**: `from gmail_assistant import ...`
+1. **CLI**: `gman` command (Click-based)
+2. **Python API**: `from gman import ...`
 3. **Protocols**: Interface contracts in `core/protocols.py`
 
 **Issues**:
@@ -699,7 +699,7 @@ for msg_id in message_ids:
 ### Critical (P0) - Address Immediately
 
 **C-1: Implement Gmail Batch API** [CRITICAL]
-- **File**: `src/gmail_assistant/core/fetch/gmail_api_client.py:95-124`
+- **File**: `src/gman/core/fetch/gmail_api_client.py:95-124`
 - **Issue**: Sequential API calls cause 80-90% performance loss
 - **Action**: Use scaffolded `batch_api.py`, implement batch request grouping
 - **Impact**: 10-100x performance improvement on bulk operations
@@ -707,7 +707,7 @@ for msg_id in message_ids:
 - **Reference**: Google Gmail API Batch Requests documentation
 
 **C-2: Complete CLI Command Implementations** [CRITICAL]
-- **Files**: All files in `src/gmail_assistant/cli/commands/`
+- **Files**: All files in `src/gman/cli/commands/`
 - **Issue**: All commands print "[INFO] Functional implementation is deferred to v2.1.0"
 - **Action**: Connect CLI commands to core functionality
 - **Impact**: Makes CLI entry point functional for end users
@@ -715,7 +715,7 @@ for msg_id in message_ids:
 - **Milestone**: v2.1.0 release blocker
 
 **C-3: Add Checkpoint/Resume for Incremental Sync** [CRITICAL]
-- **File**: `src/gmail_assistant/core/fetch/incremental.py`
+- **File**: `src/gman/core/fetch/incremental.py`
 - **Issue**: Failed fetches restart from beginning, no progress persistence
 - **Action**: Implement checkpoint system using scaffolded `checkpoint.py`
 - **Impact**: Reliability for large email fetches, resume after interruption
@@ -725,8 +725,8 @@ for msg_id in message_ids:
 
 **H-1: Unify Duplicate Data Structures** [HIGH]
 - **Files**:
-  - `src/gmail_assistant/core/protocols.py:43-55` (EmailMetadata)
-  - `src/gmail_assistant/core/ai/newsletter_cleaner.py:21-29` (EmailData)
+  - `src/gman/core/protocols.py:43-55` (EmailMetadata)
+  - `src/gman/core/ai/newsletter_cleaner.py:21-29` (EmailData)
 - **Issue**: Field inconsistencies, maintenance burden
 - **Action**: Create `core/schemas.py` with canonical structures, deprecate duplicates
 - **Impact**: Reduced maintenance, consistent field naming
@@ -734,7 +734,7 @@ for msg_id in message_ids:
 - **Reference**: `docs/0109-2145_remediation_plan.md` Phase 1
 
 **H-2: Integrate Async Fetcher into CLI** [HIGH]
-- **File**: `src/gmail_assistant/core/fetch/async_fetcher.py`
+- **File**: `src/gman/core/fetch/async_fetcher.py`
 - **Issue**: Async fetcher exists but not used by CLI
 - **Action**: Add `--async` flag to fetch command, default to async for batches >100
 - **Impact**: 2-5x performance improvement for concurrent fetches
@@ -750,7 +750,7 @@ for msg_id in message_ids:
 ### Medium (P2) - Address in Q1 2026
 
 **M-1: Refactor GmailFetcher God Object** [MEDIUM]
-- **File**: `src/gmail_assistant/core/fetch/gmail_assistant.py`
+- **File**: `src/gman/core/fetch/gman.py`
 - **Issue**: 18+ responsibilities in single class
 - **Action**: Extract into focused services:
   - `EmailSearchService` - Query execution
@@ -761,7 +761,7 @@ for msg_id in message_ids:
 - **Effort**: 32-40 hours
 
 **M-2: Add Repository Protocol for Database** [MEDIUM]
-- **File**: `src/gmail_assistant/core/processing/database.py`
+- **File**: `src/gman/core/processing/database.py`
 - **Issue**: No protocol interface, direct SQLite coupling
 - **Action**: Add `DatabaseRepositoryProtocol` to `protocols.py`
 - **Impact**: Enables testing with mock database, potential database migration
@@ -774,7 +774,7 @@ for msg_id in message_ids:
 - **Effort**: 12-20 hours
 
 **M-4: Implement Dead Letter Queue** [MEDIUM]
-- **File**: `src/gmail_assistant/core/fetch/dead_letter_queue.py` (scaffolded)
+- **File**: `src/gman/core/fetch/dead_letter_queue.py` (scaffolded)
 - **Issue**: Failed messages have no retry mechanism
 - **Action**: Implement DLQ with SQLite storage, exponential backoff retry
 - **Impact**: Improved reliability, no data loss on transient errors
@@ -783,14 +783,14 @@ for msg_id in message_ids:
 ### Low (P3) - Address Opportunistically
 
 **L-1: Fix Exception Consistency** [LOW]
-- **File**: `src/gmail_assistant/core/auth/base.py:20`
+- **File**: `src/gman/core/auth/base.py:20`
 - **Issue**: Local `AuthenticationError` instead of central `AuthError`
 - **Action**: Deprecate local exceptions, use central taxonomy
 - **Impact**: Consistency with exception hierarchy (ADR-0004)
 - **Effort**: 4-8 hours
 
 **L-2: Add Configuration Versioning** [LOW]
-- **File**: `src/gmail_assistant/core/config.py`
+- **File**: `src/gman/core/config.py`
 - **Issue**: No `config_version` field for migration support
 - **Action**: Add version field, implement migration logic
 - **Impact**: Easier config migrations across versions
@@ -813,7 +813,7 @@ for msg_id in message_ids:
 
 ## 11. Architectural Strengths Summary
 
-Despite the identified issues, the Gmail Assistant architecture demonstrates several exemplary patterns:
+Despite the identified issues, the Gman architecture demonstrates several exemplary patterns:
 
 1. **Protocol-Oriented Design**: Comprehensive protocols enable clean interfaces and testability
 2. **Dependency Injection**: Full DI container with proper scoping and factory functions

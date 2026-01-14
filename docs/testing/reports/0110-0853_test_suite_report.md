@@ -1,7 +1,7 @@
-# Gmail Assistant Test Suite Report
+# Gman Test Suite Report
 
 **Generated**: 2026-01-10 08:53 AM
-**Project**: gmail_assistant v2.0.0
+**Project**: gman v2.0.0
 **Test Framework**: pytest 9.0.1
 **Python Version**: 3.13.9
 **Platform**: Windows (win32)
@@ -64,7 +64,7 @@ The test suite is **functional** but has **significant issues** requiring attent
 **Input Validator Tests (2 failures)** - `tests/unit/test_input_validator.py`
 - `test_valid_relative_path`: Path resolution mismatch
   - Expected: `WindowsPath('test_folder/test.txt')`
-  - Got: `WindowsPath('C:/_Lucx/Projects/gmail_assistant/test_folder/test.txt')`
+  - Got: `WindowsPath('C:/_Lucx/Projects/gman/test_folder/test.txt')`
 - `test_path_traversal_blocked`: Error message format mismatch
   - Expected regex: 'dangerous'
   - Actual: "Path contains traversal component '..'"
@@ -185,13 +185,13 @@ IndentationError: expected an indented block after 'for' statement on line 74
 | Error | ModuleNotFoundError |
 
 **Issue**: Missing optional dependency `pyarrow`
-- Required for: `gmail_assistant.analysis.email_data_converter`
+- Required for: `gman.analysis.email_data_converter`
 - Optional dependency group: `[analysis]`
 - Install command: `pip install -e ".[analysis]"`
 
 **Files Affected**:
 - `tests/integration/test_gmail_api.py`
-- All tests importing from `gmail_assistant.analysis.*`
+- All tests importing from `gman.analysis.*`
 
 ---
 
@@ -219,7 +219,7 @@ Multiple test files in `tests/` root directory with pytest capture errors:
 - `test_base64_content.py`
 - `test_comprehensive_runner.py`
 - `test_core_container.py`
-- `test_core_gmail_assistant.py`
+- `test_core_gman.py`
 - `test_core_protocols.py`
 - `test_core_simple.py`
 - `test_deletion_functionality.py`
@@ -466,7 +466,7 @@ pip install -e ".[all]"
 ### Run All Passing Tests
 ```bash
 # Unit tests only (works)
-pytest tests/unit/ --cov=gmail_assistant --cov-report=html
+pytest tests/unit/ --cov=gman --cov-report=html
 
 # Security tests (exclude broken file)
 pytest tests/security/ --ignore=tests/security/test_m5_config_schema.py
@@ -486,7 +486,7 @@ pytest tests/security/test_m*.py -v    # Medium severity
 pytest tests/security/test_l*.py -v    # Low severity
 
 # With coverage for specific module
-pytest tests/unit/test_auth.py --cov=gmail_assistant.core.auth
+pytest tests/unit/test_auth.py --cov=gman.core.auth
 ```
 
 ### Debugging Failed Tests

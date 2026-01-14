@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Gmail Assistant needed a command-line interface with:
+Gman needed a command-line interface with:
 - Multiple subcommands (fetch, delete, analyze, auth, config)
 - Type-safe argument parsing
 - Good help text generation

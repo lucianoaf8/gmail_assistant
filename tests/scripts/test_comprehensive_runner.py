@@ -19,7 +19,7 @@ class TestValidationRunner:
     def setup_method(self):
         """Setup test validation environment."""
         self.test_files = [
-            "test_core_gmail_assistant.py",
+            "test_core_gman.py",
             "test_parsers_advanced_email.py", 
             "test_cli_main_orchestrator.py",
             "test_classification_analysis.py"
@@ -243,7 +243,7 @@ class TestValidationRunner:
         
         # Check for core application modules
         app_modules = [
-            'core.gmail_assistant',
+            'core.gman',
             'core.email_classifier',
             'parsers.advanced_email_parser'
         ]
@@ -401,7 +401,7 @@ This is a test email {i}.
 
             # Create mock config files
             mock_configs = {
-                "app_config.json": {"app_name": "gmail_assistant", "version": "2.0.0"},
+                "app_config.json": {"app_name": "gman", "version": "2.0.0"},
                 "settings.json": {"debug": False, "log_level": "INFO"}
             }
 

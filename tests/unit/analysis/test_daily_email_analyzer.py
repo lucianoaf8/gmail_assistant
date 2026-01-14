@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gmail_assistant.analysis.daily_email_analyzer import (
+from gman.analysis.daily_email_analyzer import (
     ContentAnalyzer,
     DataQualityAssessment,
     DailyEmailAnalyzer,

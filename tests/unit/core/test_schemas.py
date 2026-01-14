@@ -15,7 +15,7 @@ class TestParticipantType:
 
     def test_participant_type_values(self):
         """Test all ParticipantType values exist."""
-        from gmail_assistant.core.schemas import ParticipantType
+        from gman.core.schemas import ParticipantType
 
         assert ParticipantType.FROM.value == "from"
         assert ParticipantType.TO.value == "to"
@@ -28,7 +28,7 @@ class TestEmailParticipant:
 
     def test_participant_creation(self):
         """Test creating EmailParticipant."""
-        from gmail_assistant.core.schemas import EmailParticipant, ParticipantType
+        from gman.core.schemas import EmailParticipant, ParticipantType
 
         participant = EmailParticipant(
             address="test@example.com",
@@ -42,7 +42,7 @@ class TestEmailParticipant:
 
     def test_participant_domain_property(self):
         """Test domain property extraction."""
-        from gmail_assistant.core.schemas import EmailParticipant, ParticipantType
+        from gman.core.schemas import EmailParticipant, ParticipantType
 
         participant = EmailParticipant(
             address="test@example.com",
@@ -53,7 +53,7 @@ class TestEmailParticipant:
 
     def test_participant_domain_no_at_sign(self):
         """Test domain property with invalid email."""
-        from gmail_assistant.core.schemas import EmailParticipant, ParticipantType
+        from gman.core.schemas import EmailParticipant, ParticipantType
 
         participant = EmailParticipant(
             address="invalid_email",
@@ -64,7 +64,7 @@ class TestEmailParticipant:
 
     def test_participant_is_frozen(self):
         """Test EmailParticipant is immutable."""
-        from gmail_assistant.core.schemas import EmailParticipant, ParticipantType
+        from gman.core.schemas import EmailParticipant, ParticipantType
 
         participant = EmailParticipant(
             address="test@example.com",
@@ -80,7 +80,7 @@ class TestEmail:
 
     def test_email_creation_minimal(self):
         """Test creating Email with minimal fields."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -95,7 +95,7 @@ class TestEmail:
 
     def test_email_creation_full(self):
         """Test creating Email with all fields."""
-        from gmail_assistant.core.schemas import Email, EmailParticipant, ParticipantType
+        from gman.core.schemas import Email, EmailParticipant, ParticipantType
 
         recipients = [
             EmailParticipant(address="recipient@example.com", type=ParticipantType.TO)
@@ -126,7 +126,7 @@ class TestEmail:
 
     def test_email_default_values(self):
         """Test Email default values."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -143,7 +143,7 @@ class TestEmail:
 
     def test_email_parse_date_string(self):
         """Test Email parses date string."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -158,7 +158,7 @@ class TestEmail:
 
     def test_email_parse_iso_date(self):
         """Test Email parses ISO date format."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -171,7 +171,7 @@ class TestEmail:
 
     def test_email_sender_domain_property(self):
         """Test sender_domain property."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -184,7 +184,7 @@ class TestEmail:
 
     def test_email_year_month_property(self):
         """Test year_month property."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -197,7 +197,7 @@ class TestEmail:
 
     def test_email_to_dict(self):
         """Test to_dict method."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -214,7 +214,7 @@ class TestEmail:
 
     def test_email_to_email_metadata_deprecated(self):
         """Test to_email_metadata emits deprecation warning."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -232,7 +232,7 @@ class TestEmail:
 
     def test_email_to_email_data_deprecated(self):
         """Test to_email_data emits deprecation warning."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         email = Email(
             gmail_id="msg123",
@@ -254,7 +254,7 @@ class TestEmailFromGmailMessage:
 
     def test_from_gmail_message_basic(self):
         """Test creating Email from Gmail API response."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         message = {
             'id': 'msg123',
@@ -283,7 +283,7 @@ class TestEmailFromGmailMessage:
 
     def test_from_gmail_message_with_display_name(self):
         """Test parsing sender with display name."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         message = {
             'id': 'msg123',
@@ -303,7 +303,7 @@ class TestEmailFromGmailMessage:
 
     def test_from_gmail_message_multiple_recipients(self):
         """Test parsing multiple recipients."""
-        from gmail_assistant.core.schemas import Email, ParticipantType
+        from gman.core.schemas import Email, ParticipantType
 
         message = {
             'id': 'msg123',
@@ -329,7 +329,7 @@ class TestEmailFromGmailMessage:
 
     def test_from_gmail_message_starred(self):
         """Test detecting starred email."""
-        from gmail_assistant.core.schemas import Email
+        from gman.core.schemas import Email
 
         message = {
             'id': 'msg123',
@@ -353,7 +353,7 @@ class TestEmailBatch:
 
     def test_batch_creation(self):
         """Test creating EmailBatch."""
-        from gmail_assistant.core.schemas import Email, EmailBatch
+        from gman.core.schemas import Email, EmailBatch
 
         emails = [
             Email(
@@ -379,7 +379,7 @@ class TestEmailBatch:
 
     def test_batch_optional_fields(self):
         """Test EmailBatch optional fields."""
-        from gmail_assistant.core.schemas import EmailBatch
+        from gman.core.schemas import EmailBatch
 
         batch = EmailBatch(
             emails=[],
@@ -395,7 +395,7 @@ class TestEmailMetadataCompat:
 
     def test_compat_emits_deprecation_warning(self):
         """Test EmailMetadataCompat emits deprecation warning."""
-        from gmail_assistant.core.schemas import EmailMetadataCompat
+        from gman.core.schemas import EmailMetadataCompat
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -414,7 +414,7 @@ class TestEmailMetadataCompat:
 
     def test_compat_to_email_conversion(self):
         """Test converting EmailMetadataCompat to Email."""
-        from gmail_assistant.core.schemas import EmailMetadataCompat
+        from gman.core.schemas import EmailMetadataCompat
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -441,7 +441,7 @@ class TestEmailDataCompat:
 
     def test_compat_emits_deprecation_warning(self):
         """Test EmailDataCompat emits deprecation warning."""
-        from gmail_assistant.core.schemas import EmailDataCompat
+        from gman.core.schemas import EmailDataCompat
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -457,7 +457,7 @@ class TestEmailDataCompat:
 
     def test_compat_to_email_conversion(self):
         """Test converting EmailDataCompat to Email."""
-        from gmail_assistant.core.schemas import EmailDataCompat
+        from gman.core.schemas import EmailDataCompat
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -482,7 +482,7 @@ class TestCreateEmailFromDict:
 
     def test_create_from_dict_basic(self):
         """Test creating Email from basic dict."""
-        from gmail_assistant.core.schemas import create_email_from_dict
+        from gman.core.schemas import create_email_from_dict
 
         data = {
             'gmail_id': 'msg123',
@@ -498,7 +498,7 @@ class TestCreateEmailFromDict:
 
     def test_create_from_dict_normalized_fields(self):
         """Test creating Email normalizes field names."""
-        from gmail_assistant.core.schemas import create_email_from_dict
+        from gman.core.schemas import create_email_from_dict
 
         data = {
             'id': 'msg123',  # Instead of gmail_id
@@ -514,7 +514,7 @@ class TestCreateEmailFromDict:
 
     def test_create_from_dict_handles_labels_string(self):
         """Test creating Email handles comma-separated labels."""
-        from gmail_assistant.core.schemas import create_email_from_dict
+        from gman.core.schemas import create_email_from_dict
 
         data = {
             'gmail_id': 'msg123',

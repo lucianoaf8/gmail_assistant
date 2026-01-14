@@ -36,9 +36,9 @@ README.md requires updates to reflect the v2.0.0 restructuring. While it has som
 ## Project Structure
 
 ```
-gmail_assistant/
+gman/
 ├── src/                          # Core source code
-│   ├── gmail_assistant.py         # Main Gmail backup tool
+│   ├── gman.py         # Main Gmail backup tool
 │   ├── advanced_email_parser.py # Multi-strategy content parsing
 │   ├── gmail_ai_newsletter_cleaner.py # AI newsletter detection
 │   ├── gmail_api_client.py      # Gmail API integration
@@ -56,14 +56,14 @@ gmail_assistant/
 ## Project Structure
 
 ```
-gmail_assistant/
-├── src/gmail_assistant/           # Main package (src-layout)
+gman/
+├── src/gman/           # Main package (src-layout)
 │   ├── cli/                       # Click-based CLI
-│   │   ├── main.py                # Entry point (gmail-assistant command)
+│   │   ├── main.py                # Entry point (gman command)
 │   │   └── commands/              # Subcommand implementations
 │   ├── core/                      # Core functionality
 │   │   ├── fetch/                 # Email fetching
-│   │   │   ├── gmail_assistant.py # GmailFetcher class
+│   │   │   ├── gman.py # GmailFetcher class
 │   │   │   └── gmail_api_client.py # Gmail API client
 │   │   ├── ai/                    # AI-related features
 │   │   │   └── newsletter_cleaner.py # Newsletter detection
@@ -107,14 +107,14 @@ gmail_assistant/
 
 **CURRENT (MIXED OLD/NEW)**:
 ```markdown
-#### 1. Gmail Fetcher (`gmail_assistant.py`)
+#### 1. Gmail Fetcher (`gman.py`)
 
 ```bash
 # Download unread emails (new CLI)
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Download by date range with organization
-python src/gmail_assistant.py --query "after:2025/02/28 before:2025/04/01" --organize sender --format both
+python src/gman.py --query "after:2025/02/28 before:2025/04/01" --organize sender --format both
 ```
 ```
 
@@ -125,15 +125,15 @@ python src/gmail_assistant.py --query "after:2025/02/28 before:2025/04/01" --org
 **CLI Usage** (v2.1.0 - currently stub):
 ```bash
 # Download unread emails
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Download with format and output options
-gmail-assistant fetch --query "after:2025/02/28" --format json --output-dir ./backups
+gman fetch --query "after:2025/02/28" --format json --output-dir ./backups
 ```
 
 **Direct Module Usage** (immediately functional):
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 fetcher = GmailFetcher('credentials.json')
 fetcher.authenticate()
@@ -165,7 +165,7 @@ python src/advanced_email_parser.py email_file.html
 ```markdown
 ```bash
 # Parse HTML email with multiple strategies
-python -m gmail_assistant.parsers.advanced_email_parser email_file.html
+python -m gman.parsers.advanced_email_parser email_file.html
 ```
 ```
 
@@ -192,10 +192,10 @@ python src/gmail_ai_newsletter_cleaner.py email_data.json --delete
 ```markdown
 ```bash
 # Analyze emails for AI newsletters (dry run)
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json
+python -m gman.core.ai.newsletter_cleaner email_data.json
 
 # Actually delete identified AI newsletters
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json --delete
+python -m gman.core.ai.newsletter_cleaner email_data.json --delete
 ```
 ```
 
@@ -222,10 +222,10 @@ python src/gmail_api_client.py --delete --max-emails 500
 ```markdown
 ```bash
 # Fetch and analyze unread emails
-python -m gmail_assistant.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000
+python -m gman.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000
 
 # Actually delete AI newsletters from Gmail
-python -m gmail_assistant.core.fetch.gmail_api_client --delete --max-emails 500
+python -m gman.core.fetch.gmail_api_client --delete --max-emails 500
 ```
 ```
 
@@ -249,7 +249,7 @@ python src/gmail_eml_to_markdown_cleaner.py --base backup_folder --year 2025
 ```markdown
 ```bash
 # Convert EML files to clean Markdown
-python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
+python -m gman.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
 ```
 ```
 
@@ -261,7 +261,7 @@ python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_fo
 
 **Location**: Lines 205-276 (multiple examples)
 
-**CHANGES NEEDED**: Update all `python src/...` to `python -m gmail_assistant...` or `gmail-assistant` CLI.
+**CHANGES NEEDED**: Update all `python src/...` to `python -m gman...` or `gman` CLI.
 
 **EXAMPLE - Basic Email Backup Section (Lines 205-216)**:
 
@@ -271,13 +271,13 @@ python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_fo
 
 ```bash
 # First-time authentication
-python src/gmail_assistant.py --auth-only
+python src/gman.py --auth-only
 
 # Backup all unread emails
-python src/gmail_assistant.py --query "is:unread" --max 1000 --format both
+python src/gman.py --query "is:unread" --max 1000 --format both
 
 # Organize by sender for easy browsing
-python src/gmail_assistant.py --query "newer_than:6m" --organize sender --output recent_emails
+python src/gman.py --query "newer_than:6m" --organize sender --output recent_emails
 ```
 ```
 
@@ -288,20 +288,20 @@ python src/gmail_assistant.py --query "newer_than:6m" --organize sender --output
 **Using CLI** (v2.1.0 implementation pending):
 ```bash
 # First-time authentication
-gmail-assistant auth
+gman auth
 
 # Backup all unread emails
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Check current configuration
-gmail-assistant config --show
+gman config --show
 ```
 
 **Using Direct Module** (immediately functional):
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
-fetcher = GmailFetcher('~/.gmail-assistant/credentials.json')
+fetcher = GmailFetcher('~/.gman/credentials.json')
 fetcher.authenticate()
 
 # Backup unread emails
@@ -367,16 +367,16 @@ pip install -e ".[all,dev]"
 pytest tests/
 
 # Run tests with coverage
-pytest tests/ --cov=gmail_assistant --cov-report=html
+pytest tests/ --cov=gman --cov-report=html
 
 # Code linting (using ruff)
 ruff check src/
 
 # Type checking
-mypy src/gmail_assistant
+mypy src/gman
 
 # All quality checks
-ruff check src/ && mypy src/gmail_assistant && pytest tests/
+ruff check src/ && mypy src/gman && pytest tests/
 ```
 ```
 
@@ -414,11 +414,11 @@ All occurrences of these patterns should be updated:
 
 | Old Pattern | New Pattern |
 |-------------|-------------|
-| `python src/gmail_assistant.py` | `gmail-assistant fetch` or direct module |
-| `python src/advanced_email_parser.py` | `python -m gmail_assistant.parsers.advanced_email_parser` |
-| `python src/gmail_ai_newsletter_cleaner.py` | `python -m gmail_assistant.core.ai.newsletter_cleaner` |
-| `python src/gmail_api_client.py` | `python -m gmail_assistant.core.fetch.gmail_api_client` |
-| `python src/gmail_eml_to_markdown_cleaner.py` | `python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner` |
+| `python src/gman.py` | `gman fetch` or direct module |
+| `python src/advanced_email_parser.py` | `python -m gman.parsers.advanced_email_parser` |
+| `python src/gmail_ai_newsletter_cleaner.py` | `python -m gman.core.ai.newsletter_cleaner` |
+| `python src/gmail_api_client.py` | `python -m gman.core.fetch.gmail_api_client` |
+| `python src/gmail_eml_to_markdown_cleaner.py` | `python -m gman.parsers.gmail_eml_to_markdown_cleaner` |
 | `pip install -r requirements_advanced.txt` | `pip install -e ".[all]"` |
 | `black src/` | `ruff check src/` |
 | `flake8 src/` | `ruff check src/` |

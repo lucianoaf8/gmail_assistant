@@ -1,6 +1,6 @@
 # Technical Reference Documentation Guide
 
-Quick navigation guide to the Gmail Assistant technical reference documentation suite.
+Quick navigation guide to the Gman technical reference documentation suite.
 
 ---
 
@@ -24,7 +24,7 @@ Main navigation hub for all technical documentation. Start here to find what you
 ### 2. CLI Reference
 **File**: `0109-1500_CLI_REFERENCE.md`
 
-Complete command-line interface documentation for the `gmail-assistant` command.
+Complete command-line interface documentation for the `gman` command.
 
 **Contains**:
 - Entry point and global options
@@ -85,7 +85,7 @@ Complete Python API documentation for programmatic use.
 - Type hint patterns
 
 **Use this for**:
-- Writing Python code using gmail-assistant
+- Writing Python code using gman
 - Understanding class methods and signatures
 - Exception handling
 - Working with Email models
@@ -171,7 +171,7 @@ Complete reference of all constants and hardcoded values.
 All documentation files are in the `docs/` directory:
 
 ```
-C:\_Lucx\Projects\gmail_assistant\docs\
+C:\_Lucx\Projects\gman\docs\
 ├── 0109-1400_TECHNICAL_REFERENCE_INDEX.md
 ├── 0109-1500_CLI_REFERENCE.md
 ├── 0109-1600_CONFIGURATION_REFERENCE.md
@@ -215,10 +215,10 @@ C:\_Lucx\Projects\gmail_assistant\docs\
 
 ## Starting Your Journey
 
-### I want to use gmail-assistant from the command line
+### I want to use gman from the command line
 → Start with `0109-1500_CLI_REFERENCE.md`
 
-### I want to configure gmail-assistant
+### I want to configure gman
 → Start with `0109-1600_CONFIGURATION_REFERENCE.md`
 
 ### I want to integrate it into Python code
@@ -235,7 +235,7 @@ C:\_Lucx\Projects\gmail_assistant\docs\
 ## Version Information
 
 **Documentation Version**: 2.0.0
-**Gmail Assistant Version**: 2.0.0
+**Gman Version**: 2.0.0
 **Last Updated**: 2026-01-09
 **Status**: Production Ready
 
@@ -265,5 +265,5 @@ All documentation follows consistent formatting for easy updates.
 
 ---
 
-**Welcome to the Gmail Assistant Technical Reference Documentation!**
+**Welcome to the Gman Technical Reference Documentation!**
 

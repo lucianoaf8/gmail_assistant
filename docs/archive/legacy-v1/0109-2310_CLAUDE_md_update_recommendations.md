@@ -20,7 +20,7 @@ CLAUDE.md requires significant updates to reflect the v2.0.0 restructuring. This
 ```markdown
 ### Main Components
 
-- **`gmail_assistant.py`**: Main application with `GmailFetcher` class containing all core functionality
+- **`gman.py`**: Main application with `GmailFetcher` class containing all core functionality
   - Authentication with Google OAuth 2.0
   - Email search using Gmail API queries
   - Email content extraction (plain text and HTML)
@@ -34,7 +34,7 @@ CLAUDE.md requires significant updates to reflect the v2.0.0 restructuring. This
 ```markdown
 ### Main Components
 
-- **`src/gmail_assistant/cli/main.py`**: Click-based CLI entry point with subcommands
+- **`src/gman/cli/main.py`**: Click-based CLI entry point with subcommands
   - `fetch`: Download emails from Gmail
   - `delete`: Delete emails matching query
   - `analyze`: Analyze fetched emails
@@ -42,7 +42,7 @@ CLAUDE.md requires significant updates to reflect the v2.0.0 restructuring. This
   - `config`: Manage configuration
   - **Note**: CLI commands are stub implementations; functional logic deferred to v2.1.0
 
-- **`src/gmail_assistant/core/fetch/gmail_assistant.py`**: Core `GmailFetcher` class
+- **`src/gman/core/fetch/gman.py`**: Core `GmailFetcher` class
   - Authentication with Google OAuth 2.0 via `ReadOnlyGmailAuth`
   - Email search using Gmail API queries
   - Email content extraction (plain text and HTML)
@@ -80,25 +80,25 @@ CLAUDE.md requires significant updates to reflect the v2.0.0 restructuring. This
 ```markdown
 ### Advanced Processing Tools
 
-- **`src/gmail_assistant/parsers/advanced_email_parser.py`**: Multi-strategy email content parsing with intelligent HTML to Markdown conversion
+- **`src/gman/parsers/advanced_email_parser.py`**: Multi-strategy email content parsing with intelligent HTML to Markdown conversion
   - Smart email type detection (newsletter, notification, marketing, simple)
   - Multiple parsing strategies (readability, trafilatura, html2text, markdownify)
   - Newsletter-specific content extraction rules
   - Quality scoring and automatic best-result selection
 
-- **`src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py`**: Professional EML to Markdown converter with front matter
+- **`src/gman/parsers/gmail_eml_to_markdown_cleaner.py`**: Professional EML to Markdown converter with front matter
   - Converts .eml files to clean, consistent Markdown format
   - Extracts and preserves email metadata in YAML front matter
   - Handles attachments and inline images (CID references)
   - Configurable content cleaning and formatting rules
 
-- **`src/gmail_assistant/core/ai/newsletter_cleaner.py`**: AI newsletter identification and deletion system
+- **`src/gman/core/ai/newsletter_cleaner.py`**: AI newsletter identification and deletion system
   - Pattern-based detection of AI newsletters using keywords and domains
   - Configurable confidence scoring and thresholds
   - Dry-run mode with detailed logging for safety
   - Support for JSON/CSV email data formats
 
-- **`src/gmail_assistant/core/fetch/gmail_api_client.py`**: Live Gmail API integration for direct inbox operations
+- **`src/gman/core/fetch/gmail_api_client.py`**: Live Gmail API integration for direct inbox operations
   - Real-time email fetching and analysis
   - Batch operations for efficient processing
   - Trash vs permanent deletion options
@@ -152,19 +152,19 @@ CLAUDE.md requires significant updates to reflect the v2.0.0 restructuring. This
 pip install -r requirements.txt
 
 # First-time authentication (opens browser)
-python gmail_assistant.py --auth-only
+python gman.py --auth-only
 ```
 
 ### Basic Operations
 ```bash
 # Download unread emails
-python gmail_assistant.py --query "is:unread" --max 1000
+python gman.py --query "is:unread" --max 1000
 
 # Download by date range
-python gmail_assistant.py --query "after:2025/02/28 before:2025/04/01" --max 500
+python gman.py --query "after:2025/02/28 before:2025/04/01" --max 500
 
 # Download with specific organization
-python gmail_assistant.py --query "is:unread" --organize sender --format markdown
+python gman.py --query "is:unread" --organize sender --format markdown
 ```
 ```
 
@@ -184,7 +184,7 @@ pip install -e ".[all]"
 pip install -e ".[dev]"
 
 # First-time authentication (opens browser)
-gmail-assistant auth
+gman auth
 ```
 
 ### Basic Operations (v2.0.0 CLI)
@@ -193,24 +193,24 @@ gmail-assistant auth
 
 ```bash
 # Fetch unread emails
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Fetch by date range
-gmail-assistant fetch --query "after:2025/02/28 before:2025/04/01" --max-emails 500
+gman fetch --query "after:2025/02/28 before:2025/04/01" --max-emails 500
 
 # Fetch with specific format
-gmail-assistant fetch --query "is:unread" --format json --output-dir ./backups
+gman fetch --query "is:unread" --format json --output-dir ./backups
 
 # Delete emails (dry run first)
-gmail-assistant delete --query "from:spam@example.com" --dry-run
+gman delete --query "from:spam@example.com" --dry-run
 
 # Analyze fetched emails
-gmail-assistant analyze --input-dir ./backups --report summary
+gman analyze --input-dir ./backups --report summary
 
 # Manage configuration
-gmail-assistant config --show
-gmail-assistant config --init
-gmail-assistant config --validate
+gman config --show
+gman config --init
+gman config --validate
 ```
 
 ### Legacy Operations (Direct Module Usage)
@@ -220,7 +220,7 @@ For immediate functionality before v2.1.0 CLI completion, use direct module exec
 ```bash
 # Using the core GmailFetcher class directly
 python -c "
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 fetcher = GmailFetcher()
 fetcher.authenticate()
 print(fetcher.get_profile())
@@ -330,19 +330,19 @@ python gmail_api_client.py --credentials credentials.json --max-emails 1000 --dr
 ### Advanced Email Processing
 ```bash
 # Advanced HTML to Markdown parsing
-python -m gmail_assistant.parsers.advanced_email_parser email_file.html
+python -m gman.parsers.advanced_email_parser email_file.html
 
 # Convert EML files to clean Markdown with front matter
-python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
+python -m gman.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
 
 # AI newsletter detection and cleanup (dry run)
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json
+python -m gman.core.ai.newsletter_cleaner email_data.json
 
 # Actually delete AI newsletters
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json --delete
+python -m gman.core.ai.newsletter_cleaner email_data.json --delete
 
 # Live Gmail API operations
-python -m gmail_assistant.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000 --dry-run
+python -m gman.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000 --dry-run
 ```
 
 **Note**: Ensure you have run `pip install -e .` first to make the package importable.
@@ -461,7 +461,7 @@ The v2.0.0 release restructured the project with a new Click-based CLI. The foll
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Package structure | Complete | `src/gmail_assistant/` layout |
+| Package structure | Complete | `src/gman/` layout |
 | CLI framework | Complete | Click-based with subcommands |
 | CLI `fetch` command | **Stub** | Functional implementation v2.1.0 |
 | CLI `delete` command | **Stub** | Functional implementation v2.1.0 |
@@ -471,12 +471,12 @@ The v2.0.0 release restructured the project with a new Click-based CLI. The foll
 | Core `GmailFetcher` class | Complete | Direct usage available |
 | Parsers | Complete | Direct module usage available |
 | Exception hierarchy | Complete | Centralized in `core/exceptions.py` |
-| Configuration | Complete | `~/.gmail-assistant/` defaults |
+| Configuration | Complete | `~/.gman/` defaults |
 
 For full functionality before v2.1.0, use direct module imports:
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-from gmail_assistant.core.config import AppConfig
+from gman.core.fetch.gman import GmailFetcher
+from gman.core.config import AppConfig
 ```
 ```
 
@@ -506,7 +506,7 @@ from gmail_assistant.core.config import AppConfig
 After applying changes, verify:
 
 - [ ] All file paths reference actual existing files
-- [ ] CLI commands use `gmail-assistant` entry point
+- [ ] CLI commands use `gman` entry point
 - [ ] Implementation status is clearly documented
 - [ ] Dependency groups match pyproject.toml
 - [ ] Script paths include `scripts/` subdirectory

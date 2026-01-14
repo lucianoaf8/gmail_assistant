@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.protocols module."""
+"""Unit tests for gman.core.protocols module."""
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
@@ -6,7 +6,7 @@ from dataclasses import is_dataclass
 
 import pytest
 
-from gmail_assistant.core.protocols import (
+from gman.core.protocols import (
     # DTOs
     EmailMetadata,
     FetchResult,
@@ -545,7 +545,7 @@ class TestStreamingFetcherProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """StreamingFetcherProtocol should be runtime checkable."""
-        from gmail_assistant.core.protocols import StreamingFetcherProtocol
+        from gman.core.protocols import StreamingFetcherProtocol
 
         class MyStreamingFetcher:
             def stream_messages(self, query: str, batch_size: int = 100):
@@ -564,7 +564,7 @@ class TestMarkdownConverterProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """MarkdownConverterProtocol should be runtime checkable."""
-        from gmail_assistant.core.protocols import MarkdownConverterProtocol
+        from gman.core.protocols import MarkdownConverterProtocol
 
         class MyMarkdownConverter:
             def to_markdown(self, email_data: Dict[str, Any]) -> str:
@@ -587,7 +587,7 @@ class TestOutputPluginProtocol:
     def test_protocol_is_runtime_checkable(self):
         """OutputPluginProtocol should be runtime checkable."""
         from pathlib import Path
-        from gmail_assistant.core.protocols import OutputPluginProtocol
+        from gman.core.protocols import OutputPluginProtocol
 
         class MyOutputPlugin:
             @property
@@ -615,7 +615,7 @@ class TestOrganizationPluginProtocol:
     def test_protocol_is_runtime_checkable(self):
         """OrganizationPluginProtocol should be runtime checkable."""
         from pathlib import Path
-        from gmail_assistant.core.protocols import OrganizationPluginProtocol
+        from gman.core.protocols import OrganizationPluginProtocol
 
         class MyOrganizationPlugin:
             @property
@@ -635,7 +635,7 @@ class TestTypeAliases:
 
     def test_progress_callback_type(self):
         """ProgressCallback should be callable."""
-        from gmail_assistant.core.protocols import ProgressCallback
+        from gman.core.protocols import ProgressCallback
 
         def my_progress(current: int, total: int) -> None:
             pass
@@ -645,7 +645,7 @@ class TestTypeAliases:
 
     def test_error_callback_type(self):
         """ErrorCallback should be callable."""
-        from gmail_assistant.core.protocols import ErrorCallback
+        from gman.core.protocols import ErrorCallback
 
         def my_error(error: Exception) -> None:
             pass
@@ -654,7 +654,7 @@ class TestTypeAliases:
 
     def test_success_callback_type(self):
         """SuccessCallback should be callable."""
-        from gmail_assistant.core.protocols import SuccessCallback
+        from gman.core.protocols import SuccessCallback
 
         def my_success(data: Dict[str, Any]) -> None:
             pass
@@ -668,7 +668,7 @@ class TestMessageIdTypeAlias:
 
     def test_message_id_is_string(self):
         """MessageId should be a string type alias."""
-        from gmail_assistant.core.protocols import MessageId
+        from gman.core.protocols import MessageId
 
         msg_id: MessageId = "msg123"
         assert isinstance(msg_id, str)
@@ -680,7 +680,7 @@ class TestThreadIdTypeAlias:
 
     def test_thread_id_is_string(self):
         """ThreadId should be a string type alias."""
-        from gmail_assistant.core.protocols import ThreadId
+        from gman.core.protocols import ThreadId
 
         thread_id: ThreadId = "thread456"
         assert isinstance(thread_id, str)
@@ -692,7 +692,7 @@ class TestEmailHeadersTypeAlias:
 
     def test_email_headers_is_dict(self):
         """EmailHeaders should be a dict type alias."""
-        from gmail_assistant.core.protocols import EmailHeaders
+        from gman.core.protocols import EmailHeaders
 
         headers: EmailHeaders = {"From": "test@example.com", "Subject": "Test"}
         assert isinstance(headers, dict)
@@ -704,7 +704,7 @@ class TestEmailBodyTypeAlias:
 
     def test_email_body_is_dict(self):
         """EmailBody should be a dict type alias."""
-        from gmail_assistant.core.protocols import EmailBody
+        from gman.core.protocols import EmailBody
 
         body: EmailBody = {"text": "Hello", "html": "<p>Hello</p>"}
         assert isinstance(body, dict)
@@ -716,7 +716,7 @@ class TestOperationResultTypeAlias:
 
     def test_operation_result_is_dict(self):
         """OperationResult should be a dict type alias."""
-        from gmail_assistant.core.protocols import OperationResult
+        from gman.core.protocols import OperationResult
 
         result: OperationResult = {
             "count": 10,

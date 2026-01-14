@@ -68,7 +68,7 @@ This workflow runs on push/PR and includes:
 
 **Update README.md** with:
 - New installation instructions (`pip install -e .`)
-- New CLI usage (`gmail-assistant --help`)
+- New CLI usage (`gman --help`)
 - Breaking changes notice
 - Link to BREAKING_CHANGES.md
 
@@ -87,8 +87,8 @@ from core.config import Config
 from handlers.fetch import FetchHandler
 
 # New (v2.0.0)
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.cli.commands.fetch import ...
+from gman.core.config import AppConfig
+from gman.cli.commands.fetch import ...
 ```
 
 ## CLI Interface
@@ -100,26 +100,26 @@ The CLI has been completely redesigned using Click:
 python main.py --fetch --query "is:unread"
 
 # New
-gmail-assistant fetch --query "is:unread"
+gman fetch --query "is:unread"
 ```
 
 ## Configuration
 
-Configuration now defaults to `~/.gmail-assistant/` for security:
+Configuration now defaults to `~/.gman/` for security:
 
-- Credentials: `~/.gmail-assistant/credentials.json`
-- Token: `~/.gmail-assistant/token.json`
-- Config: `~/.gmail-assistant/config.json`
+- Credentials: `~/.gman/credentials.json`
+- Token: `~/.gman/token.json`
+- Config: `~/.gman/config.json`
 
 ## Entry Points
 
 - Old: `python main.py`
-- New: `gmail-assistant` or `python -m gmail_assistant`
+- New: `gman` or `python -m gman`
 
 ## Migration Guide
 
-1. Update all imports to use `gmail_assistant.*` prefix
-2. Move credentials to `~/.gmail-assistant/`
+1. Update all imports to use `gman.*` prefix
+2. Move credentials to `~/.gman/`
 3. Update any scripts using old CLI syntax
 4. Run `pip install -e .` to install package
 ```
@@ -138,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Click-based CLI with subcommands (fetch, delete, analyze, auth, config)
-- Secure configuration system with `~/.gmail-assistant/` defaults
+- Secure configuration system with `~/.gman/` defaults
 - Centralized exception hierarchy
 - JSON Schema for configuration validation
 - Comprehensive test suite with ≥70% coverage gate
@@ -147,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **BREAKING**: Migrated to src-layout package structure
-- **BREAKING**: All imports now use `gmail_assistant.*` prefix
+- **BREAKING**: All imports now use `gman.*` prefix
 - **BREAKING**: CLI completely redesigned
 - **BREAKING**: Configuration paths changed
 
@@ -193,16 +193,16 @@ python -m venv .test-venv
 .\.test-venv\Scripts\activate
 pip install dist/*.whl
 cd $env:TEMP
-gmail-assistant --version
-gmail-assistant fetch --help
-python -c "import gmail_assistant; print(gmail_assistant.__version__)"
+gman --version
+gman fetch --help
+python -c "import gman; print(gman.__version__)"
 deactivate
-cd C:\_Lucx\Projects\gmail_assistant
+cd C:\_Lucx\Projects\gman
 Remove-Item -Recurse .test-venv
 
 # 2. Version alignment check
 grep -E "version.*2\.0\.0" pyproject.toml
-grep -E "__version__.*2\.0\.0" src/gmail_assistant/__init__.py
+grep -E "__version__.*2\.0\.0" src/gman/__init__.py
 
 # 3. Security check
 git ls-files | Select-String "(credentials|token)\.json"

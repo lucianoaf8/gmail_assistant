@@ -24,7 +24,7 @@ class TestSecureCredentialManager:
         """Verify credentials retrieved from keyring."""
         mock_get.return_value = '{"token": "encrypted_data"}'
 
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         # Should attempt keyring access, not file access
         manager = SecureCredentialManager("credentials.json")
@@ -33,7 +33,7 @@ class TestSecureCredentialManager:
     @patch('keyring.set_password')
     def test_keyring_credential_storage(self, mock_set):
         """Verify credentials stored via keyring."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         manager = SecureCredentialManager("credentials.json")
         # Keyring should be used for storage, not file system
@@ -52,7 +52,7 @@ class TestSecureCredentialManager:
 
     def test_credential_manager_uses_os_keyring(self):
         """Verify credential manager imports keyring module."""
-        from gmail_assistant.core.auth import credential_manager
+        from gman.core.auth import credential_manager
 
         # Module should use keyring for secure storage
         source = Path(credential_manager.__file__).read_text(encoding='utf-8')
@@ -64,7 +64,7 @@ class TestGmailAPIClientCredentials:
 
     def test_api_client_uses_secure_manager(self):
         """Verify GmailAPIClient uses SecureCredentialManager."""
-        from gmail_assistant.core.fetch import gmail_api_client
+        from gman.core.fetch import gmail_api_client
 
         source = Path(gmail_api_client.__file__).read_text(encoding='utf-8')
         assert 'SecureCredentialManager' in source, \
@@ -72,7 +72,7 @@ class TestGmailAPIClientCredentials:
 
     def test_no_direct_token_file_handling(self):
         """Verify no direct token.json file handling in API client."""
-        from gmail_assistant.core.fetch import gmail_api_client
+        from gman.core.fetch import gmail_api_client
 
         source = Path(gmail_api_client.__file__).read_text(encoding='utf-8')
         # Should not have direct token file operations

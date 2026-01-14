@@ -17,8 +17,8 @@ class TestHandleErrorsDecorator:
 
     def test_config_error_exits_5(self):
         """Test ConfigError maps to exit code 5."""
-        from gmail_assistant.cli.main import handle_errors
-        from gmail_assistant.core.exceptions import ConfigError
+        from gman.cli.main import handle_errors
+        from gman.core.exceptions import ConfigError
 
         @handle_errors
         def raises_config_error():
@@ -30,8 +30,8 @@ class TestHandleErrorsDecorator:
 
     def test_auth_error_exits_3(self):
         """Test AuthError maps to exit code 3."""
-        from gmail_assistant.cli.main import handle_errors
-        from gmail_assistant.core.exceptions import AuthError
+        from gman.cli.main import handle_errors
+        from gman.core.exceptions import AuthError
 
         @handle_errors
         def raises_auth_error():
@@ -43,8 +43,8 @@ class TestHandleErrorsDecorator:
 
     def test_network_error_exits_4(self):
         """Test NetworkError maps to exit code 4."""
-        from gmail_assistant.cli.main import handle_errors
-        from gmail_assistant.core.exceptions import NetworkError
+        from gman.cli.main import handle_errors
+        from gman.core.exceptions import NetworkError
 
         @handle_errors
         def raises_network_error():
@@ -54,10 +54,10 @@ class TestHandleErrorsDecorator:
             raises_network_error()
         assert exc_info.value.code == 4
 
-    def test_gmail_assistant_error_exits_1(self):
+    def test_gman_error_exits_1(self):
         """Test GmailAssistantError maps to exit code 1."""
-        from gmail_assistant.cli.main import handle_errors
-        from gmail_assistant.core.exceptions import GmailAssistantError
+        from gman.cli.main import handle_errors
+        from gman.core.exceptions import GmailAssistantError
 
         @handle_errors
         def raises_base_error():
@@ -69,7 +69,7 @@ class TestHandleErrorsDecorator:
 
     def test_generic_exception_exits_1(self):
         """Test generic exception maps to exit code 1."""
-        from gmail_assistant.cli.main import handle_errors
+        from gman.cli.main import handle_errors
 
         @handle_errors
         def raises_generic():
@@ -81,7 +81,7 @@ class TestHandleErrorsDecorator:
 
     def test_click_exception_reraises(self):
         """Test ClickException is re-raised."""
-        from gmail_assistant.cli.main import handle_errors
+        from gman.cli.main import handle_errors
 
         @handle_errors
         def raises_click():
@@ -92,7 +92,7 @@ class TestHandleErrorsDecorator:
 
     def test_no_error_returns_normally(self):
         """Test normal execution returns result."""
-        from gmail_assistant.cli.main import handle_errors
+        from gman.cli.main import handle_errors
 
         @handle_errors
         def returns_value():
@@ -112,29 +112,29 @@ class TestMainCLIGroup:
 
     def test_version_option(self, runner):
         """Test --version shows version."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         result = runner.invoke(main, ['--version'])
         assert result.exit_code == 0
-        assert 'gmail-assistant' in result.output
+        assert 'gman' in result.output
 
     def test_help_option(self, runner):
         """Test --help shows help."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         result = runner.invoke(main, ['--help'])
         assert result.exit_code == 0
-        assert 'Gmail Assistant' in result.output
+        assert 'Gman' in result.output
         assert 'fetch' in result.output
         assert 'delete' in result.output
         assert 'analyze' in result.output
         assert 'auth' in result.output
         assert 'config' in result.output
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_config_option_passed_to_command(self, mock_config, runner, tmp_path):
         """Test --config option is passed to subcommand via context."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         config_file = tmp_path / "config.json"
         config_file.write_text('{}')
@@ -154,10 +154,10 @@ class TestMainCLIGroup:
         # Verify config.load was called with the config path
         mock_config.load.assert_called()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_allow_repo_credentials_flag_passed(self, mock_config, runner, tmp_path):
         """Test --allow-repo-credentials flag is passed to subcommand."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -184,11 +184,11 @@ class TestFetchCommand:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.fetch_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.fetch_emails')
     def test_fetch_basic(self, mock_fetch, mock_config, runner, tmp_path):
         """Test basic fetch command."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.max_emails = 100
@@ -203,11 +203,11 @@ class TestFetchCommand:
         assert 'Fetching emails' in result.output
         mock_fetch.assert_called_once()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.fetch_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.fetch_emails')
     def test_fetch_with_options(self, mock_fetch, mock_config, runner, tmp_path):
         """Test fetch with all options."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.max_emails = 100
@@ -228,11 +228,11 @@ class TestFetchCommand:
         call_kwargs = mock_fetch.call_args.kwargs
         assert call_kwargs['max_emails'] == 50
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.fetch_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.fetch_emails')
     def test_fetch_resume_flag(self, mock_fetch, mock_config, runner, tmp_path):
         """Test fetch with --resume flag."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.max_emails = 100
@@ -247,11 +247,11 @@ class TestFetchCommand:
         call_kwargs = mock_fetch.call_args.kwargs
         assert call_kwargs['resume'] is True
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main._fetch_async')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main._fetch_async')
     def test_fetch_async_mode(self, mock_async, mock_config, runner, tmp_path):
         """Test fetch with --async flag."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.max_emails = 100
@@ -275,11 +275,11 @@ class TestDeleteCommand:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.delete_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.delete_emails')
     def test_delete_dry_run(self, mock_delete, mock_config, runner, tmp_path):
         """Test delete in dry run mode."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -291,12 +291,12 @@ class TestDeleteCommand:
         assert result.exit_code == 0
         assert 'Dry run' in result.output
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.delete_emails')
-    @mock.patch('gmail_assistant.cli.main.get_email_count')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.delete_emails')
+    @mock.patch('gman.cli.main.get_email_count')
     def test_delete_with_confirm(self, mock_count, mock_delete, mock_config, runner, tmp_path):
         """Test delete with --confirm flag."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -314,11 +314,11 @@ class TestDeleteCommand:
         call_kwargs = mock_delete.call_args.kwargs
         assert call_kwargs['dry_run'] is False
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.delete_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.delete_emails')
     def test_delete_permanent(self, mock_delete, mock_config, runner, tmp_path):
         """Test delete with --permanent flag."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -344,11 +344,11 @@ class TestAnalyzeCommand:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.analyze_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.analyze_emails')
     def test_analyze_basic(self, mock_analyze, mock_config, runner, tmp_path):
         """Test basic analyze command."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         input_dir = tmp_path / "emails"
         input_dir.mkdir()
@@ -362,11 +362,11 @@ class TestAnalyzeCommand:
         assert result.exit_code == 0
         mock_analyze.assert_called_once()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.analyze_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.analyze_emails')
     def test_analyze_with_report_type(self, mock_analyze, mock_config, runner, tmp_path):
         """Test analyze with report type."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         input_dir = tmp_path / "emails"
         input_dir.mkdir()
@@ -385,11 +385,11 @@ class TestAnalyzeCommand:
         call_kwargs = mock_analyze.call_args.kwargs
         assert call_kwargs['report_type'] == 'detailed'
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.analyze_emails')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.analyze_emails')
     def test_analyze_with_output_file(self, mock_analyze, mock_config, runner, tmp_path):
         """Test analyze with output file."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         input_dir = tmp_path / "emails"
         input_dir.mkdir()
@@ -419,11 +419,11 @@ class TestAuthCommand:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.check_auth_status')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.check_auth_status')
     def test_auth_status(self, mock_status, mock_config, runner, tmp_path):
         """Test auth --status command."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -435,11 +435,11 @@ class TestAuthCommand:
         assert result.exit_code == 0
         assert 'Authenticated' in result.output
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.revoke_auth')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.revoke_auth')
     def test_auth_revoke(self, mock_revoke, mock_config, runner, tmp_path):
         """Test auth --revoke command."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -451,11 +451,11 @@ class TestAuthCommand:
         assert result.exit_code == 0
         mock_revoke.assert_called_once()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
-    @mock.patch('gmail_assistant.cli.main.authenticate')
+    @mock.patch('gman.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.authenticate')
     def test_auth_force_reauth(self, mock_auth, mock_config, runner, tmp_path):
         """Test auth --force command."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -477,10 +477,10 @@ class TestConfigCommand:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_config_show(self, mock_config, runner, tmp_path):
         """Test config --show command."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = tmp_path / "creds.json"
@@ -497,10 +497,10 @@ class TestConfigCommand:
         assert 'credentials_path' in result.output
         assert 'max_emails' in result.output
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_config_validate_success(self, mock_config, runner, tmp_path):
         """Test config --validate with valid config."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_config.load.return_value = mock_cfg
@@ -510,11 +510,11 @@ class TestConfigCommand:
         assert result.exit_code == 0
         assert 'valid' in result.output.lower()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_config_validate_failure(self, mock_config, runner):
         """Test config --validate with invalid config."""
-        from gmail_assistant.cli.main import main
-        from gmail_assistant.core.exceptions import ConfigError
+        from gman.cli.main import main
+        from gman.core.exceptions import ConfigError
 
         mock_config.load.side_effect = ConfigError("Invalid config")
 
@@ -525,7 +525,7 @@ class TestConfigCommand:
 
     def test_config_init_creates_file(self, runner, tmp_path, monkeypatch):
         """Test config --init creates config file."""
-        from gmail_assistant.cli.main import main, AppConfig
+        from gman.cli.main import main, AppConfig
 
         # Mock default_dir to use tmp_path
         monkeypatch.setattr(AppConfig, 'default_dir', lambda: tmp_path)
@@ -537,7 +537,7 @@ class TestConfigCommand:
 
     def test_config_init_existing_file(self, runner, tmp_path, monkeypatch):
         """Test config --init with existing file."""
-        from gmail_assistant.cli.main import main, AppConfig
+        from gman.cli.main import main, AppConfig
 
         # Create existing config
         config_file = tmp_path / "config.json"
@@ -556,7 +556,7 @@ class TestSaveEmailAsync:
 
     def test_save_json_format(self, tmp_path):
         """Test saving email as JSON."""
-        from gmail_assistant.cli.main import _save_email_async
+        from gman.cli.main import _save_email_async
 
         email_data = {
             'subject': 'Test Subject',
@@ -571,7 +571,7 @@ class TestSaveEmailAsync:
 
     def test_save_eml_format(self, tmp_path):
         """Test saving email as EML."""
-        from gmail_assistant.cli.main import _save_email_async
+        from gman.cli.main import _save_email_async
 
         email_data = {
             'subject': 'Test Subject',
@@ -586,7 +586,7 @@ class TestSaveEmailAsync:
 
     def test_save_mbox_format(self, tmp_path):
         """Test saving email as mbox."""
-        from gmail_assistant.cli.main import _save_email_async
+        from gman.cli.main import _save_email_async
 
         email_data = {
             'subject': 'Test Subject',
@@ -602,7 +602,7 @@ class TestSaveEmailAsync:
 
     def test_save_sanitizes_filename(self, tmp_path):
         """Test filename is sanitized."""
-        from gmail_assistant.cli.main import _save_email_async
+        from gman.cli.main import _save_email_async
 
         email_data = {
             'subject': 'Test: Subject <with> special/chars',

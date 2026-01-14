@@ -9,7 +9,7 @@ from pathlib import Path
 def mock_email_classifier():
     """Provide EmailClassifier or mock if not available."""
     try:
-        from gmail_assistant.processing.email_classifier import EmailClassifier
+        from gman.processing.email_classifier import EmailClassifier
         return EmailClassifier
     except ImportError:
         # Create comprehensive mock
@@ -29,7 +29,7 @@ def mock_email_classifier():
 def mock_email_content_parser():
     """Provide EmailContentParser or mock if not available."""
     try:
-        from gmail_assistant.parsers.advanced_email_parser import EmailContentParser
+        from gman.parsers.advanced_email_parser import EmailContentParser
         return EmailContentParser
     except ImportError:
         mock_cls = MagicMock()
@@ -47,7 +47,7 @@ def mock_email_content_parser():
 def mock_robust_eml_converter():
     """Provide RobustEMLConverter or mock if not available."""
     try:
-        from gmail_assistant.parsers.robust_eml_converter import RobustEMLConverter
+        from gman.parsers.robust_eml_converter import RobustEMLConverter
         return RobustEMLConverter
     except ImportError:
         mock_cls = MagicMock()
@@ -62,7 +62,7 @@ def mock_robust_eml_converter():
 def mock_eml_cleaner():
     """Provide GmailEMLToMarkdownCleaner or mock if not available."""
     try:
-        from gmail_assistant.parsers.gmail_eml_to_markdown_cleaner import GmailEMLToMarkdownCleaner
+        from gman.parsers.gmail_eml_to_markdown_cleaner import GmailEMLToMarkdownCleaner
         return GmailEMLToMarkdownCleaner
     except ImportError:
         mock_cls = MagicMock()
@@ -77,7 +77,7 @@ def mock_eml_cleaner():
 def mock_email_database_importer():
     """Provide EmailDatabaseImporter or mock if not available."""
     try:
-        from gmail_assistant.processing.email_database_importer import EmailDatabaseImporter
+        from gman.processing.email_database_importer import EmailDatabaseImporter
         return EmailDatabaseImporter
     except ImportError:
         mock_cls = MagicMock()

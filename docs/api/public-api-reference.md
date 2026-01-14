@@ -1,6 +1,6 @@
-# Gmail Assistant Public API Reference
+# Gman Public API Reference
 
-Comprehensive Python API documentation for programmatic use of gmail-assistant v2.0.0.
+Comprehensive Python API documentation for programmatic use of gman v2.0.0.
 
 **Version**: 2.0.0
 **Status**: Production
@@ -25,14 +25,14 @@ Comprehensive Python API documentation for programmatic use of gmail-assistant v
 ### Installation
 
 ```bash
-pip install gmail-assistant
+pip install gman
 ```
 
 ### Basic Usage
 
 ```python
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.config import AppConfig
+from gman.core.fetch.gman import GmailFetcher
 
 # Load configuration
 config = AppConfig.load()
@@ -66,7 +66,7 @@ for msg_id in message_ids[:5]:
 
 ### AppConfig
 
-**Module**: `gmail_assistant.core.config`
+**Module**: `gman.core.config`
 **Inherits**: `dataclass` (frozen, immutable)
 **Purpose**: Load and validate application configuration
 
@@ -124,18 +124,18 @@ def load(
 
 **Resolution Order**:
 1. CLI argument (`cli_config`)
-2. Environment variable `gmail_assistant_CONFIG`
-3. Project config `./gmail-assistant.json`
-4. User config `~/.gmail-assistant/config.json`
+2. Environment variable `gman_CONFIG`
+3. Project config `./gman.json`
+4. User config `~/.gman/config.json`
 5. Secure defaults (all in user home)
 
 **Example**:
 ```python
 # Load from file
-config = AppConfig.load(Path("/etc/gmail-assistant/config.json"))
+config = AppConfig.load(Path("/etc/gman/config.json"))
 
 # Load from environment
-config = AppConfig.load()  # Uses gmail_assistant_CONFIG env var if set
+config = AppConfig.load()  # Uses gman_CONFIG env var if set
 
 # Allow repo credentials (with warning)
 config = AppConfig.load(allow_repo_credentials=True)
@@ -147,17 +147,17 @@ config = AppConfig.load(allow_repo_credentials=True)
 @classmethod
 def default_dir(cls) -> Path:
     """
-    Return the default config directory (~/.gmail-assistant/).
+    Return the default config directory (~/.gman/).
 
     Returns:
-        Path to ~/.gmail-assistant/
+        Path to ~/.gman/
     """
 ```
 
 **Example**:
 ```python
 config_dir = AppConfig.default_dir()
-# Returns: Path("/home/user/.gmail-assistant")
+# Returns: Path("/home/user/.gman")
 ```
 
 #### Instance Methods
@@ -180,7 +180,7 @@ def __post_init__(self) -> None:
 
 ### GmailFetcher
 
-**Module**: `gmail_assistant.core.fetch.gmail_assistant`
+**Module**: `gman.core.fetch.gman`
 **Purpose**: Fetch emails from Gmail API
 
 #### Constructor
@@ -198,9 +198,9 @@ class GmailFetcher:
 
 **Example**:
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
-fetcher = GmailFetcher('~/.gmail-assistant/credentials.json')
+fetcher = GmailFetcher('~/.gman/credentials.json')
 ```
 
 #### Methods
@@ -365,7 +365,7 @@ if message:
 
 ### Email
 
-**Module**: `gmail_assistant.core.schemas`
+**Module**: `gman.core.schemas`
 **Base**: `pydantic.BaseModel`
 **Purpose**: Canonical email model (single source of truth)
 
@@ -473,7 +473,7 @@ json_str = json.dumps(data)
 
 ### EmailParticipant
 
-**Module**: `gmail_assistant.core.schemas`
+**Module**: `gman.core.schemas`
 **Base**: `pydantic.BaseModel`
 **Purpose**: Email participant with type and domain
 
@@ -511,7 +511,7 @@ def domain(self) -> str:
 
 ### EmailMetadata (DTO)
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 **Base**: `dataclass`
 **Status**: Deprecated (use Email class instead)
 **Purpose**: Email metadata transfer object
@@ -536,7 +536,7 @@ class EmailMetadata:
 
 ### FetchResult (DTO)
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 **Base**: `dataclass`
 **Purpose**: Result of email fetch operation
 
@@ -556,7 +556,7 @@ class FetchResult:
 
 ### DeleteResult (DTO)
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 **Base**: `dataclass`
 **Purpose**: Result of email deletion operation
 
@@ -575,7 +575,7 @@ class DeleteResult:
 
 ### ParseResult (DTO)
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 **Base**: `dataclass`
 **Purpose**: Result of email parsing operation
 
@@ -600,7 +600,7 @@ Protocols define structural interfaces for implementing Gmail operations. Use th
 
 ### GmailClientProtocol
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 
 ```python
 @runtime_checkable
@@ -627,7 +627,7 @@ class GmailClientProtocol(Protocol):
 
 **Usage**:
 ```python
-from gmail_assistant.core.protocols import GmailClientProtocol
+from gman.core.protocols import GmailClientProtocol
 
 def process_emails(client: GmailClientProtocol) -> int:
     """Accept any object implementing GmailClientProtocol."""
@@ -640,7 +640,7 @@ def process_emails(client: GmailClientProtocol) -> int:
 
 ### EmailFetcherProtocol
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 
 ```python
 @runtime_checkable
@@ -688,7 +688,7 @@ class EmailFetcherProtocol(Protocol):
 
 ### EmailDeleterProtocol
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 
 ```python
 @runtime_checkable
@@ -726,7 +726,7 @@ class EmailDeleterProtocol(Protocol):
 
 ### EmailParserProtocol
 
-**Module**: `gmail_assistant.core.protocols`
+**Module**: `gman.core.protocols`
 
 ```python
 @runtime_checkable
@@ -759,12 +759,12 @@ class EmailParserProtocol(Protocol):
 
 ### GmailAssistantError
 
-**Module**: `gmail_assistant.core.exceptions`
+**Module**: `gman.core.exceptions`
 **Base**: `Exception`
 
 ```python
 class GmailAssistantError(Exception):
-    """Base exception for Gmail Assistant. All domain exceptions inherit from this."""
+    """Base exception for Gman. All domain exceptions inherit from this."""
 ```
 
 #### Subclasses
@@ -782,7 +782,7 @@ class ConfigError(GmailAssistantError):
 
 **Example**:
 ```python
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.exceptions import ConfigError
 
 try:
     config = AppConfig.load(Path("invalid.json"))
@@ -826,7 +826,7 @@ class APIError(GmailAssistantError):
 ### Exception Handling
 
 ```python
-from gmail_assistant.core.exceptions import (
+from gman.core.exceptions import (
     ConfigError,
     AuthError,
     NetworkError,
@@ -854,14 +854,14 @@ except GmailAssistantError as e:
 ### Loading Configuration
 
 ```python
-from gmail_assistant.core.config import AppConfig
+from gman.core.config import AppConfig
 
 # Load with automatic resolution
 config = AppConfig.load()
 
 # Load from specific file
 from pathlib import Path
-config = AppConfig.load(Path("/etc/gmail-assistant/config.json"))
+config = AppConfig.load(Path("/etc/gman/config.json"))
 
 # Allow repo credentials
 config = AppConfig.load(allow_repo_credentials=True)
@@ -873,7 +873,7 @@ config = AppConfig.load(allow_repo_credentials=True)
 config = AppConfig.load()
 
 # Access fields
-print(config.credentials_path)      # Path("/home/user/.gmail-assistant/credentials.json")
+print(config.credentials_path)      # Path("/home/user/.gman/credentials.json")
 print(config.max_emails)            # 1000
 print(config.rate_limit_per_second) # 10.0
 print(config.log_level)             # "INFO"
@@ -885,10 +885,10 @@ print(config.log_level)             # "INFO"
 ### Default Configuration Directory
 
 ```python
-from gmail_assistant.core.config import AppConfig
+from gman.core.config import AppConfig
 
 config_dir = AppConfig.default_dir()
-print(config_dir)  # Path("/home/user/.gmail-assistant")
+print(config_dir)  # Path("/home/user/.gman")
 
 # Create if needed
 config_dir.mkdir(parents=True, exist_ok=True)
@@ -900,10 +900,10 @@ config_dir.mkdir(parents=True, exist_ok=True)
 
 ### Application Metadata
 
-**Module**: `gmail_assistant.core.constants`
+**Module**: `gman.core.constants`
 
 ```python
-APP_NAME: str = "gmail-assistant"
+APP_NAME: str = "gman"
 APP_VERSION: str = "2.0.0"
 ```
 
@@ -951,7 +951,7 @@ DEFAULT_ORGANIZATION: str = 'date'
 ### Keyring Configuration
 
 ```python
-KEYRING_SERVICE: str = "gmail_assistant"
+KEYRING_SERVICE: str = "gman"
 KEYRING_USERNAME: str = "oauth_credentials"
 ```
 
@@ -989,7 +989,7 @@ fetcher = GmailFetcher("./credentials.json")  # ❌ Fragile
 ### Error Handling
 
 ```python
-from gmail_assistant.core.exceptions import (
+from gman.core.exceptions import (
     AuthError,
     NetworkError,
     ConfigError,
@@ -1018,7 +1018,7 @@ except Exception:  # ❌ Too broad
 
 ```python
 # Good: Use protocols for type hints
-from gmail_assistant.core.protocols import EmailFetcherProtocol
+from gman.core.protocols import EmailFetcherProtocol
 
 def backup_inbox(fetcher: EmailFetcherProtocol) -> int:
     """Accept any object implementing EmailFetcherProtocol."""

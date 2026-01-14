@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from gmail_assistant.export.parquet_exporter import (
+from gman.export.parquet_exporter import (
     ParquetExporter,
     ParquetExportError,
     PYARROW_AVAILABLE,
@@ -113,7 +113,7 @@ class TestParquetExporterInit:
 
     def test_exporter_init_without_pyarrow(self, temp_db):
         """Test initialization fails without PyArrow."""
-        with patch('gmail_assistant.export.parquet_exporter.PYARROW_AVAILABLE', False):
+        with patch('gman.export.parquet_exporter.PYARROW_AVAILABLE', False):
             with pytest.raises(ImportError, match="PyArrow required"):
                 ParquetExporter(temp_db)
 

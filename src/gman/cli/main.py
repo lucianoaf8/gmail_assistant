@@ -1,0 +1,520 @@
+"""
+Gman CLI - Click-based command line interface.
+
+Exit Codes:
+    0: Success
+    1: General error
+    2: Usage/argument error (Click default)
+    3: Authentication error
+    4: Network error
+    5: Configuration error
+
+C-2 Fix: Full CLI command implementations integrated.
+M-5 Fix: Async fetcher integration.
+H-1 Fix: CLI integrated with DI container.
+"""
+from __future__ import annotations
+
+import asyncio
+import functools
+import logging
+import sys
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any, TypeVar
+
+import click
+
+
+def setup_logging(log_level: str = "INFO", log_dir: Path | None = None) -> None:
+    """Configure centralized logging for the application.
+
+    Creates both file and console handlers for comprehensive logging.
+    Log files are written to `logs/` directory by default.
+    """
+    # Determine log directory
+    if log_dir is None:
+        log_dir = Path.cwd() / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    # Configure root logger
+    root_logger = logging.getLogger("gman")
+    root_logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+
+    # Prevent duplicate handlers
+    if root_logger.handlers:
+        return
+
+    # File handler - main log
+    main_log = log_dir / "gman.log"
+    file_handler = logging.FileHandler(main_log, encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG)
+
+    # Error log - errors only
+    error_log = log_dir / "errors.log"
+    error_handler = logging.FileHandler(error_log, encoding="utf-8")
+    error_handler.setLevel(logging.ERROR)
+
+    # Console handler - respects log level
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+
+    # Formatter
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    file_handler.setFormatter(formatter)
+    error_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+
+    # Add handlers
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(error_handler)
+    root_logger.addHandler(console_handler)
+
+    root_logger.debug("Logging initialized: level=%s, log_dir=%s", log_level, log_dir)
+
+from gman import __version__
+from gman.cli.commands.analyze import analyze_emails
+from gman.cli.commands.auth import authenticate, check_auth_status, revoke_auth
+from gman.cli.commands.delete import delete_emails, get_email_count
+
+# C-2: Import command implementations
+from gman.cli.commands.fetch import fetch_emails
+from gman.core.config import AppConfig
+from gman.core.container import (
+    ServiceContainer,
+    create_default_container,
+    set_global_container,
+)
+from gman.core.exceptions import (
+    AuthError,
+    ConfigError,
+    GmailAssistantError,
+    NetworkError,
+)
+
+F = TypeVar("F", bound=Callable[..., None])
+
+
+def _fetch_async(
+    query: str,
+    max_emails: int,
+    output_dir: Path,
+    output_format: str,
+    credentials_path: Path,
+    concurrency: int
+) -> dict[str, Any]:
+    """
+    Async fetch implementation (M-5).
+
+    Uses AsyncGmailFetcher for concurrent email fetching.
+    Falls back to sync if async dependencies unavailable.
+    """
+    try:
+        from gman.core.fetch.async_fetcher import AsyncGmailFetcher
+    except ImportError:
+        click.echo("Async dependencies not installed. Falling back to sync mode.")
+        click.echo("Install with: pip install gman[async]")
+        return fetch_emails(
+            query=query,
+            max_emails=max_emails,
+            output_dir=output_dir,
+            output_format=output_format,
+            credentials_path=credentials_path,
+            resume=False
+        )
+
+    async def _run_async():
+        async with AsyncGmailFetcher(
+            str(credentials_path),
+            max_concurrent=concurrency
+        ) as fetcher:
+            # Fetch email IDs
+            click.echo(f"Using async mode with concurrency={concurrency}")
+            email_ids = await fetcher.fetch_email_ids_async(query, max_emails)
+
+            if not email_ids:
+                return {'fetched': 0, 'total': 0}
+
+            click.echo(f"Found {len(email_ids)} emails, fetching...")
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            # Fetch emails concurrently
+            emails = await fetcher.fetch_emails_async(email_ids)
+
+            # Save emails
+            fetched = 0
+            for i, email_data in enumerate(emails):
+                if email_data:
+                    _save_email_async(email_data, output_dir, output_format, i)
+                    fetched += 1
+
+            return {'fetched': fetched, 'total': len(email_ids)}
+
+    return asyncio.run(_run_async())
+
+
+def _save_email_async(email_data: dict[str, Any], output_dir: Path, output_format: str, index: int) -> None:
+    """Save email from async fetch."""
+    import json
+    import re
+
+    # Extract subject from headers if not at top level
+    subject = email_data.get('subject')
+    if not subject and 'payload' in email_data:
+        headers = email_data.get('payload', {}).get('headers', [])
+        for header in headers:
+            if header.get('name', '').lower() == 'subject':
+                subject = header.get('value', '')
+                break
+    subject = str(subject or 'no_subject')[:50]
+    safe_subject = re.sub(r'[<>:"/\\|?*]', '_', subject)
+    msg_id = str(email_data.get('id', str(index)))[:16]
+
+    if output_format == 'json':
+        filename = f"{index:05d}_{safe_subject}_{msg_id}.json"
+        filepath = output_dir / filename
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(email_data, f, indent=2, default=str)
+    elif output_format == 'eml':
+        filename = f"{index:05d}_{safe_subject}_{msg_id}.eml"
+        filepath = output_dir / filename
+        raw_content = email_data.get('raw_content', email_data.get('raw', ''))
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(str(raw_content))
+    elif output_format == 'mbox':
+        mbox_path = output_dir / "emails.mbox"
+        raw_content = email_data.get('raw_content', email_data.get('raw', ''))
+        with open(mbox_path, 'a', encoding='utf-8') as f:
+            f.write(f"From {email_data.get('sender', 'unknown')}\n")
+            f.write(str(raw_content))
+            f.write("\n\n")
+
+
+def handle_errors(func: F) -> F:
+    """Decorator to map exceptions to exit codes."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ConfigError as e:
+            click.echo(f"Configuration error: {e}", err=True)
+            sys.exit(5)
+        except AuthError as e:
+            click.echo(f"Authentication error: {e}", err=True)
+            sys.exit(3)
+        except NetworkError as e:
+            click.echo(f"Network error: {e}", err=True)
+            sys.exit(4)
+        except click.ClickException:
+            raise  # Let Click handle its own exceptions
+        except GmailAssistantError as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+        except Exception as e:
+            click.echo(f"Unexpected error: {e}", err=True)
+            sys.exit(1)
+    return wrapper  # type: ignore
+
+
+@click.group()
+@click.version_option(version=__version__, prog_name="gman")
+@click.option(
+    "--config", "-c",
+    type=click.Path(exists=True, path_type=Path),
+    help="Path to configuration file.",
+)
+@click.option(
+    "--allow-repo-credentials",
+    is_flag=True,
+    help="Allow credentials inside git repository (security risk).",
+)
+@click.option(
+    "--log-level", "-l",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
+    default="INFO",
+    help="Set logging level.",
+)
+@click.option(
+    "--log-dir",
+    type=click.Path(path_type=Path),
+    help="Directory for log files (default: ./logs/).",
+)
+@click.pass_context
+def main(
+    ctx: click.Context,
+    config: Path | None,
+    allow_repo_credentials: bool,
+    log_level: str,
+    log_dir: Path | None,
+) -> None:
+    """Gman - Backup, analyze, and manage your Gmail."""
+    ctx.ensure_object(dict)
+    ctx.obj["config_path"] = config
+    ctx.obj["allow_repo_credentials"] = allow_repo_credentials
+
+    # Initialize centralized logging
+    setup_logging(log_level=log_level, log_dir=log_dir)
+
+    # H-1: Initialize DI container and store in context
+    container = create_default_container()
+    ctx.obj["container"] = container
+
+    # Set global container for convenience methods
+    set_global_container(container)
+
+
+@main.command()
+@click.option("--query", "-q", default="", help="Gmail search query.")
+@click.option("--max-emails", "-m", type=int, help="Maximum emails to fetch.")
+@click.option("--output-dir", "-o", type=click.Path(path_type=Path), help="Output directory.")
+@click.option("--format", "output_format", type=click.Choice(["json", "mbox", "eml"]), default="json")
+@click.option("--resume", is_flag=True, help="Resume from last checkpoint.")
+@click.option("--async", "use_async", is_flag=True, help="Use async fetcher for better performance (M-5).")
+@click.option("--concurrency", type=int, default=10, help="Max concurrent operations for async mode.")
+@click.pass_context
+@handle_errors
+def fetch(
+    ctx: click.Context,
+    query: str,
+    max_emails: int | None,
+    output_dir: Path | None,
+    output_format: str,
+    resume: bool,
+    use_async: bool,
+    concurrency: int,
+) -> None:
+    """Fetch emails from Gmail."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+    )
+
+    # Use CLI options if provided, otherwise use config defaults
+    effective_max = max_emails if max_emails is not None else cfg.max_emails
+    effective_output = output_dir if output_dir is not None else cfg.output_dir
+
+    mode = "async" if use_async else "sync"
+    click.echo(f"Fetching emails (max: {effective_max}, format: {output_format}, mode: {mode})")
+    click.echo(f"Query: {query or '(all)'}")
+    click.echo(f"Output: {effective_output}")
+
+    # M-5: Use async fetcher if requested
+    if use_async:
+        result = _fetch_async(
+            query=query,
+            max_emails=effective_max,
+            output_dir=Path(effective_output),
+            output_format=output_format,
+            credentials_path=cfg.credentials_path,
+            concurrency=concurrency
+        )
+    else:
+        # C-2: Call sync fetch implementation
+        # H-1: Pass container for DI resolution
+        result = fetch_emails(
+            query=query,
+            max_emails=effective_max,
+            output_dir=Path(effective_output),
+            output_format=output_format,
+            credentials_path=cfg.credentials_path,
+            resume=resume,
+            container=ctx.obj.get("container"),
+        )
+    click.echo(f"\nFetched {result['fetched']}/{result['total']} emails")
+
+
+@main.command()
+@click.option("--query", "-q", required=True, help="Gmail search query for emails to delete.")
+@click.option("--dry-run", is_flag=True, default=True, help="Show what would be deleted without deleting.")
+@click.option("--confirm", is_flag=True, help="Actually perform deletion (disables dry-run).")
+@click.option("--trash", is_flag=True, default=True, help="Move to trash instead of permanent delete.")
+@click.option("--permanent", is_flag=True, help="Permanently delete (cannot be undone).")
+@click.option("--max-delete", type=int, default=1000, help="Maximum emails to delete.")
+@click.pass_context
+@handle_errors
+def delete(
+    ctx: click.Context,
+    query: str,
+    dry_run: bool,
+    confirm: bool,
+    trash: bool,
+    permanent: bool,
+    max_delete: int,
+) -> None:
+    """Delete emails matching query."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+    )
+
+    # Determine operation mode
+    is_dry_run = dry_run and not confirm
+    use_trash = trash and not permanent
+
+    if not is_dry_run and not confirm:
+        # Show count and ask for confirmation
+        # H-1: Pass container for DI resolution
+        count = get_email_count(query, cfg.credentials_path, ctx.obj.get("container"))
+        if count > 0:
+            action = "trash" if use_trash else "permanently delete"
+            if not click.confirm(f"About to {action} up to {min(count, max_delete)} emails. Continue?"):
+                click.echo("Aborted.")
+                return
+
+    # C-2: Call actual delete implementation
+    # H-1: Pass container for DI resolution
+    result = delete_emails(
+        query=query,
+        credentials_path=cfg.credentials_path,
+        dry_run=is_dry_run,
+        use_trash=use_trash,
+        max_delete=max_delete,
+        container=ctx.obj.get("container"),
+    )
+
+    if is_dry_run:
+        click.echo(f"\nDry run complete. {result['found']} emails would be affected.")
+
+
+@main.command()
+@click.option("--input-dir", "-i", type=click.Path(exists=True, path_type=Path), help="Directory with fetched emails.")
+@click.option("--report", "-r", type=click.Choice(["summary", "detailed", "json"]), default="summary")
+@click.option("--output", "-o", type=click.Path(path_type=Path), help="Output file for report.")
+@click.pass_context
+@handle_errors
+def analyze(
+    ctx: click.Context,
+    input_dir: Path | None,
+    report: str,
+    output: Path | None,
+) -> None:
+    """Analyze fetched emails."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+    )
+
+    source = input_dir or Path(cfg.output_dir)
+    click.echo(f"Analyzing emails in: {source}")
+    click.echo(f"Report type: {report}")
+
+    # C-2: Call actual analyze implementation
+    analyze_emails(
+        input_dir=source,
+        report_type=report,
+        output_file=output
+    )
+
+
+@main.command()
+@click.option("--status", is_flag=True, help="Check authentication status only.")
+@click.option("--revoke", is_flag=True, help="Revoke stored credentials.")
+@click.option("--force", is_flag=True, help="Force re-authentication.")
+@click.pass_context
+@handle_errors
+def auth(
+    ctx: click.Context,
+    status: bool,
+    revoke: bool,
+    force: bool,
+) -> None:
+    """Authenticate with Gmail API."""
+    cfg = AppConfig.load(
+        ctx.obj["config_path"],
+        allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+    )
+
+    if status:
+        # C-2: Check auth status
+        # H-1: Pass container for DI resolution
+        result = check_auth_status(cfg.credentials_path, ctx.obj.get("container"))
+        click.echo(f"Status: {result['status']}")
+        if result['authenticated']:
+            click.echo("✓ Authenticated")
+        else:
+            click.echo("✗ Not authenticated")
+        return
+
+    if revoke:
+        # C-2: Revoke credentials
+        revoke_auth()
+        return
+
+    # C-2: Perform authentication
+    # H-1: Pass container for DI resolution
+    authenticate(
+        credentials_path=cfg.credentials_path,
+        force_reauth=force,
+        container=ctx.obj.get("container"),
+    )
+
+
+@main.command("config")
+@click.option("--show", is_flag=True, help="Show current configuration.")
+@click.option("--validate", is_flag=True, help="Validate configuration file.")
+@click.option("--init", is_flag=True, help="Create default configuration.")
+@click.pass_context
+@handle_errors
+def config_cmd(
+    ctx: click.Context,
+    show: bool,
+    validate: bool,
+    init: bool,
+) -> None:
+    """Manage configuration."""
+    if init:
+        default_dir = AppConfig.default_dir()
+        default_dir.mkdir(parents=True, exist_ok=True)
+        config_file = default_dir / "config.json"
+
+        if config_file.exists():
+            click.echo(f"Config already exists: {config_file}")
+            sys.exit(5)
+
+        import json
+        cfg = AppConfig.load()  # Get defaults
+        config_data = {
+            "credentials_path": str(cfg.credentials_path),
+            "token_path": str(cfg.token_path),
+            "output_dir": str(cfg.output_dir),
+            "max_emails": cfg.max_emails,
+            "rate_limit_per_second": cfg.rate_limit_per_second,
+            "log_level": cfg.log_level,
+        }
+        config_file.write_text(json.dumps(config_data, indent=2))
+        click.echo(f"Created: {config_file}")
+        return
+
+    try:
+        cfg = AppConfig.load(
+            ctx.obj["config_path"],
+            allow_repo_credentials=ctx.obj["allow_repo_credentials"],
+        )
+    except ConfigError as e:
+        if validate:
+            click.echo(f"Configuration invalid: {e}", err=True)
+            sys.exit(5)
+        raise
+
+    if validate:
+        click.echo("Configuration valid.")
+        return
+
+    if show:
+        click.echo(f"credentials_path: {cfg.credentials_path}")
+        click.echo(f"token_path: {cfg.token_path}")
+        click.echo(f"output_dir: {cfg.output_dir}")
+        click.echo(f"max_emails: {cfg.max_emails}")
+        click.echo(f"rate_limit_per_second: {cfg.rate_limit_per_second}")
+        click.echo(f"log_level: {cfg.log_level}")
+        return
+
+    # Default: show help
+    click.echo(ctx.get_help())
+
+
+if __name__ == "__main__":
+    main()

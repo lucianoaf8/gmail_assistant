@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.config.AppConfig."""
+"""Unit tests for gman.core.config.AppConfig."""
 from __future__ import annotations
 
 import json
@@ -8,17 +8,17 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.config import AppConfig
+from gman.core.exceptions import ConfigError
 
 
 class TestAppConfigDefaults:
     """Test default configuration creation."""
 
     def test_default_dir_is_in_home(self):
-        """Default directory should be ~/.gmail-assistant/."""
+        """Default directory should be ~/.gman/."""
         default_dir = AppConfig.default_dir()
-        assert default_dir == Path.home() / ".gmail-assistant"
+        assert default_dir == Path.home() / ".gman"
 
     def test_load_returns_defaults_when_no_config(self, temp_dir: Path):
         """Loading with no config file should return defaults."""
@@ -178,11 +178,11 @@ class TestAppConfigClassVars:
 
     def test_env_var_name(self):
         """ENV_VAR should have expected name."""
-        assert AppConfig.ENV_VAR == "gmail_assistant_CONFIG"
+        assert AppConfig.ENV_VAR == "gman_CONFIG"
 
     def test_project_config_name(self):
         """PROJECT_CONFIG_NAME should have expected name."""
-        assert AppConfig.PROJECT_CONFIG_NAME == "gmail-assistant.json"
+        assert AppConfig.PROJECT_CONFIG_NAME == "gman.json"
 
 
 class TestAppConfigResolveConfigPath:
@@ -190,7 +190,7 @@ class TestAppConfigResolveConfigPath:
 
     def test_resolve_project_config_file(self, temp_dir: Path):
         """Project config file should be found in current directory."""
-        project_config = temp_dir / "gmail-assistant.json"
+        project_config = temp_dir / "gman.json"
         project_config.write_text(json.dumps({"max_emails": 500}))
 
         with mock.patch.object(AppConfig, "default_dir", return_value=temp_dir / "home"):

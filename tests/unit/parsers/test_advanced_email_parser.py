@@ -8,7 +8,7 @@ from unittest import mock
 import pytest
 from bs4 import BeautifulSoup
 
-from gmail_assistant.parsers.advanced_email_parser import EmailContentParser
+from gman.parsers.advanced_email_parser import EmailContentParser
 
 
 # ==============================================================================

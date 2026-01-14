@@ -11,7 +11,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.utils.manifest import (
+from gman.utils.manifest import (
     BackupManifest,
     FileEntry,
     ManifestManager,

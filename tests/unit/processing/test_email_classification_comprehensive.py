@@ -14,8 +14,8 @@ import os
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from gmail_assistant.core.processing.classifier import EmailClassifier
-from gmail_assistant.core.processing.database import EmailDatabaseImporter
+from gman.core.processing.classifier import EmailClassifier
+from gman.core.processing.database import EmailDatabaseImporter
 
 
 class TestEmailClassifierComprehensive:

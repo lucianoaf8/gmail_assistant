@@ -14,7 +14,7 @@ class TestBatchResult:
 
     def test_batch_result_default_values(self):
         """Test BatchResult has correct default values."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         assert result.successful == 0
@@ -23,7 +23,7 @@ class TestBatchResult:
 
     def test_batch_result_with_values(self):
         """Test BatchResult with custom values."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult(
             successful=10,
@@ -45,7 +45,7 @@ class TestGmailBatchClientInit:
 
     def test_init_with_service(self, mock_service):
         """Test initializing batch client with service."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
 
         client = GmailBatchClient(mock_service)
         assert client.service == mock_service
@@ -54,7 +54,7 @@ class TestGmailBatchClientInit:
 
     def test_init_with_rate_limiter(self, mock_service):
         """Test initializing with rate limiter."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
 
         mock_limiter = mock.MagicMock()
         client = GmailBatchClient(mock_service, rate_limiter=mock_limiter)
@@ -62,7 +62,7 @@ class TestGmailBatchClientInit:
 
     def test_init_with_error_callback(self, mock_service):
         """Test initializing with error callback."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
 
         def error_handler(msg_id, exc):
             pass
@@ -72,7 +72,7 @@ class TestGmailBatchClientInit:
 
     def test_max_batch_size_constant(self):
         """Test MAX_BATCH_SIZE is set correctly."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
 
         assert GmailBatchClient.MAX_BATCH_SIZE == 100
 
@@ -89,7 +89,7 @@ class TestBatchGetMessages:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_empty_message_ids_returns_empty_list(self, client):
@@ -99,7 +99,7 @@ class TestBatchGetMessages:
 
     def test_default_metadata_headers(self, mock_service):
         """Test default metadata headers are set."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
 
         client = GmailBatchClient(mock_service)
 
@@ -124,7 +124,7 @@ class TestBatchGetMessages:
 
     def test_progress_callback_called(self, mock_service):
         """Test progress callback is called."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
 
         client = GmailBatchClient(mock_service)
         progress_calls = []
@@ -141,7 +141,7 @@ class TestBatchGetMessages:
         client._errors = {}
 
         # Mock Email.from_gmail_message
-        with mock.patch('gmail_assistant.core.fetch.batch_api.Email') as MockEmail:
+        with mock.patch('gman.core.fetch.batch_api.Email') as MockEmail:
             MockEmail.from_gmail_message.return_value = mock.MagicMock()
             result = client.batch_get_messages(['msg1'], progress_callback=progress_cb)
 
@@ -160,7 +160,7 @@ class TestBatchGetMessagesRaw:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_empty_message_ids_returns_empty_dict(self, client):
@@ -180,7 +180,7 @@ class TestBatchDeleteMessages:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_empty_message_ids_returns_empty_result(self, client):
@@ -202,7 +202,7 @@ class TestBatchTrashMessages:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_empty_message_ids_returns_empty_result(self, client):
@@ -223,7 +223,7 @@ class TestBatchModifyLabels:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_empty_message_ids_returns_empty_result(self, client):
@@ -244,7 +244,7 @@ class TestConvenienceMethods:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_batch_mark_read_calls_modify_labels(self, client):
@@ -286,7 +286,7 @@ class TestCallbackCreation:
     @pytest.fixture
     def client(self, mock_service):
         """Create batch client."""
-        from gmail_assistant.core.fetch.batch_api import GmailBatchClient
+        from gman.core.fetch.batch_api import GmailBatchClient
         return GmailBatchClient(mock_service)
 
     def test_create_get_callback_success(self, client):
@@ -305,7 +305,7 @@ class TestCallbackCreation:
 
     def test_create_delete_callback_success(self, client):
         """Test delete callback handles success."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         callback = client._create_delete_callback('msg1', result)
@@ -315,7 +315,7 @@ class TestCallbackCreation:
 
     def test_create_delete_callback_error(self, client):
         """Test delete callback handles error."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         callback = client._create_delete_callback('msg1', result)
@@ -326,7 +326,7 @@ class TestCallbackCreation:
 
     def test_create_trash_callback_success(self, client):
         """Test trash callback handles success."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         callback = client._create_trash_callback('msg1', result)
@@ -335,7 +335,7 @@ class TestCallbackCreation:
 
     def test_create_trash_callback_error(self, client):
         """Test trash callback handles error."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         callback = client._create_trash_callback('msg1', result)
@@ -344,7 +344,7 @@ class TestCallbackCreation:
 
     def test_create_modify_callback_success(self, client):
         """Test modify callback handles success."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         callback = client._create_modify_callback('msg1', result)
@@ -353,7 +353,7 @@ class TestCallbackCreation:
 
     def test_create_modify_callback_error(self, client):
         """Test modify callback handles error."""
-        from gmail_assistant.core.fetch.batch_api import BatchResult
+        from gman.core.fetch.batch_api import BatchResult
 
         result = BatchResult()
         callback = client._create_modify_callback('msg1', result)

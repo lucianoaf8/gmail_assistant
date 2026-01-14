@@ -53,7 +53,7 @@
 
 ### 1.1 secure_file.py (0% → 95%)
 
-**File**: `src/gmail_assistant/utils/secure_file.py`
+**File**: `src/gman/utils/secure_file.py`
 **Lines**: 328 | **Functions**: 8 | **Current**: 0%
 
 | Test File | Test Cases | Priority |
@@ -79,7 +79,7 @@
 
 ### 1.2 pii_redactor.py (29% → 95%)
 
-**File**: `src/gmail_assistant/utils/pii_redactor.py`
+**File**: `src/gman/utils/pii_redactor.py`
 **Lines**: 199 | **Functions**: 6 | **Current**: 29%
 
 | Test File | Test Cases | Priority |
@@ -109,7 +109,7 @@
 
 ### 1.3 config_schema.py (0% → 95%)
 
-**File**: `src/gmail_assistant/utils/config_schema.py`
+**File**: `src/gman/utils/config_schema.py`
 **Lines**: 326 | **Functions**: 7 | **Current**: 0%
 
 | Test File | Test Cases | Priority |
@@ -132,7 +132,7 @@
 
 ### 1.4 manifest.py (0% → 90%)
 
-**File**: `src/gmail_assistant/utils/manifest.py`
+**File**: `src/gman/utils/manifest.py`
 **Lines**: 504 | **Functions**: 20 | **Current**: 0%
 
 | Test File | Test Cases | Priority |
@@ -159,7 +159,7 @@
 
 ### 1.5 metrics.py (0% → 90%)
 
-**File**: `src/gmail_assistant/utils/metrics.py`
+**File**: `src/gman/utils/metrics.py`
 **Lines**: 470 | **Functions**: 25 | **Current**: 0%
 
 | Test File | Test Cases | Priority |
@@ -184,7 +184,7 @@
 
 ### 1.6 secure_logger.py (77% → 95%)
 
-**File**: `src/gmail_assistant/utils/secure_logger.py`
+**File**: `src/gman/utils/secure_logger.py`
 **Lines**: 80 | **Functions**: 12 | **Current**: 77%
 
 | Test File | Test Cases | Priority |
@@ -228,9 +228,9 @@
 **Coverage target**: 90%+ for fetch modules
 **Risk**: HIGH - core business logic
 
-### 2.1 gmail_assistant.py (0% → 90%)
+### 2.1 gman.py (0% → 90%)
 
-**File**: `src/gmail_assistant/core/fetch/gmail_assistant.py`
+**File**: `src/gman/core/fetch/gman.py`
 **Lines**: 530 | **Functions**: 17 | **Current**: 0%
 
 | Test File | Test Cases | Priority |
@@ -259,7 +259,7 @@
 
 ### 2.2 gmail_api_client.py (0% → 90%)
 
-**File**: `src/gmail_assistant/core/fetch/gmail_api_client.py`
+**File**: `src/gman/core/fetch/gmail_api_client.py`
 **Lines**: 391 | **Functions**: 13 | **Current**: 0%
 
 | Test Cases | Priority |
@@ -280,7 +280,7 @@
 
 ### 2.3 batch_api.py (0% → 85%)
 
-**File**: `src/gmail_assistant/core/fetch/batch_api.py`
+**File**: `src/gman/core/fetch/batch_api.py`
 **Lines**: 443 | **Functions**: 17 | **Current**: 0%
 
 | Test Cases | Priority |
@@ -300,7 +300,7 @@
 
 ### 2.4 async_fetcher.py (0% → 85%)
 
-**File**: `src/gmail_assistant/core/fetch/async_fetcher.py`
+**File**: `src/gman/core/fetch/async_fetcher.py`
 **Lines**: 397 | **Functions**: 18 | **Current**: 0%
 
 | Test Cases | Priority |
@@ -318,7 +318,7 @@
 
 ### 2.5 checkpoint.py (0% → 90%)
 
-**File**: `src/gmail_assistant/core/fetch/checkpoint.py`
+**File**: `src/gman/core/fetch/checkpoint.py`
 **Lines**: 441 | **Functions**: 18 | **Current**: 0%
 
 | Test Cases | Priority |
@@ -337,7 +337,7 @@
 
 ### 2.6 dead_letter_queue.py (0% → 85%)
 
-**File**: `src/gmail_assistant/core/fetch/dead_letter_queue.py`
+**File**: `src/gman/core/fetch/dead_letter_queue.py`
 **Lines**: 514 | **Functions**: 17 | **Current**: 0%
 
 | Test Cases | Priority |
@@ -750,23 +750,23 @@ tests/
 
 ```bash
 # Unit tests with full coverage
-pytest tests/unit/ --cov=src/gmail_assistant --cov-report=html --cov-report=term-missing
+pytest tests/unit/ --cov=src/gman --cov-report=html --cov-report=term-missing
 
 # Integration tests
-pytest tests/integration/ --cov=src/gmail_assistant --cov-append --cov-report=html
+pytest tests/integration/ --cov=src/gman --cov-append --cov-report=html
 
 # Combined report
-pytest tests/ --cov=src/gmail_assistant --cov-report=html --cov-fail-under=90
+pytest tests/ --cov=src/gman --cov-report=html --cov-fail-under=90
 ```
 
 ### Per-Module Coverage
 
 ```bash
 # Check specific module coverage
-pytest tests/unit/utils/ --cov=src/gmail_assistant/utils --cov-report=term-missing
+pytest tests/unit/utils/ --cov=src/gman/utils --cov-report=term-missing
 
 # Check fetch module
-pytest tests/unit/fetch/ --cov=src/gmail_assistant/core/fetch --cov-report=term-missing
+pytest tests/unit/fetch/ --cov=src/gman/core/fetch --cov-report=term-missing
 ```
 
 ---
@@ -790,7 +790,7 @@ pytest tests/unit/fetch/ --cov=src/gmail_assistant/core/fetch --cov-report=term-
 
 ```bash
 # Must pass before completion
-pytest tests/ --cov=src/gmail_assistant --cov-fail-under=90 -v
+pytest tests/ --cov=src/gman --cov-fail-under=90 -v
 
 # Expected output:
 # TOTAL                                  10888   1089    ...    90%
@@ -828,7 +828,7 @@ pytest tests/ --cov=src/gmail_assistant --cov-fail-under=90 -v
 import pytest
 from unittest.mock import Mock, patch
 
-from gmail_assistant.module_path import TargetClass
+from gman.module_path import TargetClass
 
 
 class TestTargetClass:

@@ -1,6 +1,6 @@
 # API Documentation
 
-Developer reference for Gmail Assistant public APIs.
+Developer reference for Gman public APIs.
 
 ## Contents
 
@@ -12,8 +12,8 @@ Developer reference for Gmail Assistant public APIs.
 ## Quick Example
 
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-from gmail_assistant.core.config import AppConfig
+from gman.core.fetch.gman import GmailFetcher
+from gman.core.config import AppConfig
 
 fetcher = GmailFetcher('credentials.json')
 fetcher.authenticate()

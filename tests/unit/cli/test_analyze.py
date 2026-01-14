@@ -15,8 +15,8 @@ class TestAnalyzeEmails:
 
     def test_analyze_nonexistent_directory(self, tmp_path):
         """Test analyze raises error for nonexistent directory."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
-        from gmail_assistant.core.exceptions import ConfigError
+        from gman.cli.commands.analyze import analyze_emails
+        from gman.core.exceptions import ConfigError
 
         nonexistent = tmp_path / "nonexistent"
 
@@ -25,7 +25,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_empty_directory(self, tmp_path):
         """Test analyze with empty directory."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         result = analyze_emails(tmp_path)
 
@@ -34,7 +34,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_json_files(self, tmp_path):
         """Test analyze with JSON email files."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         # Create test JSON files
         for i in range(3):
@@ -52,7 +52,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_eml_files(self, tmp_path):
         """Test analyze counts EML files."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         # Create test EML files
         for i in range(2):
@@ -65,7 +65,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_mixed_files(self, tmp_path):
         """Test analyze with mixed file types."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         # Create mixed files
         (tmp_path / "email1.json").write_text('{"sender": "test@example.com"}')
@@ -79,7 +79,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_nested_directories(self, tmp_path):
         """Test analyze finds files in nested directories."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         # Create nested structure
         (tmp_path / "2024" / "01").mkdir(parents=True)
@@ -91,7 +91,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_report_summary(self, tmp_path, capsys):
         """Test analyze with summary report type."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         (tmp_path / "email.json").write_text('{"sender": "test@example.com"}')
 
@@ -103,7 +103,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_report_detailed(self, tmp_path, capsys):
         """Test analyze with detailed report type."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         (tmp_path / "email.json").write_text('{"sender": "test@example.com"}')
 
@@ -114,7 +114,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_report_json(self, tmp_path):
         """Test analyze with JSON report output to file."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         (tmp_path / "email.json").write_text('{"sender": "test@example.com"}')
         output_file = tmp_path / "output.json"
@@ -129,7 +129,7 @@ class TestAnalyzeEmails:
 
     def test_analyze_output_to_file(self, tmp_path):
         """Test analyze saves report to file."""
-        from gmail_assistant.cli.commands.analyze import analyze_emails
+        from gman.cli.commands.analyze import analyze_emails
 
         (tmp_path / "email.json").write_text('{"sender": "test@example.com"}')
         output_file = tmp_path / "report.json"
@@ -147,7 +147,7 @@ class TestFileStatistics:
 
     def test_file_statistics_counts_extensions(self, tmp_path):
         """Test file statistics counts by extension."""
-        from gmail_assistant.cli.commands.analyze import _analyze_file_statistics
+        from gman.cli.commands.analyze import _analyze_file_statistics
 
         files = [
             tmp_path / "test1.json",
@@ -164,7 +164,7 @@ class TestFileStatistics:
 
     def test_file_statistics_calculates_size(self, tmp_path):
         """Test file statistics calculates total size."""
-        from gmail_assistant.cli.commands.analyze import _analyze_file_statistics
+        from gman.cli.commands.analyze import _analyze_file_statistics
 
         # Create files with known sizes
         file1 = tmp_path / "test1.json"
@@ -180,7 +180,7 @@ class TestFileStatistics:
 
     def test_file_statistics_handles_missing_file(self, tmp_path):
         """Test file statistics handles missing files gracefully."""
-        from gmail_assistant.cli.commands.analyze import _analyze_file_statistics
+        from gman.cli.commands.analyze import _analyze_file_statistics
 
         existing = tmp_path / "exists.json"
         existing.write_text("test")
@@ -197,7 +197,7 @@ class TestTemporalDistribution:
 
     def test_temporal_extracts_years(self, tmp_path):
         """Test temporal analysis extracts years from paths."""
-        from gmail_assistant.cli.commands.analyze import _analyze_temporal_distribution
+        from gman.cli.commands.analyze import _analyze_temporal_distribution
 
         (tmp_path / "2024").mkdir()
         (tmp_path / "2023").mkdir()
@@ -217,7 +217,7 @@ class TestTemporalDistribution:
 
     def test_temporal_extracts_months(self, tmp_path):
         """Test temporal analysis extracts months from paths."""
-        from gmail_assistant.cli.commands.analyze import _analyze_temporal_distribution
+        from gman.cli.commands.analyze import _analyze_temporal_distribution
 
         (tmp_path / "2024" / "01").mkdir(parents=True)
         (tmp_path / "2024" / "02").mkdir(parents=True)
@@ -239,7 +239,7 @@ class TestSenderAnalysis:
 
     def test_sender_analysis_counts_senders(self):
         """Test sender analysis counts unique senders."""
-        from gmail_assistant.cli.commands.analyze import _analyze_senders
+        from gman.cli.commands.analyze import _analyze_senders
 
         emails = [
             {'sender': 'user1@example.com'},
@@ -255,7 +255,7 @@ class TestSenderAnalysis:
 
     def test_sender_analysis_uses_from_field(self):
         """Test sender analysis falls back to 'from' field."""
-        from gmail_assistant.cli.commands.analyze import _analyze_senders
+        from gman.cli.commands.analyze import _analyze_senders
 
         emails = [
             {'from': 'user@example.com'}
@@ -268,7 +268,7 @@ class TestSenderAnalysis:
 
     def test_sender_analysis_limits_top_senders(self):
         """Test sender analysis limits to top 20."""
-        from gmail_assistant.cli.commands.analyze import _analyze_senders
+        from gman.cli.commands.analyze import _analyze_senders
 
         emails = [{'sender': f'user{i}@example.com'} for i in range(30)]
 
@@ -278,7 +278,7 @@ class TestSenderAnalysis:
 
     def test_sender_analysis_sorts_by_count(self):
         """Test top senders are sorted by count."""
-        from gmail_assistant.cli.commands.analyze import _analyze_senders
+        from gman.cli.commands.analyze import _analyze_senders
 
         emails = [
             {'sender': 'rare@example.com'},
@@ -298,7 +298,7 @@ class TestEmailClassification:
 
     def test_classify_financial_emails(self):
         """Test classification of financial emails."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         emails = [
             {'subject': 'Your payment receipt', 'sender': 'bank@example.com'},
@@ -311,7 +311,7 @@ class TestEmailClassification:
 
     def test_classify_notification_emails(self):
         """Test classification of notification emails."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         emails = [
             {'subject': 'Notification: Update available', 'sender': 'service@example.com'},
@@ -324,7 +324,7 @@ class TestEmailClassification:
 
     def test_classify_marketing_emails(self):
         """Test classification of marketing emails."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         emails = [
             {'subject': 'Weekly Newsletter', 'sender': 'news@example.com'},
@@ -337,7 +337,7 @@ class TestEmailClassification:
 
     def test_classify_social_emails(self):
         """Test classification of social emails."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         emails = [
             {'subject': 'John sent you a friend request', 'sender': 'social@example.com'},
@@ -350,7 +350,7 @@ class TestEmailClassification:
 
     def test_classify_other_emails(self):
         """Test classification of uncategorized emails."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         emails = [
             {'subject': 'Hello there', 'sender': 'person@example.com'},
@@ -363,7 +363,7 @@ class TestEmailClassification:
 
     def test_classify_calculates_percentages(self):
         """Test classification calculates percentages."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         # Use clear, unambiguous emails for each category
         emails = [
@@ -383,7 +383,7 @@ class TestEmailClassification:
 
     def test_classify_handles_none_values(self):
         """Test classification handles None values."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         emails = [
             {'subject': None, 'sender': None},
@@ -397,7 +397,7 @@ class TestEmailClassification:
 
     def test_classify_empty_list(self):
         """Test classification handles empty list."""
-        from gmail_assistant.cli.commands.analyze import _classify_emails
+        from gman.cli.commands.analyze import _classify_emails
 
         result = _classify_emails([])
 
@@ -410,7 +410,7 @@ class TestReportOutput:
 
     def test_summary_report_output(self, tmp_path, capsys):
         """Test summary report outputs to console."""
-        from gmail_assistant.cli.commands.analyze import _output_summary_report
+        from gman.cli.commands.analyze import _output_summary_report
 
         analysis = {
             'metadata': {
@@ -438,7 +438,7 @@ class TestReportOutput:
 
     def test_json_report_to_file(self, tmp_path):
         """Test JSON report saves to file."""
-        from gmail_assistant.cli.commands.analyze import _output_json_report
+        from gman.cli.commands.analyze import _output_json_report
 
         analysis = {'metadata': {'test': True}}
         output_file = tmp_path / "report.json"
@@ -452,7 +452,7 @@ class TestReportOutput:
 
     def test_json_report_to_console(self, capsys):
         """Test JSON report outputs to console when no file specified."""
-        from gmail_assistant.cli.commands.analyze import _output_json_report
+        from gman.cli.commands.analyze import _output_json_report
 
         analysis = {'metadata': {'test': True}}
 
@@ -464,7 +464,7 @@ class TestReportOutput:
 
     def test_detailed_report_saves_file(self, tmp_path, capsys):
         """Test detailed report saves to file when specified."""
-        from gmail_assistant.cli.commands.analyze import _output_detailed_report
+        from gman.cli.commands.analyze import _output_detailed_report
 
         analysis = {
             'metadata': {

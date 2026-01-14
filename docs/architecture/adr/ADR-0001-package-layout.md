@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Gmail Assistant was originally a collection of scripts without proper Python packaging. This made it difficult to:
+Gman was originally a collection of scripts without proper Python packaging. This made it difficult to:
 - Install the tool via pip
 - Import modules cleanly without sys.path manipulation
 - Distribute the application
@@ -21,7 +21,7 @@ We needed to choose:
 
 We chose:
 
-1. **src-layout** (`src/gmail_assistant/`) - Industry best practice that:
+1. **src-layout** (`src/gman/`) - Industry best practice that:
    - Prevents accidental imports from the development directory
    - Forces proper package installation for testing
    - Clearly separates source from tests and scripts
@@ -38,7 +38,7 @@ We chose:
    - Windows-first project environment
    - Strong support for file operations
 
-4. **User home** (`~/.gmail-assistant/`) for configuration default because:
+4. **User home** (`~/.gman/`) for configuration default because:
    - Security-first: credentials outside any git repository by default
    - Standard location for user configuration
    - Repo-local requires explicit opt-in
@@ -47,9 +47,9 @@ We chose:
 
 ### Positive
 
-- Clean imports using `gmail_assistant.*` prefix everywhere
+- Clean imports using `gman.*` prefix everywhere
 - Proper `pip install -e .` for development
-- Console script entry point (`gmail-assistant`) works out of box
+- Console script entry point (`gman`) works out of box
 - Clear separation of concerns in directory structure
 - Credentials safe from accidental git commits by default
 

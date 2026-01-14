@@ -213,7 +213,7 @@ python -m pytest tests/integration/ -v -k "not (TestGmailDownload or TestGmailAP
 python -m pytest tests/integration/test_gmail_api.py tests/integration/test_gmail_api_integration.py::TestGmailAPIDownload tests/integration/test_gmail_api_integration_comprehensive.py -v
 
 # Generate coverage report
-python -m pytest tests/integration/ --cov=gmail_assistant --cov-report=html
+python -m pytest tests/integration/ --cov=gman --cov-report=html
 ```
 
 ## Files Modified

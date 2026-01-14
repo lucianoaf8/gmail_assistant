@@ -104,7 +104,7 @@ def test_gmail_operations():
     # Test basic fetcher functionality
     print("   📥 Testing Gmail fetcher...")
     try:
-        from gmail_assistant import GmailFetcher
+        from gman import GmailFetcher
         fetcher = GmailFetcher()
 
         # Test basic connection without downloading
@@ -216,8 +216,8 @@ def create_comprehensive_plan(email_stats):
     if unread == 0:
         print("\n✅ No unread emails - inbox already clean!")
         print("\n📋 Available operations:")
-        print("   • Backup emails: python gmail_assistant.py --query 'is:starred' --max 1000")
-        print("   • Backup important: python gmail_assistant.py --query 'is:important' --max 1000")
+        print("   • Backup emails: python gman.py --query 'is:starred' --max 1000")
+        print("   • Backup important: python gman.py --query 'is:important' --max 1000")
         return
 
     print(f"\n🎯 Comprehensive deletion strategies:")
@@ -282,7 +282,7 @@ def show_safety_checklist():
     print(f"Before running ANY deletion commands:")
     print(f"")
     print(f"1. ✅ Backup important emails first:")
-    print(f"   python gmail_assistant.py --query 'is:starred OR is:important' --max 1000")
+    print(f"   python gman.py --query 'is:starred OR is:important' --max 1000")
     print(f"")
     print(f"2. ✅ Always test with --dry-run first:")
     print(f"   python clean_unread_inbox.py --dry-run")

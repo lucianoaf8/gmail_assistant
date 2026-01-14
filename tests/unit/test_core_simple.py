@@ -12,7 +12,7 @@ from pathlib import Path
 import sys
 import os
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 
 class TestGmailFetcherBasics:

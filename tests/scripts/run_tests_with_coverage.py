@@ -14,7 +14,7 @@ def main():
     cmd = [
         sys.executable, '-m', 'pytest',
         'tests/',
-        '--cov=gmail_assistant',
+        '--cov=gman',
         '--cov-report=term',
         '--cov-report=html',
         '--cov-report=json',

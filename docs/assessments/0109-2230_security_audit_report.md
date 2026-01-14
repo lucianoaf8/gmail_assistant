@@ -1,16 +1,16 @@
-# Gmail Assistant Security Audit Report
+# Gman Security Audit Report
 
 **Document ID**: 0109-2230_security_audit_report.md
 **Date**: 2026-01-09
 **Auditor**: Claude Opus 4.5 Security Audit Agent
-**Scope**: Comprehensive security assessment of Gmail Assistant codebase
+**Scope**: Comprehensive security assessment of Gman codebase
 **Version Audited**: 2.0.0 (commit cbd2cad)
 
 ---
 
 ## Executive Summary
 
-This security audit comprehensively analyzed the Gmail Assistant project across 10 security domains. The project demonstrates **mature security practices** with several security controls already implemented, including OS keyring credential storage, PII redaction, input validation, rate limiting, and secure file operations.
+This security audit comprehensively analyzed the Gman project across 10 security domains. The project demonstrates **mature security practices** with several security controls already implemented, including OS keyring credential storage, PII redaction, input validation, rate limiting, and secure file operations.
 
 ### Overall Security Posture: **GOOD** (with minor improvements recommended)
 
@@ -37,7 +37,7 @@ This security audit comprehensively analyzed the Gmail Assistant project across 
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/auth/credential_manager.py`
+**Location**: `src/gman/core/auth/credential_manager.py`
 
 The project uses Google OAuth 2.0 with proper implementation:
 
@@ -59,7 +59,7 @@ creds = flow.run_local_server(port=0)
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/auth/credential_manager.py:35-74`
+**Location**: `src/gman/core/auth/credential_manager.py:35-74`
 
 Tokens are stored securely in the OS keyring:
 
@@ -79,7 +79,7 @@ keyring.set_password(KEYRING_SERVICE, KEYRING_USERNAME, credentials_json)
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/auth/rate_limiter.py`
+**Location**: `src/gman/core/auth/rate_limiter.py`
 
 Rate limiting prevents brute force attacks:
 
@@ -105,7 +105,7 @@ LOCKOUT_SECONDS: int = 900  # 15 minute lockout
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/utils/pii_redactor.py`
+**Location**: `src/gman/utils/pii_redactor.py`
 
 PII redaction implemented for logs:
 
@@ -131,7 +131,7 @@ def redact_email(email: str) -> str:
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/utils/secure_file.py`
+**Location**: `src/gman/utils/secure_file.py`
 
 Files written with restrictive permissions:
 
@@ -154,10 +154,10 @@ SECURE_DIR_MODE = stat.S_IRWXU  # 0o700
 
 **Finding M-DATA-1**: Email content stored in plaintext files
 
-**Location**: `src/gmail_assistant/core/fetch/gmail_assistant.py:451-460`
+**Location**: `src/gman/core/fetch/gman.py:451-460`
 
 ```python
-# gmail_assistant.py:454
+# gman.py:454
 self.atomic_write(eml_path, eml_content)
 ```
 
@@ -179,7 +179,7 @@ self.atomic_write(eml_path, eml_content)
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/utils/input_validator.py:100-200`
+**Location**: `src/gman/utils/input_validator.py:100-200`
 
 Comprehensive path validation implemented:
 
@@ -211,7 +211,7 @@ if allowed_base is not None:
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/utils/input_validator.py:46-98`
+**Location**: `src/gman/utils/input_validator.py:46-98`
 
 ```python
 # input_validator.py:73-84
@@ -236,7 +236,7 @@ for pattern in dangerous_patterns:
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/fetch/incremental.py:218-261`
+**Location**: `src/gman/core/fetch/incremental.py:218-261`
 
 ```python
 # incremental.py:257-259
@@ -261,7 +261,7 @@ if any(char in str(path) for char in dangerous_chars):
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/utils/rate_limiter.py`
+**Location**: `src/gman/utils/rate_limiter.py`
 
 Gmail API rate limiting implemented:
 
@@ -281,7 +281,7 @@ Gmail API rate limiting implemented:
 
 **Finding M-API-1**: Detailed error messages may leak implementation details
 
-**Location**: `src/gmail_assistant/utils/error_handler.py:180-292`
+**Location**: `src/gman/utils/error_handler.py:180-292`
 
 ```python
 # error_handler.py:184
@@ -303,10 +303,10 @@ error_content = exception.content.decode() if exception.content else ""
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/fetch/gmail_assistant.py:101-128`
+**Location**: `src/gman/core/fetch/gman.py:101-128`
 
 ```python
-# gmail_assistant.py:101-128
+# gman.py:101-128
 def _validate_api_response(self, response: Optional[Dict],
                             required_fields: List[str],
                             context: str = "") -> Dict:
@@ -343,7 +343,7 @@ Result: No hardcoded secrets found.
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/constants.py:14-28`
+**Location**: `src/gman/core/constants.py:14-28`
 
 ```python
 # constants.py:14-28
@@ -354,8 +354,8 @@ def _get_env_path(env_var: str, default: Path) -> Path:
         return Path(env_value)
     return default
 
-CONFIG_DIR: Path = _get_env_path('GMAIL_ASSISTANT_CONFIG_DIR', ...)
-CREDENTIALS_DIR: Path = _get_env_path('GMAIL_ASSISTANT_CREDENTIALS_DIR', ...)
+CONFIG_DIR: Path = _get_env_path('GMAN_CONFIG_DIR', ...)
+CREDENTIALS_DIR: Path = _get_env_path('GMAN_CREDENTIALS_DIR', ...)
 ```
 
 **Reference**: `tests/security/test_l1_environment_paths.py`
@@ -402,10 +402,10 @@ See Section 2.2 for details.
 
 **Finding L-TEMP-1**: Temporary files not securely deleted
 
-**Location**: `src/gmail_assistant/core/fetch/gmail_assistant.py:356-369`
+**Location**: `src/gman/core/fetch/gman.py:356-369`
 
 ```python
-# gmail_assistant.py:366-368
+# gman.py:366-368
 if os.path.exists(tmp_path):
     os.unlink(tmp_path)  # Standard deletion, not secure overwrite
 ```
@@ -428,15 +428,15 @@ if os.path.exists(tmp_path):
 
 **Status**: SECURE (with caveats)
 
-**Location**: `src/gmail_assistant/utils/secure_logger.py`
+**Location**: `src/gman/utils/secure_logger.py`
 
 SecureLogger wrapper available but not universally applied.
 
 **Finding L-LOG-1**: Not all modules use SecureLogger
 
 **Locations with standard logger**:
-- `src/gmail_assistant/core/fetch/gmail_api_client.py` - Uses standard logger
-- `src/gmail_assistant/deletion/deleter.py` - Uses print() with email content
+- `src/gman/core/fetch/gmail_api_client.py` - Uses standard logger
+- `src/gman/deletion/deleter.py` - Uses print() with email content
 
 **Recommendation**:
 1. Replace all `logging.getLogger(__name__)` with `get_secure_logger(__name__)`
@@ -534,7 +534,7 @@ google-api-python-client>=2.140.0
 
 **Status**: SECURE
 
-**Location**: `src/gmail_assistant/core/constants.py:46-61`
+**Location**: `src/gman/core/constants.py:46-61`
 
 ```python
 # constants.py:46-61
@@ -568,7 +568,7 @@ None - All high-severity issues have been remediated.
 
 | ID | Finding | Location | Recommendation |
 |----|---------|----------|----------------|
-| M-DATA-1 | Plaintext email storage | gmail_assistant.py | Add encryption-at-rest option |
+| M-DATA-1 | Plaintext email storage | gman.py | Add encryption-at-rest option |
 | M-API-1 | Verbose error disclosure | error_handler.py | Sanitize error messages |
 | M-CONFIG-1 | No config integrity check | config/*.json | Add checksum validation |
 
@@ -576,7 +576,7 @@ None - All high-severity issues have been remediated.
 
 | ID | Finding | Location | Recommendation |
 |----|---------|----------|----------------|
-| L-TEMP-1 | Insecure temp deletion | gmail_assistant.py | Implement secure overwrite |
+| L-TEMP-1 | Insecure temp deletion | gman.py | Implement secure overwrite |
 | L-LOG-1 | Inconsistent SecureLogger | Multiple files | Universal SecureLogger adoption |
 | L-DEP-1 | Unpinned transitive deps | requirements.txt | Generate lock file |
 
@@ -617,7 +617,7 @@ pytest tests/security/ -v --tb=short
 
 ## Conclusion
 
-The Gmail Assistant project demonstrates **mature security practices** with a defense-in-depth approach. The development team has proactively addressed common security vulnerabilities including:
+The Gman project demonstrates **mature security practices** with a defense-in-depth approach. The development team has proactively addressed common security vulnerabilities including:
 
 1. Secure credential storage using OS keyring
 2. Comprehensive input validation with path traversal prevention

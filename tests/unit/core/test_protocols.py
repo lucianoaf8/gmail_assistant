@@ -16,7 +16,7 @@ class TestEmailMetadata:
 
     def test_email_metadata_creation(self):
         """Test creating EmailMetadata."""
-        from gmail_assistant.core.protocols import EmailMetadata
+        from gman.core.protocols import EmailMetadata
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -37,7 +37,7 @@ class TestEmailMetadata:
 
     def test_email_metadata_default_values(self):
         """Test EmailMetadata default values."""
-        from gmail_assistant.core.protocols import EmailMetadata
+        from gman.core.protocols import EmailMetadata
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -60,7 +60,7 @@ class TestFetchResult:
 
     def test_fetch_result_success(self):
         """Test creating successful FetchResult."""
-        from gmail_assistant.core.protocols import FetchResult
+        from gman.core.protocols import FetchResult
 
         result = FetchResult(
             success=True,
@@ -76,7 +76,7 @@ class TestFetchResult:
 
     def test_fetch_result_failure(self):
         """Test creating failed FetchResult."""
-        from gmail_assistant.core.protocols import FetchResult
+        from gman.core.protocols import FetchResult
 
         result = FetchResult(
             success=False,
@@ -95,7 +95,7 @@ class TestDeleteResult:
 
     def test_delete_result_creation(self):
         """Test creating DeleteResult."""
-        from gmail_assistant.core.protocols import DeleteResult
+        from gman.core.protocols import DeleteResult
 
         result = DeleteResult(
             deleted=50,
@@ -109,7 +109,7 @@ class TestDeleteResult:
 
     def test_delete_result_error_messages_default(self):
         """Test DeleteResult error_messages default to empty list."""
-        from gmail_assistant.core.protocols import DeleteResult
+        from gman.core.protocols import DeleteResult
 
         result = DeleteResult(
             deleted=0,
@@ -124,7 +124,7 @@ class TestParseResult:
 
     def test_parse_result_success(self):
         """Test creating successful ParseResult."""
-        from gmail_assistant.core.protocols import ParseResult
+        from gman.core.protocols import ParseResult
 
         result = ParseResult(
             success=True,
@@ -139,7 +139,7 @@ class TestParseResult:
 
     def test_parse_result_metadata_default(self):
         """Test ParseResult metadata defaults to empty dict."""
-        from gmail_assistant.core.protocols import ParseResult
+        from gman.core.protocols import ParseResult
 
         result = ParseResult(
             success=True,
@@ -156,7 +156,7 @@ class TestCredentialProviderProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import CredentialProviderProtocol
+        from gman.core.protocols import CredentialProviderProtocol
 
         class MockProvider:
             @property
@@ -181,7 +181,7 @@ class TestGmailClientProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import GmailClientProtocol
+        from gman.core.protocols import GmailClientProtocol
 
         class MockClient:
             def authenticate(self) -> bool:
@@ -206,7 +206,7 @@ class TestEmailFetcherProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import EmailFetcherProtocol, FetchResult
+        from gman.core.protocols import EmailFetcherProtocol, FetchResult
 
         class MockFetcher:
             def search_messages(self, query: str, max_results: int = 100):
@@ -233,7 +233,7 @@ class TestStreamingFetcherProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import StreamingFetcherProtocol
+        from gman.core.protocols import StreamingFetcherProtocol
 
         class MockStreamingFetcher:
             def stream_messages(self, query: str, batch_size: int = 100):
@@ -251,7 +251,7 @@ class TestEmailDeleterProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import EmailDeleterProtocol, DeleteResult
+        from gman.core.protocols import EmailDeleterProtocol, DeleteResult
 
         class MockDeleter:
             def delete_emails(self, email_ids, batch_size=100):
@@ -275,7 +275,7 @@ class TestEmailParserProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import EmailParserProtocol, ParseResult
+        from gman.core.protocols import EmailParserProtocol, ParseResult
 
         class MockParser:
             def parse_eml(self, file_path):
@@ -296,7 +296,7 @@ class TestMarkdownConverterProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import MarkdownConverterProtocol
+        from gman.core.protocols import MarkdownConverterProtocol
 
         class MockConverter:
             def to_markdown(self, email_data):
@@ -317,7 +317,7 @@ class TestOutputPluginProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import OutputPluginProtocol
+        from gman.core.protocols import OutputPluginProtocol
 
         class MockPlugin:
             @property
@@ -343,7 +343,7 @@ class TestOrganizationPluginProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import OrganizationPluginProtocol
+        from gman.core.protocols import OrganizationPluginProtocol
 
         class MockPlugin:
             @property
@@ -362,7 +362,7 @@ class TestCacheProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import CacheProtocol
+        from gman.core.protocols import CacheProtocol
 
         class MockCache:
             def get(self, key, default=None):
@@ -386,7 +386,7 @@ class TestEmailRepositoryProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import EmailRepositoryProtocol
+        from gman.core.protocols import EmailRepositoryProtocol
 
         class MockRepository:
             def save(self, email):
@@ -416,7 +416,7 @@ class TestRateLimiterProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import RateLimiterProtocol
+        from gman.core.protocols import RateLimiterProtocol
 
         class MockRateLimiter:
             def wait_if_needed(self, quota_cost=1):
@@ -437,7 +437,7 @@ class TestServiceContainerProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import ServiceContainerProtocol
+        from gman.core.protocols import ServiceContainerProtocol
 
         class MockContainer:
             def register(self, service_type, instance):
@@ -461,7 +461,7 @@ class TestValidatorProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import ValidatorProtocol
+        from gman.core.protocols import ValidatorProtocol
 
         class MockValidator:
             def validate_email(self, email):
@@ -485,7 +485,7 @@ class TestErrorHandlerProtocol:
 
     def test_protocol_is_runtime_checkable(self):
         """Test protocol is runtime checkable."""
-        from gmail_assistant.core.protocols import ErrorHandlerProtocol
+        from gman.core.protocols import ErrorHandlerProtocol
 
         class MockErrorHandler:
             def handle_error(self, error, context=None):
@@ -506,7 +506,7 @@ class TestImplementsProtocol:
 
     def test_implements_protocol_true(self):
         """Test implements_protocol returns True for valid implementation."""
-        from gmail_assistant.core.protocols import implements_protocol, CacheProtocol
+        from gman.core.protocols import implements_protocol, CacheProtocol
 
         class ValidCache:
             def get(self, key, default=None):
@@ -526,7 +526,7 @@ class TestImplementsProtocol:
 
     def test_implements_protocol_false(self):
         """Test implements_protocol returns False for invalid implementation."""
-        from gmail_assistant.core.protocols import implements_protocol, CacheProtocol
+        from gman.core.protocols import implements_protocol, CacheProtocol
 
         class InvalidCache:
             def get(self, key):
@@ -542,7 +542,7 @@ class TestAssertProtocol:
 
     def test_assert_protocol_passes(self):
         """Test assert_protocol passes for valid implementation."""
-        from gmail_assistant.core.protocols import assert_protocol, CacheProtocol
+        from gman.core.protocols import assert_protocol, CacheProtocol
 
         class ValidCache:
             def get(self, key, default=None):
@@ -563,7 +563,7 @@ class TestAssertProtocol:
 
     def test_assert_protocol_raises_type_error(self):
         """Test assert_protocol raises TypeError for invalid implementation."""
-        from gmail_assistant.core.protocols import assert_protocol, CacheProtocol
+        from gman.core.protocols import assert_protocol, CacheProtocol
 
         class InvalidCache:
             pass
@@ -578,19 +578,19 @@ class TestTypeAliases:
 
     def test_message_id_is_str(self):
         """Test MessageId is str type."""
-        from gmail_assistant.core.protocols import MessageId
+        from gman.core.protocols import MessageId
 
         assert MessageId == str
 
     def test_thread_id_is_str(self):
         """Test ThreadId is str type."""
-        from gmail_assistant.core.protocols import ThreadId
+        from gman.core.protocols import ThreadId
 
         assert ThreadId == str
 
     def test_email_headers_is_dict(self):
         """Test EmailHeaders type."""
-        from gmail_assistant.core.protocols import EmailHeaders
+        from gman.core.protocols import EmailHeaders
 
         assert EmailHeaders == dict[str, str]
 
@@ -600,7 +600,7 @@ class TestDataclassImmutability:
 
     def test_fetch_result_immutable_after_creation(self):
         """FetchResult fields should be assignable but validated."""
-        from gmail_assistant.core.protocols import FetchResult
+        from gman.core.protocols import FetchResult
 
         result = FetchResult(
             success=True,
@@ -615,7 +615,7 @@ class TestDataclassImmutability:
 
     def test_delete_result_error_messages_initialization(self):
         """DeleteResult should properly initialize error_messages list."""
-        from gmail_assistant.core.protocols import DeleteResult
+        from gman.core.protocols import DeleteResult
 
         # Test with None
         result1 = DeleteResult(deleted=5, failed=0, error_messages=None)
@@ -628,7 +628,7 @@ class TestDataclassImmutability:
 
     def test_parse_result_metadata_initialization(self):
         """ParseResult should properly initialize metadata dict."""
-        from gmail_assistant.core.protocols import ParseResult
+        from gman.core.protocols import ParseResult
 
         # Test with None
         result1 = ParseResult(
@@ -653,7 +653,7 @@ class TestDataclassImmutability:
 
     def test_email_metadata_all_fields(self):
         """EmailMetadata should accept all field values."""
-        from gmail_assistant.core.protocols import EmailMetadata
+        from gman.core.protocols import EmailMetadata
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -685,7 +685,7 @@ class TestProtocolEdgeCases:
 
     def test_cache_protocol_with_none_default(self):
         """CacheProtocol get should support None as default."""
-        from gmail_assistant.core.protocols import CacheProtocol
+        from gman.core.protocols import CacheProtocol
 
         class TestCache:
             def get(self, key, default=None):
@@ -706,7 +706,7 @@ class TestProtocolEdgeCases:
 
     def test_email_repository_protocol_complex_queries(self):
         """EmailRepositoryProtocol should handle various query types."""
-        from gmail_assistant.core.protocols import EmailRepositoryProtocol
+        from gman.core.protocols import EmailRepositoryProtocol
 
         class TestRepository:
             def save(self, email):
@@ -738,7 +738,7 @@ class TestProtocolEdgeCases:
 
     def test_rate_limiter_protocol_quota_check(self):
         """RateLimiterProtocol quota check should return dict."""
-        from gmail_assistant.core.protocols import RateLimiterProtocol
+        from gman.core.protocols import RateLimiterProtocol
 
         class TestRateLimiter:
             def wait_if_needed(self, quota_cost=1):
@@ -762,7 +762,7 @@ class TestProtocolEdgeCases:
 
     def test_validator_protocol_path_validation(self):
         """ValidatorProtocol should handle path validation with must_exist flag."""
-        from gmail_assistant.core.protocols import ValidatorProtocol
+        from gman.core.protocols import ValidatorProtocol
 
         class TestValidator:
             def validate_email(self, email):
@@ -799,7 +799,7 @@ class TestProtocolReturnTypes:
 
     def test_credential_provider_refresh_returns_bool(self):
         """CredentialProviderProtocol refresh should return bool."""
-        from gmail_assistant.core.protocols import CredentialProviderProtocol
+        from gman.core.protocols import CredentialProviderProtocol
 
         class SuccessProvider:
             @property
@@ -839,7 +839,7 @@ class TestProtocolReturnTypes:
 
     def test_error_handler_recovery_action(self):
         """ErrorHandlerProtocol should return recovery actions."""
-        from gmail_assistant.core.protocols import ErrorHandlerProtocol
+        from gman.core.protocols import ErrorHandlerProtocol
 
         class TestErrorHandler:
             def handle_error(self, error, context=None):
@@ -867,7 +867,7 @@ class TestStreamingProtocolBehavior:
 
     def test_streaming_fetcher_yields_messages(self):
         """StreamingFetcherProtocol should yield message data."""
-        from gmail_assistant.core.protocols import StreamingFetcherProtocol
+        from gman.core.protocols import StreamingFetcherProtocol
 
         class TestStreamingFetcher:
             def stream_messages(self, query: str, batch_size: int = 100):

@@ -1,1 +1,1 @@
-"""Security test suite for Gmail Assistant."""
+"""Security test suite for Gman."""

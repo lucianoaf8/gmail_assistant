@@ -1,4 +1,4 @@
-# Gmail Assistant - Architecture Overview
+# Gman - Architecture Overview
 
 **Version**: 2.0.0
 **Document Date**: 2026-01-09
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Gmail Assistant is a Python-based email management suite that provides backup, analysis, and manipulation capabilities for Gmail accounts via the Gmail API. The system employs a modular architecture with clear separation of concerns, protocol-driven interfaces, and comprehensive security controls.
+Gman is a Python-based email management suite that provides backup, analysis, and manipulation capabilities for Gmail accounts via the Gmail API. The system employs a modular architecture with clear separation of concerns, protocol-driven interfaces, and comprehensive security controls.
 
 **Core Capabilities**:
 - OAuth 2.0 authenticated Gmail API access with three permission tiers (readonly, modify, full)
@@ -43,7 +43,7 @@ Gmail Assistant is a Python-based email management suite that provides backup, a
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      CLI Layer (Click)                       │
-│  Entry Point: gmail-assistant command                        │
+│  Entry Point: gman command                        │
 │  Commands: fetch, delete, analyze, auth, config              │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -106,9 +106,9 @@ Gmail Assistant is a Python-based email management suite that provides backup, a
 ### 2.1 Source Tree Organization
 
 ```
-src/gmail_assistant/
+src/gman/
 ├── __init__.py                    # Package entry point, version info
-├── __main__.py                    # Python -m gmail_assistant support
+├── __main__.py                    # Python -m gman support
 │
 ├── cli/                           # Command-line interface
 │   ├── main.py                    # Click-based CLI (entry point)
@@ -135,7 +135,7 @@ src/gmail_assistant/
 │   │   └── rate_limiter.py        # Auth rate limiting
 │   │
 │   ├── fetch/                     # Email fetching subsystem
-│   │   ├── gmail_assistant.py     # Main fetcher implementation
+│   │   ├── gman.py     # Main fetcher implementation
 │   │   ├── gmail_api_client.py    # Gmail API wrapper
 │   │   ├── async_fetcher.py       # Async email fetching
 │   │   ├── streaming.py           # Streaming fetcher
@@ -450,18 +450,18 @@ AppConfig.load(cli_config, allow_repo_credentials)
     │       └─→ --config /path/to/config.json
     │
     ├─→ Priority 2: Environment variable
-    │       └─→ $GMAIL_ASSISTANT_CONFIG
+    │       └─→ $GMAN_CONFIG
     │
     ├─→ Priority 3: Project config
-    │       └─→ ./gmail-assistant.json (current directory)
+    │       └─→ ./gman.json (current directory)
     │
     ├─→ Priority 4: User config
-    │       └─→ ~/.gmail-assistant/config.json
+    │       └─→ ~/.gman/config.json
     │
     ├─→ Priority 5: Built-in defaults
-    │       ├─→ credentials_path: ~/.gmail-assistant/credentials.json
-    │       ├─→ token_path: ~/.gmail-assistant/token.json
-    │       ├─→ output_dir: ~/.gmail-assistant/backups
+    │       ├─→ credentials_path: ~/.gman/credentials.json
+    │       ├─→ token_path: ~/.gman/token.json
+    │       ├─→ output_dir: ~/.gman/backups
     │       ├─→ max_emails: 1000
     │       ├─→ rate_limit_per_second: 10.0
     │       └─→ log_level: INFO
@@ -571,14 +571,14 @@ class ErrorCategory(Enum):
 ### 6.1 Configuration Schema
 
 **File Format**: JSON
-**Default Location**: `~/.gmail-assistant/config.json`
+**Default Location**: `~/.gman/config.json`
 
 **Schema**:
 ```json
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "token_path": "~/.gmail-assistant/token.json",
-  "output_dir": "~/.gmail-assistant/backups",
+  "credentials_path": "~/.gman/credentials.json",
+  "token_path": "~/.gman/token.json",
+  "output_dir": "~/.gman/backups",
   "max_emails": 1000,
   "rate_limit_per_second": 10.0,
   "log_level": "INFO"
@@ -597,16 +597,16 @@ class ErrorCategory(Enum):
 
 **Path Overrides** (L-1 Security Enhancement):
 ```bash
-export GMAIL_ASSISTANT_CONFIG_DIR=/custom/config
-export GMAIL_ASSISTANT_DATA_DIR=/custom/data
-export GMAIL_ASSISTANT_BACKUP_DIR=/custom/backups
-export GMAIL_ASSISTANT_CREDENTIALS_DIR=/custom/credentials
-export GMAIL_ASSISTANT_CACHE_DIR=/custom/cache
+export GMAN_CONFIG_DIR=/custom/config
+export GMAN_DATA_DIR=/custom/data
+export GMAN_BACKUP_DIR=/custom/backups
+export GMAN_CREDENTIALS_DIR=/custom/credentials
+export GMAN_CACHE_DIR=/custom/cache
 ```
 
 **Configuration File Override**:
 ```bash
-export GMAIL_ASSISTANT_CONFIG=/path/to/config.json
+export GMAN_CONFIG=/path/to/config.json
 ```
 
 ### 6.3 Constants Management
@@ -623,7 +623,7 @@ export GMAIL_ASSISTANT_CONFIG=/path/to/config.json
 
 **Usage**:
 ```python
-from gmail_assistant.core.constants import (
+from gman.core.constants import (
     SCOPES_READONLY,
     DEFAULT_MAX_EMAILS,
     DEFAULT_CREDENTIALS_PATH
@@ -642,7 +642,7 @@ cli/main.py
     ├─→ core/exceptions.py
     └─→ cli/commands/*
             ├─→ core/auth/base.py
-            ├─→ core/fetch/gmail_assistant.py
+            ├─→ core/fetch/gman.py
             └─→ core/ai/newsletter_cleaner.py
 
 core/auth/base.py
@@ -651,7 +651,7 @@ core/auth/base.py
     ├─→ core/exceptions.py
     └─→ utils/error_handler.py
 
-core/fetch/gmail_assistant.py
+core/fetch/gman.py
     ├─→ core/auth/base.py
     ├─→ core/constants.py
     ├─→ utils/memory_manager.py

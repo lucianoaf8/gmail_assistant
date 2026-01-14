@@ -14,7 +14,7 @@ from pathlib import Path
 import tempfile
 import os
 
-from gmail_assistant.analysis.daily_email_analyzer import (
+from gman.analysis.daily_email_analyzer import (
     DailyEmailAnalyzer,
     DataQualityAssessment,
     HierarchicalClassifier,

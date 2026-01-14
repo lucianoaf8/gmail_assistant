@@ -79,7 +79,7 @@
 
 | Test File | Error |
 |-----------|-------|
-| `tests/test_core_gmail_assistant.py` | `AINewsletterCleaner` not found in `newsletter_cleaner.py` |
+| `tests/test_core_gman.py` | `AINewsletterCleaner` not found in `newsletter_cleaner.py` |
 | `tests/test_gmail_api_integration.py` | `IncrementalFetcher` not found in `incremental.py` |
 
 ## Recommendations
@@ -90,8 +90,8 @@
    ```
 
 2. **Fix import errors in:**
-   - `src/gmail_assistant/core/ai/__init__.py`
-   - `src/gmail_assistant/core/fetch/__init__.py`
+   - `src/gman/core/ai/__init__.py`
+   - `src/gman/core/fetch/__init__.py`
 
 3. **Run specific test subsets when optional deps not installed:**
    ```bash

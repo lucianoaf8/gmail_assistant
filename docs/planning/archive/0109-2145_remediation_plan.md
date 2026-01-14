@@ -1,15 +1,15 @@
-# Gmail Assistant Data Architecture Remediation Plan
+# Gman Data Architecture Remediation Plan
 
 **Document ID**: 0109-2145_remediation_plan.md
 **Created**: 2026-01-09 21:45
-**Project**: Gmail Assistant
+**Project**: Gman
 **Version**: 1.0
 
 ---
 
 ## Executive Summary
 
-This remediation plan addresses critical data architecture issues identified in the Gmail Assistant project, including duplicate data structures, missing batch API usage, lack of checkpoint/resume capability, and database denormalization. The plan is structured in 4 phases over an estimated 6-8 weeks.
+This remediation plan addresses critical data architecture issues identified in the Gman project, including duplicate data structures, missing batch API usage, lack of checkpoint/resume capability, and database denormalization. The plan is structured in 4 phases over an estimated 6-8 weeks.
 
 **Key Metrics**:
 - Estimated effort: 120-160 hours
@@ -37,8 +37,8 @@ This remediation plan addresses critical data architecture issues identified in 
 ### Issue 1: Duplicate Email Data Structures
 
 **Location**:
-- `src/gmail_assistant/core/protocols.py` (lines 43-55): `EmailMetadata` dataclass
-- `src/gmail_assistant/core/ai/newsletter_cleaner.py` (lines 21-29): `EmailData` dataclass
+- `src/gman/core/protocols.py` (lines 43-55): `EmailMetadata` dataclass
+- `src/gman/core/ai/newsletter_cleaner.py` (lines 21-29): `EmailData` dataclass
 
 **Impact**: Code duplication, inconsistent field naming, maintenance burden
 
@@ -71,7 +71,7 @@ class EmailData:
 
 ### Issue 2: No Gmail Batch API Usage
 
-**Location**: `src/gmail_assistant/core/fetch/gmail_api_client.py` (lines 95-124)
+**Location**: `src/gman/core/fetch/gmail_api_client.py` (lines 95-124)
 
 **Current Implementation**: Sequential API calls in `_fetch_email_batch()` method
 ```python
@@ -83,7 +83,7 @@ for msg_id in message_ids:
 
 ### Issue 3: No Checkpoint/Resume for Incremental Sync
 
-**Location**: `src/gmail_assistant/core/fetch/incremental.py`
+**Location**: `src/gman/core/fetch/incremental.py`
 
 **Missing Features**:
 - No state persistence between runs
@@ -92,7 +92,7 @@ for msg_id in message_ids:
 
 ### Issue 4: Database Denormalization
 
-**Location**: `src/gmail_assistant/core/processing/database.py` (lines 41-63)
+**Location**: `src/gman/core/processing/database.py` (lines 41-63)
 
 **Current Schema Issues**:
 - `labels TEXT` - comma-separated string
@@ -112,7 +112,7 @@ for msg_id in message_ids:
 
 **Implementation Steps**:
 
-1. Create new file: `src/gmail_assistant/core/schemas.py`
+1. Create new file: `src/gman/core/schemas.py`
 
 ```python
 """
@@ -225,10 +225,10 @@ class EmailBatch(BaseModel):
 - [ ] Type hints work correctly in IDE
 
 **Files to Modify**:
-- Create: `src/gmail_assistant/core/schemas.py`
-- Update: `src/gmail_assistant/core/__init__.py`
-- Update: `src/gmail_assistant/core/ai/newsletter_cleaner.py` (add deprecation)
-- Update: `src/gmail_assistant/core/protocols.py` (add deprecation)
+- Create: `src/gman/core/schemas.py`
+- Update: `src/gman/core/__init__.py`
+- Update: `src/gman/core/ai/newsletter_cleaner.py` (add deprecation)
+- Update: `src/gman/core/protocols.py` (add deprecation)
 
 ---
 
@@ -243,7 +243,7 @@ class EmailBatch(BaseModel):
 1. Create Pydantic models for all config files:
 
 ```python
-# src/gmail_assistant/core/config_schemas.py
+# src/gman/core/config_schemas.py
 
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Dict, Optional
@@ -403,7 +403,7 @@ def upsert_emails_batch(self, emails: List[Email]) -> Dict[str, int]:
 
 **Implementation Steps**:
 
-1. Create new batch API module: `src/gmail_assistant/core/fetch/batch_api.py`
+1. Create new batch API module: `src/gman/core/fetch/batch_api.py`
 
 ```python
 """
@@ -743,7 +743,7 @@ def test_batch_respects_rate_limits():
 
 **Implementation Steps**:
 
-1. Create checkpoint manager: `src/gmail_assistant/core/fetch/checkpoint.py`
+1. Create checkpoint manager: `src/gman/core/fetch/checkpoint.py`
 
 ```python
 """
@@ -1011,7 +1011,7 @@ class CheckpointManager:
 2. Integrate with incremental fetcher:
 
 ```python
-# Update src/gmail_assistant/core/fetch/incremental.py
+# Update src/gman/core/fetch/incremental.py
 
 from .checkpoint import CheckpointManager, SyncCheckpoint, SyncState
 
@@ -1122,7 +1122,7 @@ class IncrementalGmailFetcher:
 
 **Implementation Steps**:
 
-1. Create DLQ module: `src/gmail_assistant/core/fetch/dead_letter_queue.py`
+1. Create DLQ module: `src/gman/core/fetch/dead_letter_queue.py`
 
 ```python
 """
@@ -1620,7 +1620,7 @@ if __name__ == "__main__":
 
 **Implementation Steps**:
 
-1. Create history API module: `src/gmail_assistant/core/fetch/history_sync.py`
+1. Create history API module: `src/gman/core/fetch/history_sync.py`
 
 ```python
 """
@@ -1996,7 +1996,7 @@ class IntegratedErrorHandler(ErrorHandler):
 
 **Implementation Steps**:
 
-1. Create Parquet exporter: `src/gmail_assistant/export/parquet_exporter.py`
+1. Create Parquet exporter: `src/gman/export/parquet_exporter.py`
 
 ```python
 """
@@ -2246,11 +2246,11 @@ class ParquetExporter:
 
 **Implementation Steps**:
 
-1. Create metrics module: `src/gmail_assistant/utils/metrics.py`
+1. Create metrics module: `src/gman/utils/metrics.py`
 
 ```python
 """
-Metrics and observability for Gmail Assistant.
+Metrics and observability for Gman.
 Provides structured metrics collection and reporting.
 """
 
@@ -2380,7 +2380,7 @@ class MetricsCollector:
         metrics = self.get_metrics()
 
         report_lines = [
-            "=== Gmail Assistant Metrics Report ===",
+            "=== Gman Metrics Report ===",
             f"Uptime: {metrics['uptime_seconds']:.1f}s",
             "",
             "--- Counters ---"
@@ -2450,7 +2450,7 @@ def timer(name: str, labels: Dict[str, str] = None):
 
 **Implementation Steps**:
 
-1. Create manifest module: `src/gmail_assistant/utils/manifest.py`
+1. Create manifest module: `src/gman/utils/manifest.py`
 
 ```python
 """
@@ -2713,7 +2713,7 @@ DROP TABLE IF EXISTS sync_state;
 git revert HEAD
 
 # Or restore specific files
-git checkout HEAD~1 -- src/gmail_assistant/core/schemas.py
+git checkout HEAD~1 -- src/gman/core/schemas.py
 ```
 
 3. **Feature Flags**:
@@ -2799,27 +2799,27 @@ Week 7-8 (Optimization):
 
 | Path | Purpose |
 |------|---------|
-| `src/gmail_assistant/core/schemas.py` | Canonical email models |
-| `src/gmail_assistant/core/config_schemas.py` | Config validation |
-| `src/gmail_assistant/core/fetch/batch_api.py` | Gmail Batch API |
-| `src/gmail_assistant/core/fetch/checkpoint.py` | Sync checkpoints |
-| `src/gmail_assistant/core/fetch/dead_letter_queue.py` | Failed operation handling |
-| `src/gmail_assistant/core/fetch/history_sync.py` | History API integration |
-| `src/gmail_assistant/export/parquet_exporter.py` | Analytics export |
-| `src/gmail_assistant/utils/metrics.py` | Observability |
-| `src/gmail_assistant/utils/manifest.py` | Backup integrity |
+| `src/gman/core/schemas.py` | Canonical email models |
+| `src/gman/core/config_schemas.py` | Config validation |
+| `src/gman/core/fetch/batch_api.py` | Gmail Batch API |
+| `src/gman/core/fetch/checkpoint.py` | Sync checkpoints |
+| `src/gman/core/fetch/dead_letter_queue.py` | Failed operation handling |
+| `src/gman/core/fetch/history_sync.py` | History API integration |
+| `src/gman/export/parquet_exporter.py` | Analytics export |
+| `src/gman/utils/metrics.py` | Observability |
+| `src/gman/utils/manifest.py` | Backup integrity |
 | `scripts/migrations/002_normalize_schema.py` | DB migration |
 
 ### Files to Modify
 
 | Path | Changes |
 |------|---------|
-| `src/gmail_assistant/core/protocols.py` | Add deprecation warnings |
-| `src/gmail_assistant/core/ai/newsletter_cleaner.py` | Use new schema |
-| `src/gmail_assistant/core/fetch/gmail_api_client.py` | Use batch API |
-| `src/gmail_assistant/core/fetch/incremental.py` | Add checkpoint support |
-| `src/gmail_assistant/core/processing/database.py` | Normalize schema, upsert |
-| `src/gmail_assistant/utils/error_handler.py` | Circuit breaker integration |
+| `src/gman/core/protocols.py` | Add deprecation warnings |
+| `src/gman/core/ai/newsletter_cleaner.py` | Use new schema |
+| `src/gman/core/fetch/gmail_api_client.py` | Use batch API |
+| `src/gman/core/fetch/incremental.py` | Add checkpoint support |
+| `src/gman/core/processing/database.py` | Normalize schema, upsert |
+| `src/gman/utils/error_handler.py` | Circuit breaker integration |
 
 ---
 

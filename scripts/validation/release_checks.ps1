@@ -40,10 +40,10 @@ try {
     $repoRoot = $PWD.Path
     Set-Location $tempDir
     $output = & "$repoRoot/$venvPath/Scripts/python" -c @"
-import gmail_assistant
-print(f'Version: {gmail_assistant.__version__}')
-from gmail_assistant.cli.main import main
-from gmail_assistant.core.config import AppConfig
+import gman
+print(f'Version: {gman.__version__}')
+from gman.cli.main import main
+from gman.core.config import AppConfig
 print('All imports OK')
 "@
     if ($LASTEXITCODE -ne 0) { throw "Import check failed" }
@@ -51,7 +51,7 @@ print('All imports OK')
     Write-Host "[OK] Import resolution passed" -ForegroundColor Green
 
     # CLI check
-    & "$repoRoot/$venvPath/Scripts/gmail-assistant" --version
+    & "$repoRoot/$venvPath/Scripts/gman" --version
     if ($LASTEXITCODE -ne 0) { throw "CLI --version failed" }
     Write-Host "[OK] CLI works" -ForegroundColor Green
 

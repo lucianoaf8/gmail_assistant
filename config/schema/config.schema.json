@@ -1,27 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/user/gmail-assistant/config.schema.json",
-  "title": "Gmail Assistant Configuration",
-  "description": "Configuration schema for Gmail Assistant v2.0.0",
+  "$id": "https://github.com/user/gman/config.schema.json",
+  "title": "Gman Configuration",
+  "description": "Configuration schema for Gman v2.0.0",
   "type": "object",
   "properties": {
     "credentials_path": {
       "type": "string",
       "description": "Path to Google OAuth credentials JSON file. Relative paths resolved from config file location. Supports ~ expansion.",
       "minLength": 1,
-      "examples": ["~/.gmail-assistant/credentials.json", "./credentials.json"]
+      "examples": ["~/.gman/credentials.json", "./credentials.json"]
     },
     "token_path": {
       "type": "string",
       "description": "Path to store OAuth token after authentication. Relative paths resolved from config file location. Supports ~ expansion.",
       "minLength": 1,
-      "examples": ["~/.gmail-assistant/token.json", "./token.json"]
+      "examples": ["~/.gman/token.json", "./token.json"]
     },
     "output_dir": {
       "type": "string",
       "description": "Directory for email backups and exports. Relative paths resolved from config file location. Supports ~ expansion.",
       "minLength": 1,
-      "examples": ["~/.gmail-assistant/backups", "./gmail_backup"]
+      "examples": ["~/.gman/backups", "./gmail_backup"]
     },
     "max_emails": {
       "type": "integer",

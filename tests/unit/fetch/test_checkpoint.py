@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from gmail_assistant.core.fetch.checkpoint import (
+from gman.core.fetch.checkpoint import (
     CheckpointManager,
     SyncCheckpoint,
     SyncState,

@@ -5,7 +5,7 @@ Tests PIIRedactor class for PII detection and redaction.
 
 import pytest
 
-from gmail_assistant.utils.pii_redactor import PIIRedactor
+from gman.utils.pii_redactor import PIIRedactor
 
 
 class TestRedactEmail:

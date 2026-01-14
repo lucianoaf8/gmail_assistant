@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.auth.rate_limiter module."""
+"""Unit tests for gman.core.auth.rate_limiter module."""
 from __future__ import annotations
 
 import time
@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from gmail_assistant.core.auth.rate_limiter import (
+from gman.core.auth.rate_limiter import (
     AuthenticationThrottler,
     RateLimitState,
     get_auth_throttler,

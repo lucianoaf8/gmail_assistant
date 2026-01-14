@@ -11,7 +11,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.utils.secure_file import (
+from gman.utils.secure_file import (
     SecureFileWriter,
     secure_mkdir,
     secure_write,

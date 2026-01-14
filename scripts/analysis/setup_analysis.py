@@ -448,7 +448,7 @@ This analysis system integrates seamlessly with the existing Gmail Fetcher infra
 
 ```bash
 # After running Gmail Fetcher
-python gmail_assistant.py --query "is:unread" --max 1000 --output backup_$(date +%Y%m%d)
+python gman.py --query "is:unread" --max 1000 --output backup_$(date +%Y%m%d)
 
 # Run daily analysis
 python scripts/analysis/daily_email_analysis.py \\
@@ -463,8 +463,8 @@ Add to your cron jobs:
 
 ```bash
 # Daily Gmail fetch and analysis at 6 AM
-0 6 * * * cd /path/to/gmail_assistant && \\
-  python gmail_assistant.py --query "newer_than:1d" --max 500 && \\
+0 6 * * * cd /path/to/gman && \\
+  python gman.py --query "newer_than:1d" --max 500 && \\
   python scripts/analysis/daily_email_analysis.py \\
     --input gmail_backup/emails.parquet --yesterday
 ```

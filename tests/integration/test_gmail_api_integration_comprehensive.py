@@ -15,7 +15,7 @@ import os
 from datetime import datetime, timedelta
 from unittest import mock
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 
 class TestGmailAPIAuthentication:

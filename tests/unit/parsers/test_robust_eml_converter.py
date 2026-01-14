@@ -13,7 +13,7 @@ from unittest import mock
 import pytest
 
 try:
-    from gmail_assistant.parsers.robust_eml_converter import RobustEMLConverter
+    from gman.parsers.robust_eml_converter import RobustEMLConverter
     CONVERTER_AVAILABLE = True
 except ImportError:
     CONVERTER_AVAILABLE = False
@@ -78,7 +78,7 @@ def _create_gmail_api_eml(
         f"Date: {date}",
         f"Message-ID: {message_id}",
         "MIME-Version: 1.0",
-        "X-Mailer: Gmail Assistant Test",
+        "X-Mailer: Gman Test",
         "X-Priority: 3",
     ]
 

@@ -35,11 +35,11 @@ jobs:
 
       - name: Run type checking
         run: |
-          mypy src/gmail_assistant
+          mypy src/gman
 
       - name: Run tests with coverage gate
         run: |
-          pytest tests/unit/ -v --cov=src/gmail_assistant --cov-report=xml --cov-fail-under=70 -p no:playwright
+          pytest tests/unit/ -v --cov=src/gman --cov-report=xml --cov-fail-under=70 -p no:playwright
 
       - name: Upload coverage
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
@@ -101,8 +101,8 @@ jobs:
           python -m venv /tmp/test-venv
           /tmp/test-venv/bin/pip install dist/*.whl
           cd /tmp  # Run from outside repo
-          /tmp/test-venv/bin/python -c "import gmail_assistant; print(f'Version: {gmail_assistant.__version__}')"
-          /tmp/test-venv/bin/gmail-assistant --version
+          /tmp/test-venv/bin/python -c "import gman; print(f'Version: {gman.__version__}')"
+          /tmp/test-venv/bin/gman --version
 
       - name: Upload wheel
         uses: actions/upload-artifact@v4
@@ -142,13 +142,13 @@ jobs:
       - name: Verify exception taxonomy
         run: |
           python -c "
-          from gmail_assistant.core.exceptions import GmailAssistantError, ConfigError, AuthError, NetworkError
+          from gman.core.exceptions import GmailAssistantError, ConfigError, AuthError, NetworkError
           assert issubclass(ConfigError, GmailAssistantError)
           assert issubclass(AuthError, GmailAssistantError)
           assert issubclass(NetworkError, GmailAssistantError)
 
           # Verify no duplicate ConfigError
-          from gmail_assistant.core import config, exceptions
+          from gman.core import config, exceptions
           if hasattr(config, 'ConfigError'):
               assert config.ConfigError is exceptions.ConfigError, 'Duplicate ConfigError detected!'
           print('Exception taxonomy valid')

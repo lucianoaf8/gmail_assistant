@@ -11,7 +11,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.utils.input_validator import ValidationError
+from gman.utils.input_validator import ValidationError
 
 
 class TestIncrementalGmailFetcherInit:
@@ -19,21 +19,21 @@ class TestIncrementalGmailFetcherInit:
 
     def test_init_default_db_path(self):
         """Test initialization with default database path."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher()
         assert fetcher.db_path == Path("data/databases/emails_final.db")
 
     def test_init_custom_db_path(self):
         """Test initialization with custom database path."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher("custom/path.db")
         assert fetcher.db_path == Path("custom/path.db")
 
     def test_init_creates_checkpoint_manager(self):
         """Test initialization creates checkpoint manager."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher()
         assert fetcher.checkpoint_manager is not None
@@ -45,7 +45,7 @@ class TestGetLatestEmailDate:
 
     def test_get_latest_date_db_not_found(self):
         """Test returns None when database not found."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher("/nonexistent/path.db")
         result = fetcher.get_latest_email_date()
@@ -53,7 +53,7 @@ class TestGetLatestEmailDate:
 
     def test_get_latest_date_with_valid_db(self):
         """Test returns date when database has emails."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "test.db"
@@ -80,7 +80,7 @@ class TestGetLatestEmailDate:
 
     def test_get_latest_date_empty_db(self):
         """Test returns None when database is empty."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "test.db"
@@ -108,7 +108,7 @@ class TestValidateSubprocessPath:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
         return IncrementalGmailFetcher()
 
     def test_validate_path_traversal_rejected(self, fetcher):
@@ -150,7 +150,7 @@ class TestSafeSubprocessRun:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
         return IncrementalGmailFetcher()
 
     def test_safe_subprocess_shell_false(self, fetcher):
@@ -190,7 +190,7 @@ class TestFetchIncrementalEmails:
 
     def test_fetch_no_latest_date_fails(self):
         """Test fetch fails when no latest date available."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher("/nonexistent/path.db")
         success, path = fetcher.fetch_incremental_emails()
@@ -205,7 +205,7 @@ class TestConvertEmlToMarkdown:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
         return IncrementalGmailFetcher()
 
     def test_convert_invalid_path_fails(self, fetcher):
@@ -224,7 +224,7 @@ class TestRunIncrementalFetch:
 
     def test_run_fetch_fails_without_latest_date(self):
         """Test run fails when no latest date available."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher("/nonexistent/path.db")
         result = fetcher.run_incremental_fetch()
@@ -237,7 +237,7 @@ class TestAliasBackwardCompatibility:
 
     def test_incremental_fetcher_alias_exists(self):
         """Test IncrementalFetcher alias exists."""
-        from gmail_assistant.core.fetch.incremental import (
+        from gman.core.fetch.incremental import (
             IncrementalFetcher,
             IncrementalGmailFetcher,
         )
@@ -250,7 +250,7 @@ class TestCheckpointIntegration:
 
     def test_fetcher_has_checkpoint_manager(self):
         """Test fetcher creates checkpoint manager."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher()
         assert hasattr(fetcher, 'checkpoint_manager')
@@ -258,7 +258,7 @@ class TestCheckpointIntegration:
 
     def test_fetcher_checkpoint_initially_none(self):
         """Test current checkpoint is initially None."""
-        from gmail_assistant.core.fetch.incremental import IncrementalGmailFetcher
+        from gman.core.fetch.incremental import IncrementalGmailFetcher
 
         fetcher = IncrementalGmailFetcher()
         assert fetcher.current_checkpoint is None

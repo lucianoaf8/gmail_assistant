@@ -13,7 +13,7 @@ class TestAuthRateLimiter:
 
     def test_rate_limiter_module_exists(self):
         """Verify rate limiter module exists."""
-        from gmail_assistant.core.auth import rate_limiter
+        from gman.core.auth import rate_limiter
 
         assert hasattr(rate_limiter, 'AuthRateLimiter') or \
                hasattr(rate_limiter, 'get_auth_rate_limiter'), \
@@ -21,7 +21,7 @@ class TestAuthRateLimiter:
 
     def test_rate_limit_configuration(self):
         """Verify rate limit configuration."""
-        from gmail_assistant.core.auth.rate_limiter import AuthRateLimiter
+        from gman.core.auth.rate_limiter import AuthRateLimiter
 
         limiter = AuthRateLimiter()
 
@@ -31,7 +31,7 @@ class TestAuthRateLimiter:
 
     def test_failed_attempts_tracked(self):
         """Verify failed authentication attempts are tracked."""
-        from gmail_assistant.core.auth.rate_limiter import AuthRateLimiter
+        from gman.core.auth.rate_limiter import AuthRateLimiter
 
         limiter = AuthRateLimiter()
         test_key = "test_credential_file"
@@ -45,7 +45,7 @@ class TestAuthRateLimiter:
 
     def test_rate_limit_triggered(self):
         """Verify rate limit is triggered after max attempts."""
-        from gmail_assistant.core.auth.rate_limiter import AuthRateLimiter
+        from gman.core.auth.rate_limiter import AuthRateLimiter
 
         limiter = AuthRateLimiter()
         test_key = "test_rate_limit"
@@ -61,7 +61,7 @@ class TestAuthRateLimiter:
 
     def test_lockout_duration(self):
         """Verify lockout duration is enforced."""
-        from gmail_assistant.core.auth.rate_limiter import AuthRateLimiter
+        from gman.core.auth.rate_limiter import AuthRateLimiter
 
         limiter = AuthRateLimiter()
         test_key = "test_lockout"
@@ -76,7 +76,7 @@ class TestAuthRateLimiter:
 
     def test_successful_auth_resets_counter(self):
         """Verify successful authentication resets the counter."""
-        from gmail_assistant.core.auth.rate_limiter import AuthRateLimiter
+        from gman.core.auth.rate_limiter import AuthRateLimiter
 
         limiter = AuthRateLimiter()
         test_key = "test_reset"
@@ -99,7 +99,7 @@ class TestRateLimiterIntegration:
 
     def test_auth_base_uses_rate_limiter(self):
         """Verify AuthenticationBase uses rate limiter."""
-        from gmail_assistant.core.auth import base
+        from gman.core.auth import base
 
         source = Path(base.__file__).read_text(encoding='utf-8')
 
@@ -108,7 +108,7 @@ class TestRateLimiterIntegration:
 
     def test_rate_limit_check_before_auth(self):
         """Verify rate limit checked before auth attempt."""
-        from gmail_assistant.core.auth import base
+        from gman.core.auth import base
 
         source = Path(base.__file__).read_text(encoding='utf-8')
 
@@ -117,7 +117,7 @@ class TestRateLimiterIntegration:
 
     def test_attempt_recorded_after_auth(self):
         """Verify attempt recorded after auth result."""
-        from gmail_assistant.core.auth import base
+        from gman.core.auth import base
 
         source = Path(base.__file__).read_text(encoding='utf-8')
 

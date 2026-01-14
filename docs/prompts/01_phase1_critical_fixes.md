@@ -104,7 +104,7 @@ After completing all tasks:
 git add -A
 git commit -m "phase-1: critical fixes and baseline capture
 
-Phase 1 of Gmail Assistant restructuring.
+Phase 1 of Gman restructuring.
 - Fixed documentation filename typos
 - Moved test runner to correct location
 - Added baseline measurement script

@@ -233,7 +233,7 @@ def mock_gmail_service_full():
 @pytest.fixture
 def mock_gmail_fetcher(mock_credentials_file, mock_gmail_service_full):
     """Create a fully mocked GmailFetcher instance."""
-    from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+    from gman.core.fetch.gman import GmailFetcher
 
     fetcher = GmailFetcher(str(mock_credentials_file))
 

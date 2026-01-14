@@ -1,4 +1,4 @@
-# Gmail Assistant Implementation Plan — Final (Release Edition, Corrected)
+# Gman Implementation Plan — Final (Release Edition, Corrected)
 
 **Document ID**: Implementation_Plan_Final_Release_Edition_Corrected.md
 **Date**: 2026-01-09
@@ -32,7 +32,7 @@
 
 ### 1.1 Purpose
 
-This document defines the complete migration of Gmail Assistant from an ad-hoc script collection to a properly packaged Python application. It serves as the single source of truth for all restructuring work.
+This document defines the complete migration of Gman from an ad-hoc script collection to a properly packaged Python application. It serves as the single source of truth for all restructuring work.
 
 ### 1.2 Goals
 
@@ -43,7 +43,7 @@ This document defines the complete migration of Gmail Assistant from an ad-hoc s
 | Consolidate entry points        | Post-migration entry points         | 2 (`cli/main.py` + `__main__.py`) |
 | Remove legacy entry points      | Legacy entry points                 | 0                                     |
 | Standardize packaging           | Installable via pip                 | Yes                                   |
-| Enable clean imports            | All imports use `gmail_assistant.*` | Yes                                   |
+| Enable clean imports            | All imports use `gman.*` | Yes                                   |
 | Security-first configuration    | Credentials outside repo by default | Yes                                   |
 
 ### 1.3 Scope
@@ -60,8 +60,8 @@ This document defines the complete migration of Gmail Assistant from an ad-hoc s
 ### 1.4 Success Criteria
 
 1. `pip install -e .` succeeds in clean venv
-2. `gmail-assistant --help` produces expected output
-3. `python -m gmail_assistant --help` produces expected output
+2. `gman --help` produces expected output
+3. `python -m gman --help` produces expected output
 4. All unit tests pass
 5. No sys.path manipulation in codebase
 6. No credentials tracked in git
@@ -81,7 +81,7 @@ This document defines the complete migration of Gmail Assistant from an ad-hoc s
 | This document                 | Final (Release Edition, Corrected) | Supersedes v1–v8 and uncorrected Final         |
 | Package release               | **2.0.0**                    | Major bump for breaking changes; packaging-only |
 | `pyproject.toml`            | `version = "2.0.0"`              | Single source of truth for version              |
-| `gmail_assistant/__init__.py` | `__version__ = "2.0.0"`          | Runtime version access                          |
+| `gman/__init__.py` | `__version__ = "2.0.0"`          | Runtime version access                          |
 | CHANGELOG.md                  | `## [2.0.0]`                     | Release notes                                   |
 | BREAKING_CHANGES.md           | References v2.0.0                  | Migration guide                                 |
 | Classifier                    | `Development Status :: 4 - Beta` | Packaging complete; functionality in progress   |
@@ -139,7 +139,7 @@ This document defines the complete migration of Gmail Assistant from an ad-hoc s
 | ----------------------- | ------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | Compatibility strategy  | **Clean break**                       | No shims. Bump to v2.0.0 with documented breaking changes. Reduces complexity. | ADR-0002                                             |
 | CLI framework           | **Click**                             | Better UX than argparse, good subcommand support, widespread adoption.         | ADR-0003                                             |
-| Config default location | **User home** (`~/.gmail-assistant/`) | Security-first. Repo-local requires explicit opt-in.                           | ADR-0001                                             |
+| Config default location | **User home** (`~/.gman/`) | Security-first. Repo-local requires explicit opt-in.                           | ADR-0001                                             |
 | Build backend           | **Hatchling**                         | Modern, fast, correct src-layout defaults.                                     | ADR-0001                                             |
 | Python minimum          | **>=3.10**                            | Enables `                                                                      | ` union types, match statements. Realistic for 2026. |
 | Scripting language      | **PowerShell**                        | Cross-platform via pwsh. Windows-first project.                                | ADR-0001                                             |
@@ -152,7 +152,7 @@ This document defines the complete migration of Gmail Assistant from an ad-hoc s
 ### 5.1 Post-Migration Layout
 
 ```
-gmail_assistant/                          # REPO ROOT
+gman/                          # REPO ROOT
 │
 ├── pyproject.toml                      # Package configuration (single source of truth)
 ├── README.md                           # User-facing documentation
@@ -164,9 +164,9 @@ gmail_assistant/                          # REPO ROOT
 ├── .pre-commit-config.yaml             # Pre-commit hook configuration
 │
 ├── src/
-│   └── gmail_assistant/                  # INSTALLABLE PACKAGE
+│   └── gman/                  # INSTALLABLE PACKAGE
 │       ├── __init__.py                 # Package root, exports __version__
-│       ├── __main__.py                 # python -m gmail_assistant entry point
+│       ├── __main__.py                 # python -m gman entry point
 │       ├── py.typed                    # PEP 561 marker
 │       │
 │       ├── cli/                        # COMMAND LINE INTERFACE
@@ -266,8 +266,8 @@ gmail_assistant/                          # REPO ROOT
 | Item                              | Reason                                          |
 | --------------------------------- | ----------------------------------------------- |
 | `main.py` (repo root)           | Replaced by console script                      |
-| `src/cli/main.py`               | Moved to `src/gmail_assistant/cli/main.py`      |
-| `src/handlers/`                 | Merged into `src/gmail_assistant/cli/commands/` |
+| `src/cli/main.py`               | Moved to `src/gman/cli/main.py`      |
+| `src/handlers/`                 | Merged into `src/gman/cli/commands/` |
 | `src/tools/`                    | Functionality merged into `utils/` or removed |
 | `src/plugins/`                  | Deferred to v2.1.0 (no plugin contract defined) |
 | `config/app/`                   | Flattened to `config/`                        |
@@ -295,7 +295,7 @@ gmail_assistant/                          # REPO ROOT
 ```
 phase-N: <short description>
 
-Phase N of Gmail Assistant restructuring.
+Phase N of Gman restructuring.
 See: Implementation_Plan_Final_Release_Edition_Corrected.md §6.N
 ```
 
@@ -384,19 +384,19 @@ git revert $(git rev-parse migration/phase-1-complete) --no-edit
 | Task                     | Action                                                          | Validation                           |
 | ------------------------ | --------------------------------------------------------------- | ------------------------------------ |
 | Create pyproject.toml    | Use spec from §10.1                                            | `pip install . --dry-run` succeeds |
-| Create package namespace | `New-Item -ItemType Directory -Path src/gmail_assistant -Force` | Directory exists                     |
+| Create package namespace | `New-Item -ItemType Directory -Path src/gman -Force` | Directory exists                     |
 | Run migration script     | `.\scripts\migration\move_to_package_layout.ps1`              | Script completes                     |
 | Remove sys.path.insert   | Manual edit or search/replace                                   | `grep -r "sys.path.insert"` empty  |
-| Update all imports       | Change to `gmail_assistant.*` prefix                            | Import policy passes                 |
-| Create py.typed          | `New-Item src/gmail_assistant/py.typed`                         | File exists                          |
+| Update all imports       | Change to `gman.*` prefix                            | Import policy passes                 |
+| Create py.typed          | `New-Item src/gman/py.typed`                         | File exists                          |
 | Install editable         | `pip install -e .`                                            | Succeeds                             |
 
 **Definition of Done**:
 
 - [ ] `pip install -e .` succeeds in clean venv
-- [ ] `python -m gmail_assistant --help` works
-- [ ] `gmail-assistant --help` works
-- [ ] `python -m compileall src/gmail_assistant -q` succeeds
+- [ ] `python -m gman --help` works
+- [ ] `gman --help` works
+- [ ] `python -m compileall src/gman -q` succeeds
 - [ ] `python scripts/validation/check_import_policy.py` passes
 - [ ] No `sys.path.insert` or `sys.path.append` in codebase
 
@@ -412,8 +412,8 @@ git tag migration/phase-2-complete
 
 ```powershell
 git revert $(git rev-parse migration/phase-2-complete) --no-edit
-git clean -fd src/gmail_assistant
-pip uninstall gmail-assistant -y
+git clean -fd src/gman
+pip uninstall gman -y
 ```
 
 ---
@@ -440,7 +440,7 @@ pip uninstall gmail-assistant -y
 
 **Definition of Done**:
 
-- [ ] `from gmail_assistant.core.exceptions import ConfigError, AuthError, NetworkError` works
+- [ ] `from gman.core.exceptions import ConfigError, AuthError, NetworkError` works
 - [ ] Config loads from: CLI arg → env var → project → home → defaults
 - [ ] `docs/index.md` exists with working links
 - [ ] All ADRs documented including ADR-0004 (exception taxonomy)
@@ -472,7 +472,7 @@ git revert $(git rev-parse migration/phase-3-complete) --no-edit
 
 | Task                     | Action                                                                | Validation          |
 | ------------------------ | --------------------------------------------------------------------- | ------------------- |
-| Create commands/         | `New-Item -ItemType Directory -Path src/gmail_assistant/cli/commands` | Directory exists    |
+| Create commands/         | `New-Item -ItemType Directory -Path src/gman/cli/commands` | Directory exists    |
 | Implement Click CLI      | Write main.py with Click                                              | CLI runs            |
 | Add subcommand skeletons | fetch, delete, analyze, auth, config                                  | All `--help` work |
 | Implement error handler  | `@handle_errors` decorator using exceptions from §9.2              | Exit codes correct  |
@@ -480,13 +480,13 @@ git revert $(git rev-parse migration/phase-3-complete) --no-edit
 
 **Definition of Done**:
 
-- [ ] `gmail-assistant fetch --help` shows expected flags
-- [ ] `gmail-assistant delete --help` shows expected flags
-- [ ] `gmail-assistant analyze --help` shows expected flags
-- [ ] `gmail-assistant auth --help` shows expected flags
-- [ ] `gmail-assistant config --help` shows expected flags
+- [ ] `gman fetch --help` shows expected flags
+- [ ] `gman delete --help` shows expected flags
+- [ ] `gman analyze --help` shows expected flags
+- [ ] `gman auth --help` shows expected flags
+- [ ] `gman config --help` shows expected flags
 - [ ] Exit codes match specification (0=success, 1=general, 2=usage, 3=auth, 4=network, 5=config)
-- [ ] All exception types imported from `gmail_assistant.core.exceptions`
+- [ ] All exception types imported from `gman.core.exceptions`
 
 **Phase Commit**:
 
@@ -565,7 +565,7 @@ git reset --hard migration/phase-$(N-1)-complete
 | ----- | ------------------------------ | ---------------------------------------------------------- |
 | 0     | `migration/phase-0-complete` | N/A (additive only)                                        |
 | 1     | `migration/phase-1-complete` | `git revert $(git rev-parse migration/phase-1-complete)` |
-| 2     | `migration/phase-2-complete` | `git revert ...` + `pip uninstall gmail-assistant -y`    |
+| 2     | `migration/phase-2-complete` | `git revert ...` + `pip uninstall gman -y`    |
 | 3     | `migration/phase-3-complete` | `git revert $(git rev-parse migration/phase-3-complete)` |
 | 4     | `migration/phase-4-complete` | `git revert ...` + `pip install -e .`                  |
 | 5     | `migration/phase-5-complete` | `git revert $(git rev-parse migration/phase-5-complete)` |
@@ -582,7 +582,7 @@ $prePhase0 = git rev-parse migration/phase-0-complete~1
 git checkout -b rollback/pre-migration $prePhase0
 
 # 3. Uninstall the package
-pip uninstall gmail-assistant -y
+pip uninstall gman -y
 
 # 4. Clean generated files
 git clean -fd
@@ -714,9 +714,9 @@ function Get-SysPathInsertCount {
 # Checks for expected post-migration package structure
 function Get-PostMigrationPackageModuleCount {
     $expectedModules = @(
-        "src/gmail_assistant/core",
-        "src/gmail_assistant/cli",
-        "src/gmail_assistant/analysis"
+        "src/gman/core",
+        "src/gman/cli",
+        "src/gman/analysis"
     )
     return ($expectedModules | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
 }
@@ -743,8 +743,8 @@ function Get-TestFileCount {
 
 function Get-PostMigrationEntryPointCount {
     $entryPoints = @(
-        "src/gmail_assistant/cli/main.py",
-        "src/gmail_assistant/__main__.py"
+        "src/gman/cli/main.py",
+        "src/gman/__main__.py"
     )
     return ($entryPoints | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
 }
@@ -847,10 +847,10 @@ if ($allPass) {
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Migrates source files to src/gmail_assistant package layout.
+    Migrates source files to src/gman package layout.
 .DESCRIPTION
     CORRECTED: Aligns with §5 Target Folder Structure.
-    - Moves src/handlers to src/gmail_assistant/cli/commands (not cli/handlers)
+    - Moves src/handlers to src/gman/cli/commands (not cli/handlers)
     - Does NOT move src/tools or src/plugins (deferred/removed per §5.2, §5.3)
 .PARAMETER DryRun
     Show what would be done without making changes.
@@ -877,7 +877,7 @@ if (-not $repoRoot) {
 $repoRoot = (Resolve-Path $repoRoot).Path
 Set-Location $repoRoot
 
-Write-Host "=== Gmail Assistant Migration Script ===" -ForegroundColor Cyan
+Write-Host "=== Gman Migration Script ===" -ForegroundColor Cyan
 Write-Host "Repo root: $repoRoot"
 Write-Host "Version: $Version"
 Write-Host "Dry run: $DryRun"
@@ -886,7 +886,7 @@ Write-Host ""
 # Preflight checks
 Write-Host "=== Preflight Checks ===" -ForegroundColor Yellow
 
-$targetDir = "src/gmail_assistant"
+$targetDir = "src/gman"
 if ((Test-Path $targetDir) -and -not $DryRun) {
     $existing = Get-ChildItem $targetDir -ErrorAction SilentlyContinue
     if ($existing.Count -gt 0) {
@@ -911,13 +911,13 @@ Write-Host ""
 
 # Define moves - CORRECTED to match §5 Target Folder Structure
 $moves = @(
-    @{From="src/cli"; To="src/gmail_assistant/cli"},
-    @{From="src/core"; To="src/gmail_assistant/core"},
-    @{From="src/analysis"; To="src/gmail_assistant/analysis"},
-    @{From="src/deletion"; To="src/gmail_assistant/deletion"},
-    @{From="src/handlers"; To="src/gmail_assistant/cli/commands"},  # CORRECTED: to commands/ not handlers/
-    @{From="src/parsers"; To="src/gmail_assistant/parsers"},
-    @{From="src/utils"; To="src/gmail_assistant/utils"}
+    @{From="src/cli"; To="src/gman/cli"},
+    @{From="src/core"; To="src/gman/core"},
+    @{From="src/analysis"; To="src/gman/analysis"},
+    @{From="src/deletion"; To="src/gman/deletion"},
+    @{From="src/handlers"; To="src/gman/cli/commands"},  # CORRECTED: to commands/ not handlers/
+    @{From="src/parsers"; To="src/gman/parsers"},
+    @{From="src/utils"; To="src/gman/utils"}
     # NOTE: src/tools and src/plugins are NOT moved (deferred per §5.3)
 )
 
@@ -972,7 +972,7 @@ Write-Host "=== Creating Package Files ===" -ForegroundColor Yellow
 
 # __init__.py
 $initContent = @"
-"""Gmail Assistant - Gmail backup, analysis, and management suite."""
+"""Gman - Gmail backup, analysis, and management suite."""
 __version__ = "$Version"
 __all__ = ["__version__"]
 "@
@@ -987,8 +987,8 @@ if ($DryRun) {
 
 # __main__.py
 $mainContent = @'
-"""Entry point for python -m gmail_assistant."""
-from gmail_assistant.cli.main import main
+"""Entry point for python -m gman."""
+from gman.cli.main import main
 
 if __name__ == "__main__":
     raise SystemExit(main())
@@ -1078,7 +1078,7 @@ if (-not $DryRun) {
     if ($allOk) {
         Write-Host "=== Migration Complete ===" -ForegroundColor Green
         Write-Host "Next steps:"
-        Write-Host "  1. Update all imports to use gmail_assistant.* prefix"
+        Write-Host "  1. Update all imports to use gman.* prefix"
         Write-Host "  2. Remove all sys.path.insert/append calls"
         Write-Host "  3. Run: pip install -e ."
         Write-Host "  4. Run: python scripts/validation/check_import_policy.py"
@@ -1180,7 +1180,7 @@ def check_file(path: Path) -> list[Violation]:
                 elif root in OLD_PACKAGE_ROOTS:
                     violations.append(Violation(
                         path, node.lineno,
-                        f"Old import '{alias.name}' - use 'gmail_assistant.{alias.name}'"
+                        f"Old import '{alias.name}' - use 'gman.{alias.name}'"
                     ))
       
         # Check ImportFrom statements
@@ -1195,14 +1195,14 @@ def check_file(path: Path) -> list[Violation]:
                 elif root in OLD_PACKAGE_ROOTS:
                     violations.append(Violation(
                         path, node.lineno,
-                        f"Old import 'from {node.module}' - use 'from gmail_assistant.{node.module}'"
+                        f"Old import 'from {node.module}' - use 'from gman.{node.module}'"
                     ))
           
             # Check relative imports
             if node.level > 0:
-                # Relative imports are only allowed within src/gmail_assistant
+                # Relative imports are only allowed within src/gman
                 try:
-                    rel = path.relative_to(Path.cwd() / "src" / "gmail_assistant")
+                    rel = path.relative_to(Path.cwd() / "src" / "gman")
                     # Check that relative import doesn't escape package
                     depth = len(rel.parts) - 1  # -1 for the file itself
                     if node.level > depth:
@@ -1211,10 +1211,10 @@ def check_file(path: Path) -> list[Violation]:
                             f"Relative import level {node.level} escapes package boundary"
                         ))
                 except ValueError:
-                    # File not in src/gmail_assistant - relative imports not allowed
+                    # File not in src/gman - relative imports not allowed
                     violations.append(Violation(
                         path, node.lineno,
-                        "Relative imports only allowed within src/gmail_assistant/"
+                        "Relative imports only allowed within src/gman/"
                     ))
   
     return violations
@@ -1325,10 +1325,10 @@ def check_environment() -> tuple[bool, list[str]]:
 def check_imports() -> bool:
     """Try importing key modules."""
     imports_to_check = [
-        "gmail_assistant",
-        "gmail_assistant.cli.main",
-        "gmail_assistant.core.config",
-        "gmail_assistant.core.exceptions",
+        "gman",
+        "gman.cli.main",
+        "gman.core.config",
+        "gman.core.exceptions",
     ]
   
     all_ok = True
@@ -1347,9 +1347,9 @@ def check_imports() -> bool:
 def check_version() -> bool:
     """Verify __version__ is accessible."""
     try:
-        import gmail_assistant
-        version = gmail_assistant.__version__
-        print(f"  [OK] gmail_assistant.__version__ = {version}")
+        import gman
+        version = gman.__version__
+        print(f"  [OK] gman.__version__ = {version}")
         return True
     except Exception as e:
         print(f"  [FAIL] Could not access __version__: {e}")
@@ -1359,7 +1359,7 @@ def check_version() -> bool:
 def check_exception_taxonomy() -> bool:
     """Verify exception hierarchy is correct and unified."""
     try:
-        from gmail_assistant.core.exceptions import (
+        from gman.core.exceptions import (
             GmailAssistantError,
             ConfigError,
             AuthError,
@@ -1382,8 +1382,8 @@ def check_no_duplicate_configerror() -> bool:
     """Verify ConfigError is not duplicated in config.py."""
     try:
         # Import both modules
-        from gmail_assistant.core import config
-        from gmail_assistant.core import exceptions
+        from gman.core import config
+        from gman.core import exceptions
       
         # Check that config.ConfigError IS exceptions.ConfigError
         if hasattr(config, 'ConfigError'):
@@ -1402,8 +1402,8 @@ def check_no_duplicate_configerror() -> bool:
 def check_file_location() -> bool:
     """Verify package is installed, not from source."""
     try:
-        import gmail_assistant
-        location = Path(gmail_assistant.__file__).resolve()
+        import gman
+        location = Path(gman.__file__).resolve()
         cwd = Path.cwd().resolve()
       
         # Should NOT be under current working directory's src/
@@ -1478,7 +1478,7 @@ if __name__ == "__main__":
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Unified verification pipeline for Gmail Assistant.
+    Unified verification pipeline for Gman.
 .DESCRIPTION
     Executes the complete verification sequence:
     1. Baseline measurements
@@ -1538,7 +1538,7 @@ function Write-Step {
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║       Gmail Assistant - Unified Verification Pipeline          ║" -ForegroundColor Cyan
+Write-Host "║       Gman - Unified Verification Pipeline          ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Repo: $repoRoot"
@@ -1664,7 +1664,7 @@ try {
     $tempDir = [System.IO.Path]::GetTempPath()
     Push-Location $tempDir
     try {
-        $output = & $venvPython -c "import gmail_assistant; print(gmail_assistant.__version__)"
+        $output = & $venvPython -c "import gman; print(gman.__version__)"
         if ($LASTEXITCODE -ne 0) { throw "Import failed" }
         Write-Step "Install Test" "PASS"
         Write-Host "  Version: $output" -ForegroundColor Gray
@@ -1757,7 +1757,7 @@ if ($SkipTests) {
         pip install -e ".[dev]" --quiet
       
         # Run tests with coverage
-        $coverageOutput = pytest tests -m "not integration and not api" -q --tb=short --cov=gmail_assistant --cov-report=term --cov-fail-under=70 2>&1
+        $coverageOutput = pytest tests -m "not integration and not api" -q --tb=short --cov=gman --cov-report=term --cov-fail-under=70 2>&1
       
         if ($LASTEXITCODE -eq 0) {
             Write-Step "Tests" "PASS"
@@ -1840,17 +1840,17 @@ try {
     pip install -e . --quiet 2>&1 | Out-Null
   
     # Test --version
-    $version = gmail-assistant --version 2>&1
+    $version = gman --version 2>&1
     if ($LASTEXITCODE -ne 0) { throw "CLI --version failed" }
   
     # Test --help
-    $help = gmail-assistant --help 2>&1
+    $help = gman --help 2>&1
     if ($LASTEXITCODE -ne 0) { throw "CLI --help failed" }
   
     # Test subcommand helps
     $subcommands = @("fetch", "delete", "analyze", "auth", "config")
     foreach ($cmd in $subcommands) {
-        $subHelp = gmail-assistant $cmd --help 2>&1
+        $subHelp = gman $cmd --help 2>&1
         if ($LASTEXITCODE -ne 0) { throw "CLI $cmd --help failed" }
     }
   
@@ -2000,11 +2000,11 @@ try {
     python -m venv $venvPath
     $venvPython = Join-Path $venvPath "Scripts/python.exe"
     $venvPip = Join-Path $venvPath "Scripts/pip.exe"
-    $venvCli = Join-Path $venvPath "Scripts/gmail-assistant.exe"
+    $venvCli = Join-Path $venvPath "Scripts/gman.exe"
     if (-not (Test-Path $venvPython)) {
         $venvPython = Join-Path $venvPath "Scripts/python"
         $venvPip = Join-Path $venvPath "Scripts/pip"
-        $venvCli = Join-Path $venvPath "Scripts/gmail-assistant"
+        $venvCli = Join-Path $venvPath "Scripts/gman"
     }
 
     & $venvPip install --quiet $wheelPath
@@ -2016,12 +2016,12 @@ try {
     Push-Location $tempDir
     try {
         $output = & $venvPython -c @"
-import gmail_assistant
-print(f'Version: {gmail_assistant.__version__}')
-print(f'File: {gmail_assistant.__file__}')
-from gmail_assistant.cli.main import main
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import ConfigError, AuthError, NetworkError
+import gman
+print(f'Version: {gman.__version__}')
+print(f'File: {gman.__file__}')
+from gman.cli.main import main
+from gman.core.config import AppConfig
+from gman.core.exceptions import ConfigError, AuthError, NetworkError
 print('All imports OK')
 "@
         if ($LASTEXITCODE -ne 0) { throw "Import check failed" }
@@ -2191,7 +2191,7 @@ repos:
           - types-requests
         args: [--config-file=pyproject.toml]
         pass_filenames: false
-        entry: mypy src/gmail_assistant
+        entry: mypy src/gman
 
   - repo: local
     hooks:
@@ -2214,7 +2214,7 @@ repos:
 
 ### 9.1 Configuration Loader
 
-**Location**: `src/gmail_assistant/core/config.py`
+**Location**: `src/gman/core/config.py`
 
 ```python
 """
@@ -2222,13 +2222,13 @@ Configuration loader with secure defaults and strict validation.
 
 Resolution Order (highest to lowest priority):
 1. CLI arguments (--config, --credentials-path, etc.)
-2. Environment variable: gmail_assistant_CONFIG
-3. Project config: ./gmail-assistant.json (current directory)
-4. User config: ~/.gmail-assistant/config.json
+2. Environment variable: gman_CONFIG
+3. Project config: ./gman.json (current directory)
+4. User config: ~/.gman/config.json
 5. Built-in defaults
 
 Security Features:
-- Credentials default to ~/.gmail-assistant/ (outside any repo)
+- Credentials default to ~/.gman/ (outside any repo)
 - Repo-local credentials require explicit --allow-repo-credentials flag
 - Paths are validated and expanded (~, relative paths)
 - Unknown keys are rejected
@@ -2249,7 +2249,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 # CORRECTED: Import ConfigError from exceptions (single authoritative source)
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.exceptions import ConfigError
 
 __all__ = ["AppConfig", "ConfigError"]
 
@@ -2279,13 +2279,13 @@ class AppConfig:
     log_level: str = "INFO"
   
     # Class-level constants
-    ENV_VAR: ClassVar[str] = "gmail_assistant_CONFIG"
-    PROJECT_CONFIG_NAME: ClassVar[str] = "gmail-assistant.json"
+    ENV_VAR: ClassVar[str] = "gman_CONFIG"
+    PROJECT_CONFIG_NAME: ClassVar[str] = "gman.json"
   
     @classmethod
     def default_dir(cls) -> Path:
-        """Default configuration directory (~/.gmail-assistant/)."""
-        return Path.home() / ".gmail-assistant"
+        """Default configuration directory (~/.gman/)."""
+        return Path.home() / ".gman"
   
     @classmethod
     def load(
@@ -2524,7 +2524,7 @@ class AppConfig:
 
 ### 9.2 Configuration Exceptions (SINGLE SOURCE OF TRUTH)
 
-**Location**: `src/gmail_assistant/core/exceptions.py`
+**Location**: `src/gman/core/exceptions.py`
 
 ```python
 """
@@ -2545,7 +2545,7 @@ __all__ = [
 
 
 class GmailAssistantError(Exception):
-    """Base exception for Gmail Assistant. All domain exceptions inherit from this."""
+    """Base exception for Gman. All domain exceptions inherit from this."""
     pass
 
 
@@ -2576,28 +2576,28 @@ class APIError(GmailAssistantError):
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/user/gmail-assistant/config.schema.json",
-  "title": "Gmail Assistant Configuration",
-  "description": "Configuration schema for Gmail Assistant v2.0.0",
+  "$id": "https://github.com/user/gman/config.schema.json",
+  "title": "Gman Configuration",
+  "description": "Configuration schema for Gman v2.0.0",
   "type": "object",
   "properties": {
     "credentials_path": {
       "type": "string",
       "description": "Path to Google OAuth credentials JSON file. Relative paths resolved from config file location. Supports ~ expansion.",
       "minLength": 1,
-      "examples": ["~/.gmail-assistant/credentials.json", "./credentials.json"]
+      "examples": ["~/.gman/credentials.json", "./credentials.json"]
     },
     "token_path": {
       "type": "string",
       "description": "Path to store OAuth token after authentication. Relative paths resolved from config file location. Supports ~ expansion.",
       "minLength": 1,
-      "examples": ["~/.gmail-assistant/token.json", "./token.json"]
+      "examples": ["~/.gman/token.json", "./token.json"]
     },
     "output_dir": {
       "type": "string",
       "description": "Directory for email backups and exports. Relative paths resolved from config file location. Supports ~ expansion.",
       "minLength": 1,
-      "examples": ["~/.gmail-assistant/backups", "./gmail_backup"]
+      "examples": ["~/.gman/backups", "./gmail_backup"]
     },
     "max_emails": {
       "type": "integer",
@@ -2630,9 +2630,9 @@ class APIError(GmailAssistantError):
 
 ```json
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "token_path": "~/.gmail-assistant/token.json",
-  "output_dir": "~/.gmail-assistant/backups",
+  "credentials_path": "~/.gman/credentials.json",
+  "token_path": "~/.gman/token.json",
+  "output_dir": "~/.gman/backups",
   "max_emails": 1000,
   "rate_limit_per_second": 10.0,
   "log_level": "INFO"
@@ -2651,7 +2651,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gmail-assistant"
+name = "gman"
 version = "2.0.0"
 description = "Gmail backup, analysis, and management suite"
 readme = "README.md"
@@ -2714,19 +2714,19 @@ dev = [
 ]
 
 [project.scripts]
-gmail-assistant = "gmail_assistant.cli.main:main"
+gman = "gman.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/user/gmail-assistant"
-Documentation = "https://github.com/user/gmail-assistant/docs"
-Repository = "https://github.com/user/gmail-assistant"
-Changelog = "https://github.com/user/gmail-assistant/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/user/gman"
+Documentation = "https://github.com/user/gman/docs"
+Repository = "https://github.com/user/gman"
+Changelog = "https://github.com/user/gman/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gmail_assistant"]
+packages = ["src/gman"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"src/gmail_assistant/py.typed" = "gmail_assistant/py.typed"
+"src/gman/py.typed" = "gman/py.typed"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -2750,7 +2750,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["src/gmail_assistant"]
+source = ["src/gman"]
 branch = true
 omit = [
     "*/__pycache__/*",
@@ -2776,7 +2776,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "DTZ", "RUF"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["gmail_assistant"]
+known-first-party = ["gman"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -2784,7 +2784,7 @@ strict = true
 warn_return_any = true
 warn_unused_ignores = true
 disallow_untyped_defs = true
-packages = ["gmail_assistant"]
+packages = ["gman"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -2798,11 +2798,11 @@ ignore_missing_imports = true
 
 ### 10.2 CLI Implementation
 
-**Location**: `src/gmail_assistant/cli/main.py`
+**Location**: `src/gman/cli/main.py`
 
 ```python
 """
-Gmail Assistant CLI - Click-based command line interface.
+Gman CLI - Click-based command line interface.
 
 Exit Codes:
     0: Success
@@ -2812,7 +2812,7 @@ Exit Codes:
     4: Network error
     5: Configuration error
 
-CORRECTED: All exceptions imported from gmail_assistant.core.exceptions
+CORRECTED: All exceptions imported from gman.core.exceptions
 """
 from __future__ import annotations
 
@@ -2823,10 +2823,10 @@ from typing import Callable, TypeVar
 
 import click
 
-from gmail_assistant import __version__
-from gmail_assistant.core.config import AppConfig
+from gman import __version__
+from gman.core.config import AppConfig
 # CORRECTED: Import ALL exceptions from the single authoritative source
-from gmail_assistant.core.exceptions import (
+from gman.core.exceptions import (
     ConfigError,
     AuthError,
     NetworkError,
@@ -2863,7 +2863,7 @@ def handle_errors(func: F) -> F:
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="gmail-assistant")
+@click.version_option(version=__version__, prog_name="gman")
 @click.option(
     "--config", "-c",
     type=click.Path(exists=True, path_type=Path),
@@ -2876,7 +2876,7 @@ def handle_errors(func: F) -> F:
 )
 @click.pass_context
 def main(ctx: click.Context, config: Path | None, allow_repo_credentials: bool) -> None:
-    """Gmail Assistant - Backup, analyze, and manage your Gmail."""
+    """Gman - Backup, analyze, and manage your Gmail."""
     ctx.ensure_object(dict)
     ctx.obj["config_path"] = config
     ctx.obj["allow_repo_credentials"] = allow_repo_credentials
@@ -3049,21 +3049,21 @@ if __name__ == "__main__":
 
 ### 10.3 Package __init__.py
 
-**Location**: `src/gmail_assistant/__init__.py`
+**Location**: `src/gman/__init__.py`
 
 ```python
-"""Gmail Assistant - Gmail backup, analysis, and management suite."""
+"""Gman - Gmail backup, analysis, and management suite."""
 __version__ = "2.0.0"
 __all__ = ["__version__"]
 ```
 
 ### 10.4 Package __main__.py
 
-**Location**: `src/gmail_assistant/__main__.py`
+**Location**: `src/gman/__main__.py`
 
 ```python
-"""Entry point for python -m gmail_assistant."""
-from gmail_assistant.cli.main import main
+"""Entry point for python -m gman."""
+from gman.cli.main import main
 
 if __name__ == "__main__":
     raise SystemExit(main())
@@ -3115,11 +3115,11 @@ jobs:
 
       - name: Run type checking
         run: |
-          mypy src/gmail_assistant
+          mypy src/gman
 
       - name: Run tests with coverage gate
         run: |
-          pytest tests/ -m "not integration and not api" -v --cov=gmail_assistant --cov-report=xml --cov-fail-under=70
+          pytest tests/ -m "not integration and not api" -v --cov=gman --cov-report=xml --cov-fail-under=70
 
       - name: Upload coverage
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
@@ -3181,8 +3181,8 @@ jobs:
           python -m venv /tmp/test-venv
           /tmp/test-venv/bin/pip install dist/*.whl
           cd /tmp  # CORRECTED: Run from outside repo
-          /tmp/test-venv/bin/python -c "import gmail_assistant; print(f'Version: {gmail_assistant.__version__}')"
-          /tmp/test-venv/bin/gmail-assistant --version
+          /tmp/test-venv/bin/python -c "import gman; print(f'Version: {gman.__version__}')"
+          /tmp/test-venv/bin/gman --version
 
       - name: Upload wheel
         uses: actions/upload-artifact@v4
@@ -3222,13 +3222,13 @@ jobs:
       - name: Verify exception taxonomy
         run: |
           python -c "
-          from gmail_assistant.core.exceptions import GmailAssistantError, ConfigError, AuthError, NetworkError
+          from gman.core.exceptions import GmailAssistantError, ConfigError, AuthError, NetworkError
           assert issubclass(ConfigError, GmailAssistantError)
           assert issubclass(AuthError, GmailAssistantError)
           assert issubclass(NetworkError, GmailAssistantError)
         
           # Verify no duplicate ConfigError
-          from gmail_assistant.core import config, exceptions
+          from gman.core import config, exceptions
           if hasattr(config, 'ConfigError'):
               assert config.ConfigError is exceptions.ConfigError, 'Duplicate ConfigError detected!'
           print('Exception taxonomy valid')
@@ -3387,9 +3387,9 @@ pre-commit install
 | Criterion                           | Verification Method                     | Scope     |
 | ----------------------------------- | --------------------------------------- | --------- |
 | Package installs via pip            | `pip install -e .` in clean venv      | Packaging |
-| CLI accessible as `gmail-assistant` | `gmail-assistant --version`             | Packaging |
-| CLI accessible via `python -m`    | `python -m gmail_assistant --version`   | Packaging |
-| All subcommands parse correctly     | `gmail-assistant <cmd> --help` for each | Packaging |
+| CLI accessible as `gman` | `gman --version`             | Packaging |
+| CLI accessible via `python -m`    | `python -m gman --version`   | Packaging |
+| All subcommands parse correctly     | `gman <cmd> --help` for each | Packaging |
 | Config loads from all sources       | Unit tests for resolution order         | Packaging |
 | No sys.path manipulation            | Import policy checker                   | Packaging |
 | Credentials secure by default       | Config loader tests                     | Packaging |
@@ -3420,20 +3420,20 @@ Build
 ─────
 [ ] Run: python -m build
 [ ] Verify: Single wheel in dist/
-[ ] Verify: Wheel contains gmail_assistant/__init__.py
+[ ] Verify: Wheel contains gman/__init__.py
 
 Install Test
 ────────────
 [ ] Create fresh venv
 [ ] Install wheel: pip install dist/*.whl
-[ ] Verify (from /tmp): python -c "import gmail_assistant; print(gmail_assistant.__version__)"
-[ ] Verify: gmail-assistant --version
-[ ] Verify: gmail-assistant fetch --help
-[ ] Verify: gmail-assistant auth --help
+[ ] Verify (from /tmp): python -c "import gman; print(gman.__version__)"
+[ ] Verify: gman --version
+[ ] Verify: gman fetch --help
+[ ] Verify: gman auth --help
 
 Exception Taxonomy
 ──────────────────
-[ ] Verify: from gmail_assistant.core.exceptions import ConfigError works
+[ ] Verify: from gman.core.exceptions import ConfigError works
 [ ] Verify: config.py imports ConfigError from exceptions.py
 
 Security
@@ -3505,7 +3505,7 @@ See `docs/adr/` for full ADR documents.
 
 | Variable                 | Description                | Default                      |
 | ------------------------ | -------------------------- | ---------------------------- |
-| `gmail_assistant_CONFIG` | Path to configuration file | None (uses resolution order) |
+| `gman_CONFIG` | Path to configuration file | None (uses resolution order) |
 
 ---
 

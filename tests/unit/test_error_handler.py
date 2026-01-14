@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.utils.error_handler module."""
+"""Unit tests for gman.utils.error_handler module."""
 from __future__ import annotations
 
 import json
@@ -8,7 +8,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.utils.error_handler import (
+from gman.utils.error_handler import (
     ErrorSeverity,
     ErrorCategory,
     ErrorContext,

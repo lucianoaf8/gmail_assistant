@@ -38,10 +38,10 @@ def check_environment() -> tuple[bool, list[str]]:
 def check_imports() -> bool:
     """Try importing key modules."""
     imports_to_check = [
-        "gmail_assistant",
-        "gmail_assistant.cli.main",
-        "gmail_assistant.core.config",
-        "gmail_assistant.core.exceptions",
+        "gman",
+        "gman.cli.main",
+        "gman.core.config",
+        "gman.core.exceptions",
     ]
   
     all_ok = True
@@ -60,9 +60,9 @@ def check_imports() -> bool:
 def check_version() -> bool:
     """Verify __version__ is accessible."""
     try:
-        import gmail_assistant
-        version = gmail_assistant.__version__
-        print(f"  [OK] gmail_assistant.__version__ = {version}")
+        import gman
+        version = gman.__version__
+        print(f"  [OK] gman.__version__ = {version}")
         return True
     except Exception as e:
         print(f"  [FAIL] Could not access __version__: {e}")
@@ -72,7 +72,7 @@ def check_version() -> bool:
 def check_exception_taxonomy() -> bool:
     """Verify exception hierarchy is correct and unified."""
     try:
-        from gmail_assistant.core.exceptions import (
+        from gman.core.exceptions import (
             GmailAssistantError,
             ConfigError,
             AuthError,
@@ -95,8 +95,8 @@ def check_no_duplicate_configerror() -> bool:
     """Verify ConfigError is not duplicated in config.py."""
     try:
         # Import both modules
-        from gmail_assistant.core import config
-        from gmail_assistant.core import exceptions
+        from gman.core import config
+        from gman.core import exceptions
       
         # Check that config.ConfigError IS exceptions.ConfigError
         if hasattr(config, 'ConfigError'):
@@ -115,8 +115,8 @@ def check_no_duplicate_configerror() -> bool:
 def check_file_location() -> bool:
     """Verify package is installed, not from source."""
     try:
-        import gmail_assistant
-        location = Path(gmail_assistant.__file__).resolve()
+        import gman
+        location = Path(gman.__file__).resolve()
         cwd = Path.cwd().resolve()
       
         # Should NOT be under current working directory's src/

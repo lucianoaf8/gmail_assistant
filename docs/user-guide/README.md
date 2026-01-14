@@ -1,6 +1,6 @@
 # User Guide
 
-End-user documentation for Gmail Assistant.
+End-user documentation for Gman.
 
 ## Contents
 
@@ -13,7 +13,7 @@ End-user documentation for Gmail Assistant.
 ## Getting Started
 
 1. Install: `pip install -e .`
-2. Authenticate: `gmail-assistant auth`
-3. Fetch emails: `gmail-assistant fetch --query "is:unread"`
+2. Authenticate: `gman auth`
+3. Fetch emails: `gman fetch --query "is:unread"`
 
 See [CLI Reference](cli-reference.md) for full command details.

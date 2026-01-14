@@ -1,6 +1,6 @@
-# Gmail Assistant Technical Reference Index
+# Gman Technical Reference Index
 
-Complete technical documentation index for gmail-assistant v2.0.0 - The definitive reference for all APIs, configurations, and command-line interfaces.
+Complete technical documentation index for gman v2.0.0 - The definitive reference for all APIs, configurations, and command-line interfaces.
 
 **Version**: 2.0.0
 **Last Updated**: 2026-01-09
@@ -22,7 +22,7 @@ This index provides navigation to comprehensive technical reference documentatio
 ## Quick Navigation
 
 ### For Command-Line Users
-Start here if you're using gmail-assistant from the terminal.
+Start here if you're using gman from the terminal.
 
 1. **[CLI Reference](0109-1500_CLI_REFERENCE.md)** - Complete CLI documentation
    - All commands and options
@@ -41,7 +41,7 @@ Start here to understand configuration files and settings.
    - Validation rules and security
 
 ### For Python Development
-Start here to integrate gmail-assistant into your Python code.
+Start here to integrate gman into your Python code.
 
 1. **[Public API Reference](0109-1700_PUBLIC_API_REFERENCE.md)** - Python API documentation
    - Core classes (AppConfig, GmailFetcher, etc.)
@@ -51,7 +51,7 @@ Start here to integrate gmail-assistant into your Python code.
    - Code examples and best practices
 
 ### For System Administrators
-Start here to configure and deploy gmail-assistant.
+Start here to configure and deploy gman.
 
 1. **[Constants Reference](0109-1800_CONSTANTS_REFERENCE.md)** - All hardcoded values
    - Application metadata
@@ -150,7 +150,7 @@ Start here to configure and deploy gmail-assistant.
 - Best practices for configuration, error handling, type hints
 
 **Use When**:
-- Writing Python code using gmail-assistant
+- Writing Python code using gman
 - Understanding class methods and their signatures
 - Implementing protocol-based designs
 - Handling exceptions properly
@@ -239,13 +239,13 @@ Start here to configure and deploy gmail-assistant.
 
 **Via CLI**:
 ```bash
-gmail-assistant fetch --query "is:unread" --max-emails 100
+gman fetch --query "is:unread" --max-emails 100
 ```
 → See [CLI Reference - fetch command](0109-1500_CLI_REFERENCE.md#fetch)
 
 **Via Python**:
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 fetcher = GmailFetcher('credentials.json')
 fetcher.authenticate()
@@ -259,18 +259,18 @@ ids = fetcher.search_messages("is:unread", max_results=100)
 
 **Via CLI**:
 ```bash
-gmail-assistant config --init
-gmail-assistant config --show
+gman config --init
+gman config --show
 ```
 → See [CLI Reference - config command](0109-1500_CLI_REFERENCE.md#config)
 
 **Manually**:
-Create `~/.gmail-assistant/config.json`:
+Create `~/.gman/config.json`:
 ```json
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "token_path": "~/.gmail-assistant/token.json",
-  "output_dir": "~/.gmail-assistant/backups",
+  "credentials_path": "~/.gman/credentials.json",
+  "token_path": "~/.gman/token.json",
+  "output_dir": "~/.gman/backups",
   "max_emails": 1000,
   "rate_limit_per_second": 10.0,
   "log_level": "INFO"
@@ -283,14 +283,14 @@ Create `~/.gmail-assistant/config.json`:
 ### Task: Load Configuration in Python
 
 ```python
-from gmail_assistant.core.config import AppConfig
+from gman.core.config import AppConfig
 
 # Automatic resolution order
 config = AppConfig.load()
 
 # Specific file
 from pathlib import Path
-config = AppConfig.load(Path("/etc/gmail-assistant/config.json"))
+config = AppConfig.load(Path("/etc/gman/config.json"))
 
 # Access fields
 print(config.max_emails)
@@ -303,7 +303,7 @@ print(config.rate_limit_per_second)
 ### Task: Handle Errors Properly
 
 ```python
-from gmail_assistant.core.exceptions import ConfigError, AuthError, NetworkError
+from gman.core.exceptions import ConfigError, AuthError, NetworkError
 
 try:
     config = AppConfig.load()
@@ -327,10 +327,10 @@ except NetworkError as e:
 **Via CLI** (always preview first):
 ```bash
 # Preview what would be deleted
-gmail-assistant delete --query "from:newsletter@example.com" --dry-run
+gman delete --query "from:newsletter@example.com" --dry-run
 
 # Actually delete after review
-gmail-assistant delete --query "from:newsletter@example.com"
+gman delete --query "from:newsletter@example.com"
 ```
 → See [CLI Reference - delete command](0109-1500_CLI_REFERENCE.md#delete)
 
@@ -340,11 +340,11 @@ gmail-assistant delete --query "from:newsletter@example.com"
 
 **Via Environment Variables**:
 ```bash
-export GMAIL_ASSISTANT_CONFIG_DIR=/etc/gmail-assistant
-export GMAIL_ASSISTANT_BACKUP_DIR=/mnt/external/backups
-export GMAIL_ASSISTANT_CREDENTIALS_DIR=/root/.secure/gmail
+export GMAN_CONFIG_DIR=/etc/gman
+export GMAN_BACKUP_DIR=/mnt/external/backups
+export GMAN_CREDENTIALS_DIR=/root/.secure/gmail
 
-gmail-assistant fetch
+gman fetch
 ```
 → See [Constants Reference - Environment Variable Overrides](0109-1800_CONSTANTS_REFERENCE.md#environment-variable-overrides)
 
@@ -354,10 +354,10 @@ gmail-assistant fetch
 
 Priority order (highest to lowest):
 1. CLI argument: `--config /path/to/config.json`
-2. Environment: `gmail_assistant_CONFIG=/path/to/config.json`
-3. Project: `./gmail-assistant.json`
-4. User: `~/.gmail-assistant/config.json`
-5. Defaults: All in `~/.gmail-assistant/`
+2. Environment: `gman_CONFIG=/path/to/config.json`
+3. Project: `./gman.json`
+4. User: `~/.gman/config.json`
+5. Defaults: All in `~/.gman/`
 
 → See [Configuration Reference - Configuration Resolution](0109-1600_CONFIGURATION_REFERENCE.md#configuration-resolution)
 → See [CLI Reference - Configuration Resolution](0109-1500_CLI_REFERENCE.md#configuration-resolution)
@@ -462,7 +462,7 @@ if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
 - Linux: `~/.local/share/keyring/` or secret-service
 - macOS: Keychain
 - Windows: Credential Manager
-- Service: `gmail_assistant`
+- Service: `gman`
 - Username: `oauth_credentials`
 
 **Legacy (Deprecated)**: Plaintext `token.json`
@@ -522,7 +522,7 @@ if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
 **Last Updated**: 2026-01-09
 **Reviewed**: 2026-01-09
 **Next Review**: Quarterly or as needed
-**Maintainer**: Gmail Assistant Development Team
+**Maintainer**: Gman Development Team
 
 ### Document Quality Checklist
 

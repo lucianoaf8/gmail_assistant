@@ -16,7 +16,7 @@ class TestHistoryEventType:
 
     def test_event_type_values(self):
         """Test all HistoryEventType values exist."""
-        from gmail_assistant.core.fetch.history_sync import HistoryEventType
+        from gman.core.fetch.history_sync import HistoryEventType
 
         assert HistoryEventType.MESSAGE_ADDED.value == "messageAdded"
         assert HistoryEventType.MESSAGE_DELETED.value == "messageDeleted"
@@ -29,7 +29,7 @@ class TestHistoryEvent:
 
     def test_history_event_creation(self):
         """Test creating a HistoryEvent."""
-        from gmail_assistant.core.fetch.history_sync import HistoryEvent, HistoryEventType
+        from gman.core.fetch.history_sync import HistoryEvent, HistoryEventType
 
         event = HistoryEvent(
             type=HistoryEventType.MESSAGE_ADDED,
@@ -44,7 +44,7 @@ class TestHistoryEvent:
 
     def test_history_event_default_timestamp(self):
         """Test HistoryEvent has default timestamp."""
-        from gmail_assistant.core.fetch.history_sync import HistoryEvent, HistoryEventType
+        from gman.core.fetch.history_sync import HistoryEvent, HistoryEventType
 
         event = HistoryEvent(
             type=HistoryEventType.MESSAGE_ADDED,
@@ -61,7 +61,7 @@ class TestLabelChange:
 
     def test_label_change_creation(self):
         """Test creating a LabelChange."""
-        from gmail_assistant.core.fetch.history_sync import LabelChange
+        from gman.core.fetch.history_sync import LabelChange
 
         change = LabelChange(
             message_id="msg123",
@@ -79,7 +79,7 @@ class TestHistorySyncResult:
 
     def test_sync_result_creation(self):
         """Test creating a HistorySyncResult."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncResult
+        from gman.core.fetch.history_sync import HistorySyncResult
 
         result = HistorySyncResult(
             success=True,
@@ -96,7 +96,7 @@ class TestHistorySyncResult:
 
     def test_total_changes_property(self):
         """Test total_changes property calculation."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncResult
+        from gman.core.fetch.history_sync import HistorySyncResult
 
         result = HistorySyncResult(
             success=True,
@@ -109,7 +109,7 @@ class TestHistorySyncResult:
 
     def test_to_dict_method(self):
         """Test to_dict serialization method."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncResult
+        from gman.core.fetch.history_sync import HistorySyncResult
 
         result = HistorySyncResult(
             success=True,
@@ -136,7 +136,7 @@ class TestHistorySyncClientInit:
 
     def test_init_with_service(self):
         """Test initializing with service."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         client = HistorySyncClient(mock_service)
@@ -145,7 +145,7 @@ class TestHistorySyncClientInit:
 
     def test_init_with_batch_client(self):
         """Test initializing with batch client."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_batch = mock.MagicMock()
@@ -154,7 +154,7 @@ class TestHistorySyncClientInit:
 
     def test_history_types_constant(self):
         """Test HISTORY_TYPES constant."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         expected_types = [
             'messageAdded',
@@ -170,12 +170,12 @@ class TestGetBatchClient:
 
     def test_get_batch_client_creates_if_none(self):
         """Test creates batch client if none exists."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         client = HistorySyncClient(mock_service)
 
-        with mock.patch('gmail_assistant.core.fetch.history_sync.GmailBatchClient') as MockBatch:
+        with mock.patch('gman.core.fetch.history_sync.GmailBatchClient') as MockBatch:
             mock_batch = mock.MagicMock()
             MockBatch.return_value = mock_batch
 
@@ -186,7 +186,7 @@ class TestGetBatchClient:
 
     def test_get_batch_client_returns_existing(self):
         """Test returns existing batch client."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_batch = mock.MagicMock()
@@ -201,7 +201,7 @@ class TestGetCurrentHistoryId:
 
     def test_get_history_id_success(self):
         """Test getting current history ID."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_service.users().getProfile().execute.return_value = {
@@ -219,7 +219,7 @@ class TestSyncFromHistory:
 
     def test_sync_empty_history(self):
         """Test sync with no history records."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_service.users().history().list().execute.return_value = {
@@ -236,7 +236,7 @@ class TestSyncFromHistory:
 
     def test_sync_with_additions(self):
         """Test sync with message additions."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_service.users().history().list().execute.return_value = {
@@ -259,7 +259,7 @@ class TestSyncFromHistory:
 
     def test_sync_with_deletions(self):
         """Test sync with message deletions."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_service.users().history().list().execute.return_value = {
@@ -283,7 +283,7 @@ class TestFetchAddedMessages:
 
     def test_fetch_empty_list_returns_empty(self):
         """Test fetching empty list returns empty."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         client = HistorySyncClient(mock_service)
@@ -297,7 +297,7 @@ class TestCheckSyncRequired:
 
     def test_sync_required_when_behind(self):
         """Test sync required when stored ID is behind current."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_service.users().getProfile().execute.return_value = {
@@ -312,7 +312,7 @@ class TestCheckSyncRequired:
 
     def test_sync_not_required_when_current(self):
         """Test sync not required when up to date."""
-        from gmail_assistant.core.fetch.history_sync import HistorySyncClient
+        from gman.core.fetch.history_sync import HistorySyncClient
 
         mock_service = mock.MagicMock()
         mock_service.users().getProfile().execute.return_value = {
@@ -337,7 +337,7 @@ class TestSyncStateManager:
 
     def test_init_creates_table(self, db_connection):
         """Test initialization creates sync_state table."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
 
@@ -349,7 +349,7 @@ class TestSyncStateManager:
 
     def test_get_history_id_none_when_empty(self, db_connection):
         """Test get_history_id returns None when no data."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
         result = manager.get_history_id('gmail')
@@ -357,7 +357,7 @@ class TestSyncStateManager:
 
     def test_update_and_get_history_id(self, db_connection):
         """Test updating and getting history ID."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
         manager.update_history_id(12345, synced_count=100)
@@ -367,7 +367,7 @@ class TestSyncStateManager:
 
     def test_update_increments_total_synced(self, db_connection):
         """Test update increments total synced count."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
         manager.update_history_id(12345, synced_count=100)
@@ -378,7 +378,7 @@ class TestSyncStateManager:
 
     def test_get_sync_stats_none_when_empty(self, db_connection):
         """Test get_sync_stats returns None when no data."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
         result = manager.get_sync_stats()
@@ -386,7 +386,7 @@ class TestSyncStateManager:
 
     def test_get_sync_stats_returns_dict(self, db_connection):
         """Test get_sync_stats returns expected dict."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
         manager.update_history_id(12345, synced_count=100)
@@ -401,7 +401,7 @@ class TestSyncStateManager:
 
     def test_different_sources(self, db_connection):
         """Test managing different sync sources."""
-        from gmail_assistant.core.fetch.history_sync import SyncStateManager
+        from gman.core.fetch.history_sync import SyncStateManager
 
         manager = SyncStateManager(db_connection)
         manager.update_history_id(12345, source='gmail')

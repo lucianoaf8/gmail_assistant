@@ -15,8 +15,8 @@ import sys
 from datetime import datetime, timedelta
 from unittest import mock
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
+from gman.core.fetch.gman import GmailFetcher
+from gman.core.fetch.gmail_api_client import GmailAPIClient
 
 
 class TestGmailAPIAuthentication:
@@ -70,7 +70,7 @@ class TestGmailAPIAuthentication:
 
     def test_authentication_error_handling(self):
         """Test authentication error handling with missing/invalid credentials."""
-        from gmail_assistant.core.exceptions import AuthError
+        from gman.core.exceptions import AuthError
 
         # Test with missing credentials file - should raise AuthError
         fetcher = GmailFetcher("missing_credentials.json")
@@ -300,7 +300,7 @@ class TestGmailAPIDownload:
 
     def test_download_emails_eml_format(self, mock_credentials_file, mock_gmail_service_full):
         """Test downloading emails in EML format."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
         output_dir = self.test_dir / "eml_download"
@@ -333,7 +333,7 @@ class TestGmailAPIDownload:
 
     def test_download_emails_markdown_format(self, mock_credentials_file, mock_gmail_service_full):
         """Test downloading emails in Markdown format."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
         output_dir = self.test_dir / "markdown_download"
@@ -366,7 +366,7 @@ class TestGmailAPIDownload:
 
     def test_download_emails_both_formats(self, mock_credentials_file, mock_gmail_service_full):
         """Test downloading emails in both EML and Markdown formats."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
         output_dir = self.test_dir / "both_formats"
@@ -396,7 +396,7 @@ class TestGmailAPIDownload:
 
     def test_email_content_creation_methods(self, mock_credentials_file, mock_gmail_service_full):
         """Test create_eml_content and create_markdown_content with mocked data."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 
@@ -429,7 +429,7 @@ class TestGmailAPIDownload:
 
     def test_directory_organization_patterns(self, mock_credentials_file, mock_gmail_service_full):
         """Test different directory organization patterns."""
-        from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+        from gman.core.fetch.gman import GmailFetcher
 
         fetcher = GmailFetcher(str(mock_credentials_file))
 

@@ -17,14 +17,14 @@ class TestEmailDataExtractorInit:
 
     def test_init_default_output(self, tmp_path):
         """Test initialization with default output folder."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         extractor = EmailDataExtractor(str(tmp_path / "input"))
         assert extractor.output_folder == Path("monthly_email_data")
 
     def test_init_custom_output(self, tmp_path):
         """Test initialization with custom output folder."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         output_folder = tmp_path / "output"
@@ -34,7 +34,7 @@ class TestEmailDataExtractorInit:
 
     def test_init_creates_output_folder(self, tmp_path):
         """Test initialization creates output folder."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         output_folder = tmp_path / "output"
@@ -50,7 +50,7 @@ class TestParseDate:
     @pytest.fixture
     def extractor(self, tmp_path):
         """Create extractor instance."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
         return EmailDataExtractor(str(tmp_path / "input"), str(tmp_path / "output"))
 
     def test_parse_rfc_2822_format(self, extractor):
@@ -114,7 +114,7 @@ class TestExtractEmailMetadata:
     @pytest.fixture
     def extractor(self, tmp_path):
         """Create extractor instance."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
         return EmailDataExtractor(str(tmp_path / "input"), str(tmp_path / "output"))
 
     def test_extract_from_markdown_file(self, extractor, tmp_path):
@@ -182,7 +182,7 @@ class TestFindMdFilesManually:
     @pytest.fixture
     def extractor(self, tmp_path):
         """Create extractor instance."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
         input_folder = tmp_path / "input"
         input_folder.mkdir()
         return EmailDataExtractor(str(input_folder), str(tmp_path / "output"))
@@ -207,7 +207,7 @@ class TestFindMdFilesPythonFallback:
 
     def test_finds_md_files(self, tmp_path):
         """Test finding markdown files."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         input_folder.mkdir()
@@ -223,7 +223,7 @@ class TestFindMdFilesPythonFallback:
 
     def test_finds_nested_md_files(self, tmp_path):
         """Test finding nested markdown files."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         input_folder.mkdir()
@@ -242,7 +242,7 @@ class TestProcessAllEmails:
 
     def test_process_empty_folder(self, tmp_path):
         """Test processing empty folder."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         input_folder.mkdir()
@@ -255,7 +255,7 @@ class TestProcessAllEmails:
 
     def test_process_valid_files(self, tmp_path):
         """Test processing valid markdown files."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         input_folder.mkdir()
@@ -284,7 +284,7 @@ Content.
 
     def test_process_creates_monthly_json(self, tmp_path):
         """Test processing creates monthly JSON files."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         input_folder = tmp_path / "input"
         input_folder.mkdir()
@@ -319,7 +319,7 @@ class TestGenerateSummaryReport:
 
     def test_generate_summary_report(self, tmp_path):
         """Test generating summary report."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         output_folder = tmp_path / "output"
         output_folder.mkdir()
@@ -353,7 +353,7 @@ class TestGenerateSummaryReport:
         Note: The current implementation doesn't handle the zero-division case.
         This test documents the current behavior.
         """
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
 
         output_folder = tmp_path / "output"
         output_folder.mkdir()
@@ -378,7 +378,7 @@ class TestExtractorDateFormats:
     @pytest.fixture
     def extractor(self, tmp_path):
         """Create extractor instance."""
-        from gmail_assistant.core.processing.extractor import EmailDataExtractor
+        from gman.core.processing.extractor import EmailDataExtractor
         return EmailDataExtractor(str(tmp_path / "input"), str(tmp_path / "output"))
 
     def test_parse_date_without_day_name(self, extractor):

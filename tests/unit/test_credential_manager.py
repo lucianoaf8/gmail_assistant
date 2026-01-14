@@ -12,7 +12,7 @@ class TestSecureCredentialManagerInit:
     def test_default_credentials_file(self):
         """Test default credentials file path."""
         with patch.dict('sys.modules', {'keyring': MagicMock()}):
-            from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+            from gman.core.auth.credential_manager import SecureCredentialManager
             manager = SecureCredentialManager()
             assert manager.credentials_file == 'credentials.json'
             assert manager.service is None
@@ -20,7 +20,7 @@ class TestSecureCredentialManagerInit:
     def test_custom_credentials_file(self):
         """Test custom credentials file path."""
         with patch.dict('sys.modules', {'keyring': MagicMock()}):
-            from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+            from gman.core.auth.credential_manager import SecureCredentialManager
             manager = SecureCredentialManager('/custom/path/creds.json')
             assert manager.credentials_file == '/custom/path/creds.json'
 
@@ -28,10 +28,10 @@ class TestSecureCredentialManagerInit:
 class TestStoreCredentials:
     """Tests for _store_credentials_securely method."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_store_credentials_success(self, mock_keyring):
         """Test successful credential storage."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         manager = SecureCredentialManager()
         mock_creds = Mock()
@@ -42,10 +42,10 @@ class TestStoreCredentials:
         assert result is True
         mock_keyring.set_password.assert_called_once()
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_store_credentials_failure(self, mock_keyring):
         """Test credential storage failure."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.set_password.side_effect = Exception("Keyring error")
         manager = SecureCredentialManager()
@@ -60,11 +60,11 @@ class TestStoreCredentials:
 class TestLoadCredentials:
     """Tests for _load_credentials_securely method."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_load_credentials_success(self, mock_keyring, mock_creds_class):
         """Test successful credential loading."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test", "refresh_token": "refresh"}'
         mock_creds = Mock()
@@ -75,10 +75,10 @@ class TestLoadCredentials:
 
         assert result == mock_creds
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_load_credentials_not_found(self, mock_keyring):
         """Test credential loading when not found."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
 
@@ -87,10 +87,10 @@ class TestLoadCredentials:
 
         assert result is None
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_load_credentials_error(self, mock_keyring):
         """Test credential loading error handling."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.side_effect = Exception("Keyring error")
 
@@ -103,10 +103,10 @@ class TestLoadCredentials:
 class TestClearCredentials:
     """Tests for _clear_credentials method."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_clear_credentials_success(self, mock_keyring):
         """Test successful credential clearing."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         manager = SecureCredentialManager()
         result = manager._clear_credentials()
@@ -114,10 +114,10 @@ class TestClearCredentials:
         assert result is True
         mock_keyring.delete_password.assert_called_once()
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_clear_credentials_failure(self, mock_keyring):
         """Test credential clearing failure."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         # Create a proper exception that isn't PasswordDeleteError
         mock_keyring.errors = Mock()
@@ -133,10 +133,10 @@ class TestClearCredentials:
 class TestCredentialsValidation:
     """Tests for credential validation logic."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_has_valid_credentials_none(self, mock_keyring):
         """Test has_valid_credentials when no credentials exist."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
 
@@ -145,11 +145,11 @@ class TestCredentialsValidation:
         creds = manager._load_credentials_securely()
         assert creds is None
 
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_has_valid_credentials_expired(self, mock_keyring, mock_creds_class):
         """Test handling of expired credentials."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test"}'
         mock_creds = Mock()
@@ -168,12 +168,12 @@ class TestCredentialsValidation:
 class TestAuthentication:
     """Tests for authentication flow."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_service_with_valid_credentials(self, mock_keyring, mock_creds_class, mock_build):
         """Test getting service with valid cached credentials."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test"}'
         mock_creds = Mock()
@@ -190,10 +190,10 @@ class TestAuthentication:
 
         assert creds.valid is True
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_service_no_credentials_file(self, mock_keyring):
         """Test error when credentials file missing."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
 
@@ -206,12 +206,12 @@ class TestAuthentication:
 class TestRefreshToken:
     """Tests for token refresh functionality."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.Request')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.Request')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_refresh_expired_token(self, mock_keyring, mock_creds_class, mock_request):
         """Test refreshing expired token."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "old", "refresh_token": "refresh"}'
         mock_creds = Mock()
@@ -234,22 +234,22 @@ class TestKeyringConstants:
 
     def test_keyring_service_constant(self):
         """Test that KEYRING_SERVICE constant is used."""
-        from gmail_assistant.core.constants import KEYRING_SERVICE
-        assert KEYRING_SERVICE == "gmail_assistant"
+        from gman.core.constants import KEYRING_SERVICE
+        assert KEYRING_SERVICE == "gman"
 
     def test_keyring_username_constant(self):
         """Test that KEYRING_USERNAME constant is used."""
-        from gmail_assistant.core.constants import KEYRING_USERNAME
+        from gman.core.constants import KEYRING_USERNAME
         assert KEYRING_USERNAME == "oauth_credentials"
 
 
 class TestClearCredentialsPasswordDeleteError:
     """Tests for _clear_credentials with PasswordDeleteError."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_clear_credentials_password_delete_error(self, mock_keyring):
         """Test credential clearing when password doesn't exist."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
         import keyring.errors as keyring_errors
 
         # Setup to raise PasswordDeleteError - simulates no credentials to delete
@@ -266,12 +266,12 @@ class TestClearCredentialsPasswordDeleteError:
 class TestAuthenticateMethod:
     """Tests for authenticate() method comprehensive coverage."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_with_valid_cached_credentials(self, mock_keyring, mock_creds_class, mock_build):
         """Test authenticate with valid cached credentials."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         # Setup valid credentials in keyring
         mock_keyring.get_password.return_value = '{"token": "test", "refresh_token": "refresh"}'
@@ -290,15 +290,15 @@ class TestAuthenticateMethod:
         assert manager.service == mock_service
         mock_build.assert_called_once_with('gmail', 'v1', credentials=mock_creds)
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Request')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Request')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_with_expired_credentials_refresh_success(
         self, mock_keyring, mock_creds_class, mock_request_class, mock_build
     ):
         """Test authenticate refreshes expired credentials successfully."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "old", "refresh_token": "refresh"}'
         mock_creds = Mock()
@@ -317,15 +317,15 @@ class TestAuthenticateMethod:
         assert result is True
         mock_creds.refresh.assert_called_once()
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Request')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Request')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_refresh_failure_triggers_oauth_flow(
         self, mock_keyring, mock_creds_class, mock_request_class, mock_build
     ):
         """Test authenticate handles refresh failure by falling through to OAuth."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "old", "refresh_token": "refresh"}'
         mock_creds = Mock()
@@ -341,15 +341,15 @@ class TestAuthenticateMethod:
         # Should fail because credentials file doesn't exist after refresh fails
         assert result is False
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.InstalledAppFlow')
-    @patch('gmail_assistant.core.auth.credential_manager.os')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.InstalledAppFlow')
+    @patch('gman.core.auth.credential_manager.os')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_oauth_flow_success(
         self, mock_keyring, mock_os, mock_flow_class, mock_build
     ):
         """Test authenticate with OAuth flow when no cached credentials."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         # No cached credentials
         mock_keyring.get_password.return_value = None
@@ -375,11 +375,11 @@ class TestAuthenticateMethod:
         mock_flow_class.from_client_secrets_file.assert_called_once()
         mock_flow.run_local_server.assert_called_once_with(port=0)
 
-    @patch('gmail_assistant.core.auth.credential_manager.os')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.os')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_no_credentials_file(self, mock_keyring, mock_os, capsys):
         """Test authenticate fails when credentials file is missing."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
         mock_os.path.exists.return_value = False
@@ -392,14 +392,14 @@ class TestAuthenticateMethod:
         captured = capsys.readouterr()
         assert "Error" in captured.out or result is False
 
-    @patch('gmail_assistant.core.auth.credential_manager.InstalledAppFlow')
-    @patch('gmail_assistant.core.auth.credential_manager.os')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.InstalledAppFlow')
+    @patch('gman.core.auth.credential_manager.os')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_oauth_flow_failure(
         self, mock_keyring, mock_os, mock_flow_class
     ):
         """Test authenticate handles OAuth flow failure."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
         mock_os.path.exists.return_value = True
@@ -410,15 +410,15 @@ class TestAuthenticateMethod:
 
         assert result is False
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.InstalledAppFlow')
-    @patch('gmail_assistant.core.auth.credential_manager.os')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.InstalledAppFlow')
+    @patch('gman.core.auth.credential_manager.os')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_store_credentials_failure(
         self, mock_keyring, mock_os, mock_flow_class, mock_build
     ):
         """Test authenticate when storing credentials fails."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
         mock_os.path.exists.return_value = True
@@ -436,14 +436,14 @@ class TestAuthenticateMethod:
 
         assert result is False
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_authenticate_build_service_failure(
         self, mock_keyring, mock_creds_class, mock_build
     ):
         """Test authenticate when building Gmail service fails."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test"}'
         mock_creds = Mock()
@@ -460,14 +460,14 @@ class TestAuthenticateMethod:
 class TestGetServiceMethod:
     """Tests for get_service() method."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_service_returns_existing_service(
         self, mock_keyring, mock_creds_class, mock_build
     ):
         """Test get_service returns existing service without re-authenticating."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         manager = SecureCredentialManager()
         mock_service = Mock()
@@ -478,14 +478,14 @@ class TestGetServiceMethod:
         assert result == mock_service
         # Should not call authenticate since service already exists
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_service_authenticates_when_no_service(
         self, mock_keyring, mock_creds_class, mock_build
     ):
         """Test get_service authenticates when no service exists."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test"}'
         mock_creds = Mock()
@@ -500,10 +500,10 @@ class TestGetServiceMethod:
 
         assert result == mock_service
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_service_returns_none_on_auth_failure(self, mock_keyring):
         """Test get_service returns None when authentication fails."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
 
@@ -517,10 +517,10 @@ class TestGetServiceMethod:
 class TestResetCredentialsMethod:
     """Tests for reset_credentials() method."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_reset_credentials_clears_service(self, mock_keyring):
         """Test reset_credentials clears the service."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         manager = SecureCredentialManager()
         manager.service = Mock()
@@ -531,10 +531,10 @@ class TestResetCredentialsMethod:
         assert manager.service is None
         mock_keyring.delete_password.assert_called_once()
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_reset_credentials_success_with_no_service(self, mock_keyring):
         """Test reset_credentials works when service is None."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         manager = SecureCredentialManager()
         manager.service = None
@@ -548,12 +548,12 @@ class TestResetCredentialsMethod:
 class TestGetUserInfoMethod:
     """Tests for get_user_info() method."""
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_user_info_success(self, mock_keyring, mock_creds_class, mock_build):
         """Test get_user_info returns user information."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test"}'
         mock_creds = Mock()
@@ -578,10 +578,10 @@ class TestGetUserInfoMethod:
         assert result['messages_total'] == 1000
         assert result['threads_total'] == 500
 
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_user_info_no_service(self, mock_keyring):
         """Test get_user_info returns None when service unavailable."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = None
 
@@ -591,12 +591,12 @@ class TestGetUserInfoMethod:
             result = manager.get_user_info()
             assert result is None
 
-    @patch('gmail_assistant.core.auth.credential_manager.build')
-    @patch('gmail_assistant.core.auth.credential_manager.Credentials')
-    @patch('gmail_assistant.core.auth.credential_manager.keyring')
+    @patch('gman.core.auth.credential_manager.build')
+    @patch('gman.core.auth.credential_manager.Credentials')
+    @patch('gman.core.auth.credential_manager.keyring')
     def test_get_user_info_api_error(self, mock_keyring, mock_creds_class, mock_build):
         """Test get_user_info handles API errors gracefully."""
-        from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+        from gman.core.auth.credential_manager import SecureCredentialManager
 
         mock_keyring.get_password.return_value = '{"token": "test"}'
         mock_creds = Mock()

@@ -17,7 +17,7 @@ Test guides, frameworks, and execution reports.
 pytest tests/
 
 # Run with coverage
-pytest tests/ --cov=gmail_assistant --cov-report=html
+pytest tests/ --cov=gman --cov-report=html
 
 # Run specific test category
 pytest tests/unit/

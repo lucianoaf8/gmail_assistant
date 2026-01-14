@@ -18,7 +18,7 @@ class TestEmailClassifierInit:
 
     def test_init_sets_db_path(self):
         """Test initialization sets database path."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             classifier = EmailClassifier(f.name)
@@ -26,7 +26,7 @@ class TestEmailClassifierInit:
 
     def test_init_has_primary_categories(self):
         """Test initialization has primary categories."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             classifier = EmailClassifier(f.name)
@@ -36,7 +36,7 @@ class TestEmailClassifierInit:
 
     def test_init_has_domain_categories(self):
         """Test initialization has domain categories."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             classifier = EmailClassifier(f.name)
@@ -45,7 +45,7 @@ class TestEmailClassifierInit:
 
     def test_init_has_priority_levels(self):
         """Test initialization has priority levels."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             classifier = EmailClassifier(f.name)
@@ -55,7 +55,7 @@ class TestEmailClassifierInit:
 
     def test_init_has_sender_patterns(self):
         """Test initialization creates sender patterns."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             classifier = EmailClassifier(f.name)
@@ -69,7 +69,7 @@ class TestExtractDomain:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_extract_domain_from_angle_brackets(self, classifier):
@@ -97,7 +97,7 @@ class TestExtractEmailPrefix:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_extract_prefix_from_angle_brackets(self, classifier):
@@ -125,7 +125,7 @@ class TestClassifyBySender:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_classify_newsletter_sender(self, classifier):
@@ -178,7 +178,7 @@ class TestClassifyBySubject:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_classify_thread_subject(self, classifier):
@@ -223,7 +223,7 @@ class TestClassifyByContent:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_classify_content_with_unsubscribe(self, classifier):
@@ -275,7 +275,7 @@ class TestCalculateConfidenceScore:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_calculate_confidence_weighted(self, classifier):
@@ -313,7 +313,7 @@ class TestMergeClassifications:
     @pytest.fixture
     def classifier(self, tmp_path):
         """Create classifier instance."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
         return EmailClassifier(str(tmp_path / "test.db"))
 
     def test_merge_uses_sender_category(self, classifier):
@@ -365,7 +365,7 @@ class TestCreateClassificationSchema:
 
     def test_create_schema_success(self, tmp_path):
         """Test creating classification schema."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         db_path = tmp_path / "test.db"
 
@@ -395,7 +395,7 @@ class TestAnalyzeSenderPatterns:
 
     def test_analyze_sender_patterns_empty_db(self, tmp_path):
         """Test analyzing sender patterns with empty database."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         db_path = tmp_path / "test.db"
 
@@ -418,7 +418,7 @@ class TestAnalyzeSenderPatterns:
 
     def test_analyze_sender_patterns_with_data(self, tmp_path):
         """Test analyzing sender patterns with email data."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         db_path = tmp_path / "test.db"
 
@@ -449,7 +449,7 @@ class TestClassifyEmailsBatch:
 
     def test_classify_batch_empty(self, tmp_path):
         """Test classifying empty batch."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         db_path = tmp_path / "test.db"
 
@@ -479,7 +479,7 @@ class TestGenerateClassificationReport:
 
     def test_generate_report_empty_db(self, tmp_path):
         """Test generating report with empty database returns empty or valid report."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         db_path = tmp_path / "test.db"
 
@@ -523,7 +523,7 @@ class TestClassifyAllEmails:
 
     def test_classify_all_already_classified(self, tmp_path):
         """Test classify all when all emails are classified."""
-        from gmail_assistant.core.processing.classifier import EmailClassifier
+        from gman.core.processing.classifier import EmailClassifier
 
         db_path = tmp_path / "test.db"
 

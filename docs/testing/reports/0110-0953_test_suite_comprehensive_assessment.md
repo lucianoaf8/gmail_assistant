@@ -1,4 +1,4 @@
-# Gmail Assistant - Comprehensive Test Suite Assessment Report
+# Gman - Comprehensive Test Suite Assessment Report
 
 **Generated**: 2026-01-10 09:53:00
 **Platform**: Windows 10, Python 3.13.9
@@ -21,7 +21,7 @@
 
 ### Test Suite Health: **GOOD** ✓
 
-The Gmail Assistant test suite demonstrates strong overall quality with a 95.9% pass rate. The 18 failures are concentrated in specific areas (CLI stub commands and data analysis edge cases) that are either expected or low-risk.
+The Gman test suite demonstrates strong overall quality with a 95.9% pass rate. The 18 failures are concentrated in specific areas (CLI stub commands and data analysis edge cases) that are either expected or low-risk.
 
 ---
 
@@ -151,7 +151,7 @@ Integration tests requiring Gmail API credentials were appropriately skipped. Th
 **Note**: The extremely low coverage is expected because analysis modules are marked for exclusion in pyproject.toml:
 ```toml
 omit = [
-    "src/gmail_assistant/analysis/*",
+    "src/gman/analysis/*",
     ...
 ]
 ```
@@ -182,15 +182,15 @@ Coverage is measured against the entire codebase but many modules are intentiona
 
 Based on pyproject.toml configuration, the following modules are **intentionally excluded** from coverage:
 
-- Entry point: `src/gmail_assistant/__main__.py` (trivial)
-- Complex imports: `src/gmail_assistant/core/__init__.py`
-- Gmail API modules: `src/gmail_assistant/core/fetch/*` (integration-tested)
-- Processing modules: `src/gmail_assistant/core/processing/*`
-- AI modules: `src/gmail_assistant/core/ai/*`
-- Deletion modules: `src/gmail_assistant/deletion/*`
-- Analysis modules: `src/gmail_assistant/analysis/*`
-- Parser modules: `src/gmail_assistant/parsers/*`
-- CLI stub commands: `src/gmail_assistant/cli/commands/*` (v2.1.0)
+- Entry point: `src/gman/__main__.py` (trivial)
+- Complex imports: `src/gman/core/__init__.py`
+- Gmail API modules: `src/gman/core/fetch/*` (integration-tested)
+- Processing modules: `src/gman/core/processing/*`
+- AI modules: `src/gman/core/ai/*`
+- Deletion modules: `src/gman/deletion/*`
+- Analysis modules: `src/gman/analysis/*`
+- Parser modules: `src/gman/parsers/*`
+- CLI stub commands: `src/gman/cli/commands/*` (v2.1.0)
 
 ### Modules with Good Coverage (>50%)
 
@@ -233,7 +233,7 @@ All test failures are either expected (CLI stubs) or in secondary features (anal
    - **Tests**: `test_domain_analysis`, `test_date_range_analysis`
    - **Impact**: Analysis features may fail on specific data patterns
    - **Recommendation**: Add defensive data validation in analysis modules
-   - **Location**: `src/gmail_assistant/analysis/daily_email_analyzer.py`
+   - **Location**: `src/gman/analysis/daily_email_analyzer.py`
 
 ### Low-Risk Issues (Priority: LOW)
 
@@ -388,13 +388,13 @@ filterwarnings = [
 ### Priority 1: Fix Medium-Risk Issues
 
 1. **Debug Cache Persistence** (Integration)
-   - **File**: `src/gmail_assistant/core/` (cache implementation)
+   - **File**: `src/gman/core/` (cache implementation)
    - **Test**: `tests/integration/test_gmail_api.py::TestCachePersistence::test_cache_survives_restart`
    - **Action**: Investigate cache serialization logic
    - **Effort**: 2-4 hours
 
 2. **Fix Analysis Data Processing** (Analysis)
-   - **File**: `src/gmail_assistant/analysis/daily_email_analyzer.py`
+   - **File**: `src/gman/analysis/daily_email_analyzer.py`
    - **Tests**: `test_domain_analysis`, `test_date_range_analysis`
    - **Action**: Add defensive data validation and fix pandas indexing
    - **Effort**: 1-2 hours
@@ -403,7 +403,7 @@ filterwarnings = [
 
 1. **Add Parser Module Tests**
    - **Target Coverage**: 70% (from current exclusion)
-   - **Focus**: `src/gmail_assistant/parsers/`
+   - **Focus**: `src/gman/parsers/`
    - **Effort**: 8-12 hours
 
 2. **Increase Branch Coverage**
@@ -414,14 +414,14 @@ filterwarnings = [
 
 3. **Add AI Module Tests**
    - **Target Coverage**: 70% (from current exclusion)
-   - **Focus**: `src/gmail_assistant/core/ai/`
+   - **Focus**: `src/gman/core/ai/`
    - **Effort**: 6-8 hours
 
 ### Priority 3: Complete v2.1.0 CLI Implementation
 
 1. **Implement Functional CLI Commands**
    - **Tests to Fix**: 15 unit tests in `test_cli_main.py`
-   - **Files**: `src/gmail_assistant/cli/commands/*.py`
+   - **Files**: `src/gman/cli/commands/*.py`
    - **Status**: Documented as v2.1.0 milestone
    - **Effort**: 12-16 hours (per project plan)
 
@@ -443,7 +443,7 @@ filterwarnings = [
 
 ### Overall Risk Level: **LOW** ✓
 
-The Gmail Assistant test suite demonstrates strong quality with minimal risk:
+The Gman test suite demonstrates strong quality with minimal risk:
 
 | Risk Category | Level | Justification |
 |---------------|-------|---------------|
@@ -463,7 +463,7 @@ The Gmail Assistant test suite demonstrates strong quality with minimal risk:
 
 ## Conclusion
 
-The Gmail Assistant test suite is in **good health** with a 95.9% overall pass rate across 735 tests. The identified failures are either expected (CLI stub implementations awaiting v2.1.0) or low-impact (analysis edge cases, cache persistence).
+The Gman test suite is in **good health** with a 95.9% overall pass rate across 735 tests. The identified failures are either expected (CLI stub implementations awaiting v2.1.0) or low-impact (analysis edge cases, cache persistence).
 
 ### Strengths
 

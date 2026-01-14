@@ -17,7 +17,7 @@ Establish the configuration system and exception taxonomy. These must exist BEFO
 
 ### Task 1: Create Exception Taxonomy (SINGLE SOURCE OF TRUTH)
 
-Create `src/gmail_assistant/core/exceptions.py` with the content from Implementation Plan Section 9.2.
+Create `src/gman/core/exceptions.py` with the content from Implementation Plan Section 9.2.
 
 This file defines:
 - `GmailAssistantError` - Base exception
@@ -30,11 +30,11 @@ This file defines:
 
 ### Task 2: Create Configuration Loader
 
-Create `src/gmail_assistant/core/config.py` with the content from Implementation Plan Section 9.1.
+Create `src/gman/core/config.py` with the content from Implementation Plan Section 9.1.
 
 Key features:
 - Resolution order: CLI → env var → project → home → defaults
-- Security: Credentials default to `~/.gmail-assistant/`
+- Security: Credentials default to `~/.gman/`
 - Repo-safety check (warns if credentials in git repo)
 - Type validation on all fields
 - Unknown keys rejected
@@ -42,7 +42,7 @@ Key features:
 **IMPORTANT**: ConfigError must be imported from exceptions.py, NOT defined in config.py:
 
 ```python
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.exceptions import ConfigError
 ```
 
 ### Task 3: Create Configuration Schema
@@ -61,18 +61,18 @@ Create `config/default.json.template` with the content from Implementation Plan 
 
 ### Task 5: Create Constants File (if needed)
 
-Create `src/gmail_assistant/core/constants.py`:
+Create `src/gman/core/constants.py`:
 
 ```python
 """Application constants."""
 from __future__ import annotations
 
 # Application metadata
-APP_NAME = "gmail-assistant"
+APP_NAME = "gman"
 APP_VERSION = "2.0.0"
 
 # Default paths
-DEFAULT_CONFIG_DIR_NAME = ".gmail-assistant"
+DEFAULT_CONFIG_DIR_NAME = ".gman"
 DEFAULT_CONFIG_FILE_NAME = "config.json"
 
 # Gmail API
@@ -137,12 +137,12 @@ Create `docs/adr/README.md`:
 
 ### Task 8: Update Core __init__.py
 
-Update `src/gmail_assistant/core/__init__.py` to export key items:
+Update `src/gman/core/__init__.py` to export key items:
 
 ```python
-"""Core functionality for Gmail Assistant."""
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import (
+"""Core functionality for Gman."""
+from gman.core.config import AppConfig
+from gman.core.exceptions import (
     GmailAssistantError,
     ConfigError,
     AuthError,
@@ -164,21 +164,21 @@ __all__ = [
 
 ```python
 # Test exception imports
-python -c "from gmail_assistant.core.exceptions import ConfigError, AuthError, NetworkError; print('Exceptions OK')"
+python -c "from gman.core.exceptions import ConfigError, AuthError, NetworkError; print('Exceptions OK')"
 
 # Test config imports
-python -c "from gmail_assistant.core.config import AppConfig; print('Config OK')"
+python -c "from gman.core.config import AppConfig; print('Config OK')"
 
 # Verify no duplicate ConfigError
 python -c "
-from gmail_assistant.core import config, exceptions
+from gman.core import config, exceptions
 assert not hasattr(config, 'ConfigError') or config.ConfigError is exceptions.ConfigError
 print('No duplicate ConfigError')
 "
 
 # Test config loading
 python -c "
-from gmail_assistant.core.config import AppConfig
+from gman.core.config import AppConfig
 cfg = AppConfig._defaults()
 print(f'Default credentials: {cfg.credentials_path}')
 print(f'Default token: {cfg.token_path}')
@@ -189,7 +189,7 @@ print(f'Default token: {cfg.token_path}')
 
 ## Definition of Done
 
-- [ ] `from gmail_assistant.core.exceptions import ConfigError, AuthError, NetworkError` works
+- [ ] `from gman.core.exceptions import ConfigError, AuthError, NetworkError` works
 - [ ] Config loads from: CLI arg → env var → project → home → defaults
 - [ ] `docs/adr/` directory exists with ADR-0001 through ADR-0004
 - [ ] `docs/adr/README.md` exists with working links
@@ -206,14 +206,14 @@ After completing all tasks:
 git add -A
 git commit -m "phase-3: configuration system and exception taxonomy
 
-Phase 3 of Gmail Assistant restructuring.
+Phase 3 of Gman restructuring.
 - Created centralized exception hierarchy (exceptions.py)
 - Implemented secure config loader with resolution order
 - Added JSON Schema for configuration validation
 - Created ADR documents for key decisions
 - ConfigError is single source of truth
 
-BREAKING CHANGE: Config file paths changed, credentials now default to ~/.gmail-assistant/
+BREAKING CHANGE: Config file paths changed, credentials now default to ~/.gman/
 
 See: Implementation_Plan_Final_Release_Edition.md Section 6.4
 

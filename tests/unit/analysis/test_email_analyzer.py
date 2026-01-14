@@ -15,7 +15,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from gmail_assistant.analysis.email_analyzer import EmailAnalysisEngine
+from gman.analysis.email_analyzer import EmailAnalysisEngine
 
 
 # Test Fixtures

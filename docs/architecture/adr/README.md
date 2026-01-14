@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-This directory contains Architecture Decision Records (ADRs) for Gmail Assistant.
+This directory contains Architecture Decision Records (ADRs) for Gman.
 
 ADRs document significant architectural decisions made during development, including context, rationale, and consequences.
 

@@ -29,7 +29,7 @@ repos:
           - types-requests
         args: [--config-file=pyproject.toml]
         pass_filenames: false
-        entry: mypy src/gmail_assistant
+        entry: mypy src/gman
 
   - repo: local
     hooks:

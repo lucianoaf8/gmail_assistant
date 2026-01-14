@@ -17,7 +17,7 @@ class TestEmailDatabaseImporterInit:
 
     def test_init_default_values(self, tmp_path):
         """Test initialization with default values."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         importer = EmailDatabaseImporter()
         assert importer.db_path == Path("emails.db")
@@ -26,7 +26,7 @@ class TestEmailDatabaseImporterInit:
 
     def test_init_custom_values(self, tmp_path):
         """Test initialization with custom values."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "custom.db"
         json_folder = tmp_path / "custom_json"
@@ -41,7 +41,7 @@ class TestConnectDatabase:
 
     def test_connect_creates_connection(self, tmp_path):
         """Test connecting creates database connection."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -52,7 +52,7 @@ class TestConnectDatabase:
 
     def test_connect_enables_wal_mode(self, tmp_path):
         """Test connecting enables WAL journal mode."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -70,7 +70,7 @@ class TestCloseDatabase:
 
     def test_close_database(self, tmp_path):
         """Test closing database connection."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -82,7 +82,7 @@ class TestCloseDatabase:
 
     def test_close_database_when_not_connected(self, tmp_path):
         """Test closing when not connected."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         importer = EmailDatabaseImporter()
         # Should not raise error
@@ -94,7 +94,7 @@ class TestCreateDatabaseSchema:
 
     def test_creates_emails_table(self, tmp_path):
         """Test schema creates emails table."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -112,7 +112,7 @@ class TestCreateDatabaseSchema:
 
     def test_creates_import_batches_table(self, tmp_path):
         """Test schema creates import_batches table."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -129,7 +129,7 @@ class TestCreateDatabaseSchema:
 
     def test_creates_email_stats_table(self, tmp_path):
         """Test schema creates email_stats table."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -146,7 +146,7 @@ class TestCreateDatabaseSchema:
 
     def test_creates_indexes(self, tmp_path):
         """Test schema creates indexes."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -167,7 +167,7 @@ class TestImportMonthlyJson:
 
     def test_import_nonexistent_file(self, tmp_path):
         """Test importing nonexistent file."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -183,7 +183,7 @@ class TestImportMonthlyJson:
 
     def test_import_empty_json(self, tmp_path):
         """Test importing JSON with no emails."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         json_file = tmp_path / "2024-01_emails.json"
@@ -205,7 +205,7 @@ class TestImportMonthlyJson:
 
     def test_import_valid_emails(self, tmp_path):
         """Test importing valid emails."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         json_file = tmp_path / "2024-01_emails.json"
@@ -252,7 +252,7 @@ class TestImportMonthlyJson:
 
     def test_import_skips_duplicate_batch(self, tmp_path):
         """Test importing skips already imported batch."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         json_file = tmp_path / "2024-01_emails.json"
@@ -292,7 +292,7 @@ class TestImportAllMonthlyFiles:
 
     def test_import_all_missing_folder(self, tmp_path):
         """Test import all with missing folder."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         json_folder = tmp_path / "nonexistent"
@@ -309,7 +309,7 @@ class TestImportAllMonthlyFiles:
 
     def test_import_all_empty_folder(self, tmp_path):
         """Test import all with empty folder."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         json_folder = tmp_path / "json_data"
@@ -327,7 +327,7 @@ class TestImportAllMonthlyFiles:
 
     def test_import_all_with_files(self, tmp_path):
         """Test import all with JSON files."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         json_folder = tmp_path / "json_data"
@@ -365,7 +365,7 @@ class TestUpdateStatistics:
 
     def test_update_statistics(self, tmp_path):
         """Test updating statistics."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -397,7 +397,7 @@ class TestGetDatabaseInfo:
 
     def test_get_info_empty_database(self, tmp_path):
         """Test getting info from empty database."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -413,7 +413,7 @@ class TestGetDatabaseInfo:
 
     def test_get_info_with_data(self, tmp_path):
         """Test getting info with data."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -445,7 +445,7 @@ class TestSearchEmails:
 
     def test_search_no_results(self, tmp_path):
         """Test search with no results."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -460,7 +460,7 @@ class TestSearchEmails:
 
     def test_search_finds_matching_emails(self, tmp_path):
         """Test search finds matching emails."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))
@@ -486,7 +486,7 @@ class TestSearchEmails:
 
     def test_search_respects_limit(self, tmp_path):
         """Test search respects limit parameter."""
-        from gmail_assistant.core.processing.database import EmailDatabaseImporter
+        from gman.core.processing.database import EmailDatabaseImporter
 
         db_path = tmp_path / "test.db"
         importer = EmailDatabaseImporter(str(db_path))

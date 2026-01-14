@@ -56,10 +56,10 @@ python -m pytest tests/unit/test_auth.py -v
 @pytest.fixture
 def mock_all_cli_commands():
     """Mock all CLI command implementations."""
-    with mock.patch('gmail_assistant.cli.main.fetch_emails') as mock_fetch, \
-         mock.patch('gmail_assistant.cli.main.delete_emails') as mock_delete, \
-         mock.patch('gmail_assistant.cli.main.analyze_emails') as mock_analyze, \
-         mock.patch('gmail_assistant.cli.main.authenticate') as mock_auth:
+    with mock.patch('gman.cli.main.fetch_emails') as mock_fetch, \
+         mock.patch('gman.cli.main.delete_emails') as mock_delete, \
+         mock.patch('gman.cli.main.analyze_emails') as mock_analyze, \
+         mock.patch('gman.cli.main.authenticate') as mock_auth:
 
         mock_fetch.return_value = {'fetched': 10, 'total': 10}
         mock_delete.return_value = {'deleted': 0, 'failed': 0}
@@ -181,7 +181,7 @@ mock_func.return_value = (True, [])  # Tuple
 result = runner.invoke(main, ["fetch"])
 
 # Need to mock at import level, not instance level
-with mock.patch('gmail_assistant.cli.main.fetch_emails'):
+with mock.patch('gman.cli.main.fetch_emails'):
     result = runner.invoke(main, ["fetch"])
 ```
 
@@ -189,13 +189,13 @@ with mock.patch('gmail_assistant.cli.main.fetch_emails'):
 **Issue**: Functions imported at module level can't be mocked at runtime
 ```python
 # In cli/main.py
-from gmail_assistant.cli.commands.fetch import fetch_emails
+from gman.cli.commands.fetch import fetch_emails
 
 # ❌ Wrong - function already bound
 mock.patch.object(fetch, 'fetch_emails')
 
 # ✅ Correct - patch where it's used
-mock.patch('gmail_assistant.cli.main.fetch_emails')
+mock.patch('gman.cli.main.fetch_emails')
 ```
 
 ## Next Session Priorities

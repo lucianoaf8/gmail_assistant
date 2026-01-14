@@ -15,22 +15,22 @@ class TestStreamingGmailFetcherInit:
 
     def test_init_default_values(self):
         """Test initialization with default values."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager'):
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager'):
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         assert fetcher.batch_size == 100
 
     def test_init_custom_batch_size(self):
         """Test initialization with custom batch size."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager'):
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager'):
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher(batch_size=50)
                         assert fetcher.batch_size == 50
@@ -41,15 +41,15 @@ class TestServiceProperty:
 
     def test_service_property_delegates_to_credential_manager(self):
         """Test service property gets service from credential manager."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_cm.get_service.return_value = "mock_service"
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         service = fetcher.service
@@ -61,15 +61,15 @@ class TestFetchEmailIdsStreaming:
 
     def test_fetch_email_ids_no_service_raises(self):
         """Test fetch raises when service not available."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_cm.get_service.return_value = None
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
 
@@ -78,10 +78,10 @@ class TestFetchEmailIdsStreaming:
 
     def test_fetch_email_ids_yields_ids(self):
         """Test fetch yields message IDs."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker') as MockMT:
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker') as MockMT:
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_service = mock.MagicMock()
 
@@ -97,7 +97,7 @@ class TestFetchEmailIdsStreaming:
                         mock_mt_instance.check_memory.return_value = {'status': 'ok'}
                         MockMT.return_value = mock_mt_instance
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         ids = list(fetcher.fetch_email_ids_streaming("is:unread", max_results=10))
@@ -111,15 +111,15 @@ class TestFetchEmailStreaming:
 
     def test_fetch_email_no_service_returns_none(self):
         """Test fetch returns None when service not available."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_cm.get_service.return_value = None
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         result = fetcher.fetch_email_streaming("msg123")
@@ -127,10 +127,10 @@ class TestFetchEmailStreaming:
 
     def test_fetch_email_returns_essential_data(self):
         """Test fetch returns essential email data."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_service = mock.MagicMock()
 
@@ -147,7 +147,7 @@ class TestFetchEmailStreaming:
                         mock_cm.get_service.return_value = mock_service
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         result = fetcher.fetch_email_streaming("msg123")
@@ -158,10 +158,10 @@ class TestFetchEmailStreaming:
 
     def test_fetch_email_handles_exception(self):
         """Test fetch handles exceptions gracefully."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_service = mock.MagicMock()
 
@@ -169,7 +169,7 @@ class TestFetchEmailStreaming:
                         mock_cm.get_service.return_value = mock_service
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         result = fetcher.fetch_email_streaming("msg123")
@@ -181,15 +181,15 @@ class TestMemoryStats:
 
     def test_get_memory_stats(self):
         """Test get_memory_stats returns memory info."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager'):
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker') as MockMT:
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager'):
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker') as MockMT:
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_mt = mock.MagicMock()
                         mock_mt.check_memory.return_value = {'current_mb': 150, 'status': 'ok'}
                         MockMT.return_value = mock_mt
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         stats = fetcher.get_memory_stats()
@@ -199,15 +199,15 @@ class TestMemoryStats:
 
     def test_cleanup_memory(self):
         """Test cleanup_memory calls force_gc."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager'):
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker') as MockMT:
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager'):
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker') as MockMT:
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_mt = mock.MagicMock()
                         mock_mt.force_gc.return_value = 1024
                         MockMT.return_value = mock_mt
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
                         freed = fetcher.cleanup_memory()
@@ -221,10 +221,10 @@ class TestProcessEmailsStreaming:
 
     def test_process_emails_creates_output_dir(self):
         """Test process_emails creates output directory."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_service = mock.MagicMock()
                         mock_service.users().messages().list().execute.return_value = {
@@ -234,7 +234,7 @@ class TestProcessEmailsStreaming:
                         mock_cm.get_service.return_value = mock_service
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
 
@@ -245,10 +245,10 @@ class TestProcessEmailsStreaming:
 
     def test_process_emails_returns_empty_when_no_emails(self):
         """Test process_emails returns empty when no emails found."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager') as MockCM:
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager') as MockCM:
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
                         mock_cm = mock.MagicMock()
                         mock_service = mock.MagicMock()
                         mock_service.users().messages().list().execute.return_value = {
@@ -258,7 +258,7 @@ class TestProcessEmailsStreaming:
                         mock_cm.get_service.return_value = mock_service
                         MockCM.return_value = mock_cm
 
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
 
@@ -272,11 +272,11 @@ class TestSaveEmailStreaming:
 
     def test_save_email_handles_exception(self):
         """Test save handles exception gracefully."""
-        with mock.patch('gmail_assistant.core.fetch.streaming.SecureCredentialManager'):
-            with mock.patch('gmail_assistant.core.fetch.streaming.MemoryTracker'):
-                with mock.patch('gmail_assistant.core.fetch.streaming.StreamingEmailProcessor'):
-                    with mock.patch('gmail_assistant.core.fetch.streaming.ProgressiveLoader'):
-                        from gmail_assistant.core.fetch.streaming import StreamingGmailFetcher
+        with mock.patch('gman.core.fetch.streaming.SecureCredentialManager'):
+            with mock.patch('gman.core.fetch.streaming.MemoryTracker'):
+                with mock.patch('gman.core.fetch.streaming.StreamingEmailProcessor'):
+                    with mock.patch('gman.core.fetch.streaming.ProgressiveLoader'):
+                        from gman.core.fetch.streaming import StreamingGmailFetcher
 
                         fetcher = StreamingGmailFetcher()
 

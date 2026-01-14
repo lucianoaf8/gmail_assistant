@@ -1,4 +1,4 @@
-"""Shared test fixtures for Gmail Assistant."""
+"""Shared test fixtures for Gman."""
 from __future__ import annotations
 
 import json

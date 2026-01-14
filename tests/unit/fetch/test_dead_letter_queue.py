@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from gmail_assistant.core.fetch.dead_letter_queue import (
+from gman.core.fetch.dead_letter_queue import (
     DeadLetterQueue,
     DeadLetterItem,
     FailureType,

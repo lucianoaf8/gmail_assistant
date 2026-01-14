@@ -11,7 +11,7 @@ class TestPIIRedactor:
 
     def test_redactor_module_exists(self):
         """Verify PII redactor module exists."""
-        from gmail_assistant.utils import pii_redactor
+        from gman.utils import pii_redactor
 
         assert hasattr(pii_redactor, 'PIIRedactor') or \
                hasattr(pii_redactor, 'redact_pii'), \
@@ -19,7 +19,7 @@ class TestPIIRedactor:
 
     def test_email_redaction(self):
         """Verify email addresses are redacted."""
-        from gmail_assistant.utils.pii_redactor import PIIRedactor
+        from gman.utils.pii_redactor import PIIRedactor
 
         redactor = PIIRedactor()
 
@@ -36,7 +36,7 @@ class TestPIIRedactor:
 
     def test_phone_redaction(self):
         """Verify phone numbers are redacted."""
-        from gmail_assistant.utils.pii_redactor import PIIRedactor
+        from gman.utils.pii_redactor import PIIRedactor
 
         redactor = PIIRedactor()
 
@@ -53,7 +53,7 @@ class TestPIIRedactor:
 
     def test_ssn_redaction(self):
         """Verify SSN patterns are redacted."""
-        from gmail_assistant.utils.pii_redactor import PIIRedactor
+        from gman.utils.pii_redactor import PIIRedactor
 
         redactor = PIIRedactor()
 
@@ -64,7 +64,7 @@ class TestPIIRedactor:
 
     def test_credit_card_redaction(self):
         """Verify credit card patterns are redacted."""
-        from gmail_assistant.utils.pii_redactor import PIIRedactor
+        from gman.utils.pii_redactor import PIIRedactor
 
         redactor = PIIRedactor()
 
@@ -79,7 +79,7 @@ class TestPIIRedactor:
 
     def test_ip_address_redaction(self):
         """Verify IP addresses are redacted."""
-        from gmail_assistant.utils.pii_redactor import PIIRedactor
+        from gman.utils.pii_redactor import PIIRedactor
 
         redactor = PIIRedactor()
 
@@ -94,7 +94,7 @@ class TestSecureLogger:
 
     def test_secure_logger_exists(self):
         """Verify secure logger module exists."""
-        from gmail_assistant.utils import secure_logger
+        from gman.utils import secure_logger
 
         assert hasattr(secure_logger, 'SecureLogger') or \
                hasattr(secure_logger, 'get_secure_logger'), \
@@ -102,7 +102,7 @@ class TestSecureLogger:
 
     def test_logger_redacts_pii(self):
         """Verify logger automatically redacts PII."""
-        from gmail_assistant.utils.secure_logger import SecureLogger
+        from gman.utils.secure_logger import SecureLogger
         import io
         import logging
 
@@ -124,7 +124,7 @@ class TestSecureLogger:
 
     def test_logger_preserves_non_pii(self):
         """Verify logger preserves non-PII content."""
-        from gmail_assistant.utils.secure_logger import SecureLogger
+        from gman.utils.secure_logger import SecureLogger
         import io
         import logging
 

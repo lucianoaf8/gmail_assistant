@@ -1,6 +1,6 @@
 # Data Architecture Assessment Report
 
-**Project**: Gmail Assistant
+**Project**: Gman
 **Assessment Date**: 2026-01-09
 **Assessment Type**: Comprehensive Data Architecture Review
 **Version**: 1.0
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The Gmail Assistant project demonstrates a well-structured data architecture with multiple storage patterns, transformation pipelines, and integration capabilities. This assessment identifies strengths, areas for improvement, and provides actionable recommendations for data architecture optimization.
+The Gman project demonstrates a well-structured data architecture with multiple storage patterns, transformation pipelines, and integration capabilities. This assessment identifies strengths, areas for improvement, and provides actionable recommendations for data architecture optimization.
 
 ### Overall Assessment Score: **B+ (Good with Enhancement Opportunities)**
 
@@ -306,7 +306,7 @@ def get_latest_email_date(self) -> Optional[str]:
 |------|---------|-------------------|
 | `config.schema.json` | Main config schema | JSON Schema 2020-12 |
 | `config.json` | AI newsletter patterns | None |
-| `gmail_assistant_config.json` | Fetcher settings | None |
+| `gman_config.json` | Fetcher settings | None |
 | `analysis.json` | Analysis pipeline config | None |
 | `organizer_config.json` | Email categorization | None |
 | `deletion.json` | Deletion rules | None |
@@ -328,9 +328,9 @@ def get_latest_email_date(self) -> Optional[str]:
 ```python
 # Resolution Order:
 # 1. CLI arguments
-# 2. Environment variable: gmail_assistant_CONFIG
-# 3. Project config: ./gmail-assistant.json
-# 4. User config: ~/.gmail-assistant/config.json
+# 2. Environment variable: gman_CONFIG
+# 3. Project config: ./gman.json
+# 4. User config: ~/.gman/config.json
 # 5. Built-in defaults
 ```
 
@@ -482,7 +482,7 @@ class EmailAddress:
     domain: str  # Extracted for classification
 ```
 
-**Location**: `src/gmail_assistant/core/models/email.py`
+**Location**: `src/gman/core/models/email.py`
 
 #### R2: Database Schema Normalization
 Normalize the SQLite schema for better query performance and data integrity.
@@ -550,7 +550,7 @@ CREATE TABLE sync_state (
 );
 ```
 
-**Location**: `src/gmail_assistant/core/database/schema.sql`
+**Location**: `src/gman/core/database/schema.sql`
 
 #### R3: Configuration Schema Validation
 Add JSON Schema validation for all configuration files.
@@ -729,16 +729,16 @@ Design a GraphQL schema for complex email queries.
 
 | Path | Purpose | Data Type |
 |------|---------|-----------|
-| `src/gmail_assistant/core/protocols.py` | Protocol definitions | Python |
-| `src/gmail_assistant/core/processing/database.py` | SQLite operations | Python |
-| `src/gmail_assistant/core/fetch/gmail_assistant.py` | Gmail API integration | Python |
-| `src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py` | EML transformation | Python |
-| `src/gmail_assistant/core/processing/classifier.py` | Email classification | Python |
-| `src/gmail_assistant/analysis/email_analyzer.py` | Analytics engine | Python |
-| `src/gmail_assistant/core/ai/newsletter_cleaner.py` | Newsletter detection | Python |
-| `src/gmail_assistant/core/fetch/incremental.py` | Incremental fetch | Python |
+| `src/gman/core/protocols.py` | Protocol definitions | Python |
+| `src/gman/core/processing/database.py` | SQLite operations | Python |
+| `src/gman/core/fetch/gman.py` | Gmail API integration | Python |
+| `src/gman/parsers/gmail_eml_to_markdown_cleaner.py` | EML transformation | Python |
+| `src/gman/core/processing/classifier.py` | Email classification | Python |
+| `src/gman/analysis/email_analyzer.py` | Analytics engine | Python |
+| `src/gman/core/ai/newsletter_cleaner.py` | Newsletter detection | Python |
+| `src/gman/core/fetch/incremental.py` | Incremental fetch | Python |
 | `config/config.json` | AI patterns config | JSON |
-| `config/gmail_assistant_config.json` | Fetcher config | JSON |
+| `config/gman_config.json` | Fetcher config | JSON |
 | `config/analysis.json` | Analysis pipeline config | JSON |
 | `config/schema/config.schema.json` | Main config schema | JSON Schema |
 

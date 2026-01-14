@@ -13,8 +13,8 @@ import tempfile
 import json
 
 # Import deletion modules
-from gmail_assistant.deletion.deleter import GmailDeleter
-from gmail_assistant.deletion.ui import clean_unread_inbox
+from gman.deletion.deleter import GmailDeleter
+from gman.deletion.ui import clean_unread_inbox
 
 
 class TestGmailDeleter(unittest.TestCase):

@@ -80,7 +80,7 @@ The Gmail Fetcher Suite is a professional Python toolkit for comprehensive Gmail
     |   Core Module     |      |   Parsers Module    |
     |  src/core/*.py    |      |  src/parsers/*.py   |
     +-------------------+      +---------------------+
-    | - gmail_assistant   |      | - advanced_parser   |
+    | - gman   |      | - advanced_parser   |
     | - gmail_api_client|      | - eml_to_markdown   |
     | - credential_mgr  |      | - robust_converter  |
     | - protocols       |      +---------------------+
@@ -105,7 +105,7 @@ The Gmail Fetcher Suite is a professional Python toolkit for comprehensive Gmail
 
 | Component | Purpose |
 |-----------|---------|
-| `gmail_assistant.py` | Main GmailFetcher class for downloading emails |
+| `gman.py` | Main GmailFetcher class for downloading emails |
 | `gmail_api_client.py` | Gmail API integration for live operations |
 | `gmail_ai_newsletter_cleaner.py` | AI newsletter detection and cleanup |
 | `auth_base.py` | OAuth 2.0 authentication handlers |
@@ -317,7 +317,7 @@ cache = container.resolve(CacheManager)
 | Config directory | `config/` |
 | Data directory | `data/` |
 | Backup directory | `backups/` |
-| Cache directory | `~/.gmail_assistant_cache` |
+| Cache directory | `~/.gman_cache` |
 
 ### Classification Rules
 
@@ -525,7 +525,7 @@ Global Options:
 ### GmailFetcher Class
 
 ```python
-from src.core.gmail_assistant import GmailFetcher
+from src.core.gman import GmailFetcher
 
 class GmailFetcher:
     def __init__(self, credentials_file: str = 'credentials.json'):
@@ -782,7 +782,7 @@ python main.py tools ai-cleanup --input email_data.json --delete --threshold 0.8
 ### Pattern 1: Custom Email Processor
 
 ```python
-from src.core.gmail_assistant import GmailFetcher
+from src.core.gman import GmailFetcher
 from src.parsers.advanced_email_parser import EmailContentParser
 
 def process_emails_custom(query: str, processor_func):

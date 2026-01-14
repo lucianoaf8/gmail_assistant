@@ -12,10 +12,10 @@ import pytest
 class TestDeleteEmails:
     """Tests for delete_emails function."""
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_dry_run(self, mock_client_class, tmp_path):
         """Test delete in dry run mode."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         # Setup mock service
         mock_service = mock.MagicMock()
@@ -50,10 +50,10 @@ class TestDeleteEmails:
         assert result['deleted'] == 0
         assert result['dry_run'] is True
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_no_emails_found(self, mock_client_class, tmp_path):
         """Test delete when no emails match query."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -76,10 +76,10 @@ class TestDeleteEmails:
         assert result['found'] == 0
         assert result['deleted'] == 0
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_trash_mode(self, mock_client_class, tmp_path):
         """Test delete in trash mode."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -104,10 +104,10 @@ class TestDeleteEmails:
         assert result['deleted'] == 2
         mock_client.trash_emails.assert_called_once_with(['msg1', 'msg2'])
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_permanent_mode(self, mock_client_class, tmp_path):
         """Test delete in permanent deletion mode."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -132,10 +132,10 @@ class TestDeleteEmails:
         assert result['deleted'] == 2
         mock_client.delete_emails.assert_called_once_with(['msg1', 'msg2'])
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_respects_max_delete(self, mock_client_class, tmp_path):
         """Test delete respects max_delete limit."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -164,10 +164,10 @@ class TestDeleteEmails:
             maxResults=50
         )
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_handles_partial_failure(self, mock_client_class, tmp_path):
         """Test delete reports partial failures."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -191,11 +191,11 @@ class TestDeleteEmails:
         assert result['deleted'] == 2
         assert result['failed'] == 1
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_delete_api_error(self, mock_client_class, tmp_path):
         """Test delete raises APIError on failure."""
-        from gmail_assistant.cli.commands.delete import delete_emails
-        from gmail_assistant.core.exceptions import APIError
+        from gman.cli.commands.delete import delete_emails
+        from gman.core.exceptions import APIError
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.side_effect = Exception("API Error")
@@ -217,10 +217,10 @@ class TestDeleteEmails:
 class TestGetEmailCount:
     """Tests for get_email_count function."""
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_get_email_count_basic(self, mock_client_class, tmp_path):
         """Test basic email count."""
-        from gmail_assistant.cli.commands.delete import get_email_count
+        from gman.cli.commands.delete import get_email_count
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -238,10 +238,10 @@ class TestGetEmailCount:
 
         assert count == 150
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_get_email_count_zero(self, mock_client_class, tmp_path):
         """Test count returns zero when no emails."""
-        from gmail_assistant.cli.commands.delete import get_email_count
+        from gman.cli.commands.delete import get_email_count
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {
@@ -259,10 +259,10 @@ class TestGetEmailCount:
 
         assert count == 0
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_get_email_count_error_returns_zero(self, mock_client_class, tmp_path):
         """Test count returns zero on error."""
-        from gmail_assistant.cli.commands.delete import get_email_count
+        from gman.cli.commands.delete import get_email_count
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.side_effect = Exception("Error")
@@ -278,10 +278,10 @@ class TestGetEmailCount:
 
         assert count == 0
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_get_email_count_missing_field(self, mock_client_class, tmp_path):
         """Test count returns zero when field missing."""
-        from gmail_assistant.cli.commands.delete import get_email_count
+        from gman.cli.commands.delete import get_email_count
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {}
@@ -301,10 +301,10 @@ class TestGetEmailCount:
 class TestDeleteDryRunPreview:
     """Tests for dry run preview functionality."""
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_preview_shows_emails_preview(self, mock_client_class, tmp_path):
         """Test dry run shows email preview."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         # Create 15 messages
         messages = [{'id': f'msg{i}'} for i in range(15)]
@@ -345,10 +345,10 @@ class TestDeleteDryRunPreview:
         # Preview should limit to 10 emails
         assert mock_service.users().messages().get.call_count == 10
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
     def test_preview_handles_metadata_error(self, mock_client_class, tmp_path):
         """Test preview handles error getting email metadata."""
-        from gmail_assistant.cli.commands.delete import delete_emails
+        from gman.cli.commands.delete import delete_emails
 
         mock_service = mock.MagicMock()
         mock_service.users().messages().list().execute.return_value = {

@@ -1,4 +1,0 @@
-{
-    "credentials_path": "./config/security/credentials.json",
-    "output_dir": "./backups"
-}

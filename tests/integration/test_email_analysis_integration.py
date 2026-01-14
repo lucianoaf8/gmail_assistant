@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from gmail_assistant.analysis.email_data_converter import EmailDataConverter
-from gmail_assistant.analysis.daily_email_analysis import EmailAnalysisEngine
+from gman.analysis.email_data_converter import EmailDataConverter
+from gman.analysis.daily_email_analysis import EmailAnalysisEngine
 
 class TestEmailAnalysisIntegration(unittest.TestCase):
     """Test email analysis integration"""

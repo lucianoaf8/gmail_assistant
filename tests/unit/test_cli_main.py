@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.cli.main using Click's testing utilities."""
+"""Unit tests for gman.cli.main using Click's testing utilities."""
 from __future__ import annotations
 
 import json
@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from gmail_assistant.cli.main import main
-from gmail_assistant import __version__
+from gman.cli.main import main
+from gman import __version__
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ class TestCLIVersion:
         result = runner.invoke(main, ["--version"])
         assert result.exit_code == 0
         assert __version__ in result.output
-        assert "gmail-assistant" in result.output
+        assert "gman" in result.output
 
 
 class TestCLIHelp:
@@ -63,7 +63,7 @@ class TestFetchCommand:
     def test_fetch_runs(self, runner: CliRunner, temp_dir: Path, config_file: Path, mock_credentials: Path):
         """fetch should run without errors."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 10, 'total': 10}):
             result = runner.invoke(main, ["--config", str(config_file), "fetch", "--output-dir", str(temp_dir)])
@@ -72,7 +72,7 @@ class TestFetchCommand:
     def test_fetch_with_query(self, runner: CliRunner, temp_dir: Path, config_file: Path, mock_credentials: Path):
         """fetch --query should accept query string."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 5, 'total': 5}):
             result = runner.invoke(main, ["--config", str(config_file), "fetch", "--query", "is:unread", "--output-dir", str(temp_dir)])
@@ -81,7 +81,7 @@ class TestFetchCommand:
     def test_fetch_with_format(self, runner: CliRunner, temp_dir: Path, config_file: Path, mock_credentials: Path):
         """fetch --format should accept format option."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 10, 'total': 10}):
             result = runner.invoke(main, ["--config", str(config_file), "fetch", "--format", "mbox", "--output-dir", str(temp_dir)])
@@ -108,7 +108,7 @@ class TestDeleteCommand:
     def test_delete_with_query(self, runner: CliRunner):
         """delete --query should run."""
         from unittest import mock
-        from gmail_assistant.cli.commands import delete
+        from gman.cli.commands import delete
 
         with mock.patch.object(delete, 'delete_emails', return_value={'deleted': 0, 'failed': 0}):
             result = runner.invoke(main, ["delete", "--query", "from:test@example.com"])
@@ -117,7 +117,7 @@ class TestDeleteCommand:
     def test_delete_dry_run(self, runner: CliRunner):
         """delete --dry-run should indicate dry run."""
         from unittest import mock
-        from gmail_assistant.cli.commands import delete
+        from gman.cli.commands import delete
 
         with mock.patch.object(delete, 'delete_emails', return_value={'deleted': 0, 'failed': 0}):
             result = runner.invoke(main, ["delete", "--query", "test", "--dry-run"])
@@ -137,7 +137,7 @@ class TestAnalyzeCommand:
     def test_analyze_runs(self, runner: CliRunner, temp_dir: Path):
         """analyze should run without errors."""
         from unittest import mock
-        from gmail_assistant.cli.commands import analyze
+        from gman.cli.commands import analyze
 
         with mock.patch.object(analyze, 'analyze_emails', return_value={'analyzed': 10}):
             result = runner.invoke(main, ["analyze", "--input-dir", str(temp_dir)])
@@ -146,7 +146,7 @@ class TestAnalyzeCommand:
     def test_analyze_with_report_type(self, runner: CliRunner, temp_dir: Path):
         """analyze --report should accept report type."""
         from unittest import mock
-        from gmail_assistant.cli.commands import analyze
+        from gman.cli.commands import analyze
 
         with mock.patch.object(analyze, 'analyze_emails', return_value={'analyzed': 10}):
             result = runner.invoke(main, ["analyze", "--report", "json", "--input-dir", str(temp_dir)])
@@ -164,7 +164,7 @@ class TestAuthCommand:
     def test_auth_runs(self, runner: CliRunner):
         """auth should run without errors."""
         from unittest import mock
-        from gmail_assistant.cli.commands import auth
+        from gman.cli.commands import auth
 
         with mock.patch.object(auth, 'authenticate', return_value=True):
             result = runner.invoke(main, ["auth"])
@@ -201,9 +201,9 @@ class TestConfigCommand:
         with runner.isolated_filesystem(temp_dir=str(temp_dir)):
             # Mock default_dir to use temp directory
             from unittest import mock
-            from gmail_assistant.core.config import AppConfig
+            from gman.core.config import AppConfig
 
-            config_dir = Path(temp_dir) / ".gmail-assistant"
+            config_dir = Path(temp_dir) / ".gman"
             with mock.patch.object(AppConfig, "default_dir", return_value=config_dir):
                 result = runner.invoke(main, ["config", "--init"])
                 assert result.exit_code == 0
@@ -231,10 +231,10 @@ class TestHandleErrorsDecorator:
     def test_config_error_exit_code(self, runner: CliRunner, temp_dir: Path):
         """ConfigError should result in exit code 5."""
         from unittest import mock
-        from gmail_assistant.core.exceptions import ConfigError
+        from gman.core.exceptions import ConfigError
 
         with mock.patch(
-            'gmail_assistant.core.config.AppConfig.load',
+            'gman.core.config.AppConfig.load',
             side_effect=ConfigError("Invalid configuration")
         ):
             result = runner.invoke(main, ["fetch"])
@@ -244,10 +244,10 @@ class TestHandleErrorsDecorator:
     def test_auth_error_exit_code(self, runner: CliRunner):
         """AuthError should result in exit code 3."""
         from unittest import mock
-        from gmail_assistant.core.exceptions import AuthError
+        from gman.core.exceptions import AuthError
 
         with mock.patch(
-            'gmail_assistant.core.config.AppConfig.load',
+            'gman.core.config.AppConfig.load',
             side_effect=AuthError("Authentication failed")
         ):
             result = runner.invoke(main, ["fetch"])
@@ -257,23 +257,23 @@ class TestHandleErrorsDecorator:
     def test_network_error_exit_code(self, runner: CliRunner):
         """NetworkError should result in exit code 4."""
         from unittest import mock
-        from gmail_assistant.core.exceptions import NetworkError
+        from gman.core.exceptions import NetworkError
 
         with mock.patch(
-            'gmail_assistant.core.config.AppConfig.load',
+            'gman.core.config.AppConfig.load',
             side_effect=NetworkError("Network unavailable")
         ):
             result = runner.invoke(main, ["fetch"])
             assert result.exit_code == 4
             assert "Network error" in result.output
 
-    def test_gmail_assistant_error_exit_code(self, runner: CliRunner):
+    def test_gman_error_exit_code(self, runner: CliRunner):
         """GmailAssistantError should result in exit code 1."""
         from unittest import mock
-        from gmail_assistant.core.exceptions import GmailAssistantError
+        from gman.core.exceptions import GmailAssistantError
 
         with mock.patch(
-            'gmail_assistant.core.config.AppConfig.load',
+            'gman.core.config.AppConfig.load',
             side_effect=GmailAssistantError("General error")
         ):
             result = runner.invoke(main, ["fetch"])
@@ -285,7 +285,7 @@ class TestHandleErrorsDecorator:
         from unittest import mock
 
         with mock.patch(
-            'gmail_assistant.core.config.AppConfig.load',
+            'gman.core.config.AppConfig.load',
             side_effect=RuntimeError("Unexpected error")
         ):
             result = runner.invoke(main, ["fetch"])
@@ -305,9 +305,9 @@ class TestConfigCommandEdgeCases:
     def test_config_init_already_exists(self, runner: CliRunner, temp_dir: Path):
         """config --init should fail if config already exists."""
         from unittest import mock
-        from gmail_assistant.core.config import AppConfig
+        from gman.core.config import AppConfig
 
-        config_dir = temp_dir / ".gmail-assistant"
+        config_dir = temp_dir / ".gman"
         config_dir.mkdir(parents=True, exist_ok=True)
         config_file = config_dir / "config.json"
         config_file.write_text('{"test": "config"}')
@@ -320,10 +320,10 @@ class TestConfigCommandEdgeCases:
     def test_config_validate_invalid_config(self, runner: CliRunner, temp_dir: Path):
         """config --validate should detect invalid config."""
         from unittest import mock
-        from gmail_assistant.core.exceptions import ConfigError
+        from gman.core.exceptions import ConfigError
 
         with mock.patch(
-            'gmail_assistant.core.config.AppConfig.load',
+            'gman.core.config.AppConfig.load',
             side_effect=ConfigError("Invalid JSON")
         ):
             result = runner.invoke(main, ["config", "--validate"])
@@ -344,7 +344,7 @@ class TestDeleteCommandEdgeCases:
     def test_delete_with_confirm_flag(self, runner: CliRunner):
         """delete --confirm should skip prompt."""
         from unittest import mock
-        from gmail_assistant.cli.commands import delete
+        from gman.cli.commands import delete
 
         with mock.patch.object(delete, 'delete_emails', return_value={'deleted': 0, 'failed': 0}):
             result = runner.invoke(
@@ -355,7 +355,7 @@ class TestDeleteCommandEdgeCases:
     def test_delete_with_all_options(self, runner: CliRunner):
         """delete with all options should work."""
         from unittest import mock
-        from gmail_assistant.cli.commands import delete
+        from gman.cli.commands import delete
 
         with mock.patch.object(delete, 'delete_emails', return_value={'deleted': 0, 'failed': 0}):
             result = runner.invoke(
@@ -385,7 +385,7 @@ class TestAnalyzeCommandEdgeCases:
     def test_analyze_detailed_report(self, runner: CliRunner, temp_dir: Path):
         """analyze --report detailed should work."""
         from unittest import mock
-        from gmail_assistant.cli.commands import analyze
+        from gman.cli.commands import analyze
 
         with mock.patch.object(analyze, 'analyze_emails', return_value={'analyzed': 10}):
             result = runner.invoke(main, ["analyze", "--report", "detailed", "--input-dir", str(temp_dir)])
@@ -398,7 +398,7 @@ class TestFetchCommandEdgeCases:
     def test_fetch_with_max_emails(self, runner: CliRunner, temp_dir: Path):
         """fetch --max-emails should accept integer."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 500, 'total': 500}):
             result = runner.invoke(main, ["fetch", "--max-emails", "500", "--output-dir", str(temp_dir)])
@@ -407,7 +407,7 @@ class TestFetchCommandEdgeCases:
     def test_fetch_with_output_dir(self, runner: CliRunner, temp_dir: Path):
         """fetch --output-dir should accept path."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         output_dir = temp_dir / "backups"
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 10, 'total': 10}):
@@ -417,7 +417,7 @@ class TestFetchCommandEdgeCases:
     def test_fetch_with_eml_format(self, runner: CliRunner, temp_dir: Path):
         """fetch --format eml should work."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 10, 'total': 10}):
             result = runner.invoke(main, ["fetch", "--format", "eml", "--output-dir", str(temp_dir)])
@@ -426,7 +426,7 @@ class TestFetchCommandEdgeCases:
     def test_fetch_with_all_options(self, runner: CliRunner, temp_dir: Path):
         """fetch with all options should work."""
         from unittest import mock
-        from gmail_assistant.cli.commands import fetch
+        from gman.cli.commands import fetch
 
         output_dir = temp_dir / "output"
         with mock.patch.object(fetch, 'fetch_emails', return_value={'fetched': 100, 'total': 100}):

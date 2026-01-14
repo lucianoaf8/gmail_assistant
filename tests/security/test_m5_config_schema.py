@@ -13,7 +13,7 @@ class TestConfigSchemaValidation:
 
     def test_schema_module_exists(self):
         """Verify config schema module exists."""
-        from gmail_assistant.utils import config_schema
+        from gman.utils import config_schema
 
         assert hasattr(config_schema, 'validate_config') or \
                hasattr(config_schema, 'ConfigValidator'), \
@@ -21,7 +21,7 @@ class TestConfigSchemaValidation:
 
     def test_valid_config_accepted(self):
         """Verify valid configurations pass validation."""
-        from gmail_assistant.utils.config_schema import ConfigValidator
+        from gman.utils.config_schema import ConfigValidator
 
         valid_config = {
             "max_emails": 100,
@@ -37,7 +37,7 @@ class TestConfigSchemaValidation:
 
     def test_invalid_type_rejected(self):
         """Verify invalid types are rejected."""
-        from gmail_assistant.utils.config_schema import ConfigValidator
+        from gman.utils.config_schema import ConfigValidator
 
         invalid_config = {
             "max_emails": "not_a_number",  # Should be int
@@ -51,7 +51,7 @@ class TestConfigSchemaValidation:
 
     def test_missing_required_fields_rejected(self):
         """Verify missing required fields are caught."""
-        from gmail_assistant.utils.config_schema import ConfigValidator
+        from gman.utils.config_schema import ConfigValidator
 
         # Empty config missing required fields
         empty_config = {}
@@ -61,7 +61,7 @@ class TestConfigSchemaValidation:
 
     def test_malicious_values_rejected(self):
         """Verify potentially malicious values are rejected."""
-        from gmail_assistant.utils.config_schema import ConfigValidator
+        from gman.utils.config_schema import ConfigValidator
 
         malicious_configs = [
             {"output_path": "../../../etc/passwd"},
@@ -80,7 +80,7 @@ class TestConfigSchemaValidation:
 
     def test_schema_file_loading(self):
         """Verify schema can be loaded from files."""
-        from gmail_assistant.utils.config_schema import ConfigValidator
+        from gman.utils.config_schema import ConfigValidator
 
         validator = ConfigValidator()
 
@@ -93,7 +93,7 @@ class TestConfigValidationIntegration:
 
     def test_config_loading_validates(self):
         """Verify config loading uses validation."""
-        from gmail_assistant.utils import config_schema
+        from gman.utils import config_schema
 
         source = Path(config_schema.__file__).read_text(encoding='utf-8')
 
@@ -103,7 +103,7 @@ class TestConfigValidationIntegration:
 
     def test_config_error_messages_clear(self):
         """Verify validation errors are clear and actionable."""
-        from gmail_assistant.utils.config_schema import ConfigValidator
+        from gman.utils.config_schema import ConfigValidator
 
         invalid_config = {
             "max_emails": -1,  # Invalid: negative

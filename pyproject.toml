@@ -3,8 +3,8 @@ requires = ["hatchling>=1.21.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gmail-assistant"
-version = "2.0.0"
+name = "gman"
+version = "2.0.3"
 description = "Gmail backup, analysis, and management suite"
 readme = "README.md"
 license = "MIT"
@@ -72,7 +72,7 @@ network = [
     "urllib3>=2.2.0,<3.0",
 ]
 all = [
-    "gmail-assistant[analysis,ui,advanced-parsing,content-extraction,async,security,network]",
+    "gman[analysis,ui,advanced-parsing,content-extraction,async,security,network]",
 ]
 dev = [
     "pytest>=8.0.0,<9.0",
@@ -85,7 +85,7 @@ dev = [
 ]
 
 [project.scripts]
-gmail-assistant = "gmail_assistant.cli.main:main"
+gman = "gman.cli.main:main"
 
 [project.urls]
 Homepage = "https://github.com/user/gmail-assistant"
@@ -95,19 +95,19 @@ Changelog = "https://github.com/user/gmail-assistant/blob/main/CHANGELOG.md"
 
 # Fixed: Correct hatchling src-layout configuration
 [tool.hatch.build.targets.wheel]
-packages = ["src/gmail_assistant"]
+packages = ["src/gman"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "src/gmail_assistant/**/*.py",
-    "src/gmail_assistant/py.typed",
+    "src/gman/**/*.py",
+    "src/gman/py.typed",
     "README.md",
     "CHANGELOG.md",
 ]
 
 # Ensure py.typed is included
 [tool.hatch.build.targets.wheel.force-include]
-"src/gmail_assistant/py.typed" = "gmail_assistant/py.typed"
+"src/gman/py.typed" = "gman/py.typed"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -134,30 +134,30 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["src/gmail_assistant"]
+source = ["src/gman"]
 branch = true
 data_file = "tests/test_results/.coverage"
 omit = [
     "*/__pycache__/*",
     "*/tests/*",
     # Entry point (trivial)
-    "src/gmail_assistant/__main__.py",
+    "src/gman/__main__.py",
     # Complex conditional imports
-    "src/gmail_assistant/core/__init__.py",
+    "src/gman/core/__init__.py",
     # Modules requiring Gmail API (tested in integration)
-    "src/gmail_assistant/core/fetch/*",
-    "src/gmail_assistant/core/processing/*",
-    "src/gmail_assistant/core/ai/*",
-    "src/gmail_assistant/deletion/*",
-    "src/gmail_assistant/analysis/*",
-    "src/gmail_assistant/parsers/*",
+    "src/gman/core/fetch/*",
+    "src/gman/core/processing/*",
+    "src/gman/core/ai/*",
+    "src/gman/deletion/*",
+    "src/gman/analysis/*",
+    "src/gman/parsers/*",
     # CLI stub commands (v2.1.0 implementation)
-    "src/gmail_assistant/cli/commands/analyze.py",
-    "src/gmail_assistant/cli/commands/auth.py",
-    "src/gmail_assistant/cli/commands/config_cmd.py",
-    "src/gmail_assistant/cli/commands/delete.py",
-    "src/gmail_assistant/cli/commands/fetch.py",
-    "src/gmail_assistant/cli/commands/__init__.py",
+    "src/gman/cli/commands/analyze.py",
+    "src/gman/cli/commands/auth.py",
+    "src/gman/cli/commands/config_cmd.py",
+    "src/gman/cli/commands/delete.py",
+    "src/gman/cli/commands/fetch.py",
+    "src/gman/cli/commands/__init__.py",
 ]
 
 [tool.coverage.report]
@@ -188,7 +188,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
 ignore = ["E501", "SIM102", "E402"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["gmail_assistant"]
+known-first-party = ["gman"]
 
 # Fixed: Remove --ignore-missing-imports, add explicit per-module config
 [tool.mypy]
@@ -197,7 +197,7 @@ warn_return_any = true
 warn_unused_ignores = true
 disallow_untyped_defs = true
 mypy_path = "src"
-packages = ["gmail_assistant"]
+packages = ["gman"]
 
 [[tool.mypy.overrides]]
 module = [

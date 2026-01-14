@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from gmail_assistant.analysis.email_data_converter import EmailDataConverter
+from gman.analysis.email_data_converter import EmailDataConverter
 
 
 # Test Fixtures

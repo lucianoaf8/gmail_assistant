@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The Gmail Assistant project documentation has significant discrepancies between documented features and actual implementation. The project underwent a v2.0.0 restructuring with a new Click-based CLI, but documentation in CLAUDE.md and README.md still references obsolete paths and commands.
+The Gman project documentation has significant discrepancies between documented features and actual implementation. The project underwent a v2.0.0 restructuring with a new Click-based CLI, but documentation in CLAUDE.md and README.md still references obsolete paths and commands.
 
 ### Audit Status
 
@@ -27,14 +27,14 @@ The Gmail Assistant project documentation has significant discrepancies between 
 
 **DOCUMENTED (Lines 60-74)**:
 ```
-- `gmail_assistant.py`: Main application with GmailFetcher class
+- `gman.py`: Main application with GmailFetcher class
 - `samples.py`: Pre-built scenarios for common use cases
 ```
 
 **ACTUAL STATE**:
-- `gmail_assistant.py` is located at `src/gmail_assistant/core/fetch/gmail_assistant.py`, NOT in project root
+- `gman.py` is located at `src/gman/core/fetch/gman.py`, NOT in project root
 - `samples.py` is located at `examples/samples.py`, NOT in root
-- Entry point is now `gmail-assistant` CLI (defined in pyproject.toml)
+- Entry point is now `gman` CLI (defined in pyproject.toml)
 
 **DISCREPANCY SEVERITY**: CRITICAL
 
@@ -44,7 +44,7 @@ The Gmail Assistant project documentation has significant discrepancies between 
 
 **DOCUMENTED**:
 ```
-- `config/gmail_assistant_config.json`: Main fetcher configuration
+- `config/gman_config.json`: Main fetcher configuration
 - `config/config.json`: AI newsletter detection configuration
 ```
 
@@ -67,11 +67,11 @@ The Gmail Assistant project documentation has significant discrepancies between 
 ```
 
 **ACTUAL STATE**:
-- All moved to `src/gmail_assistant/` subdirectories:
-  - `src/gmail_assistant/parsers/advanced_email_parser.py`
-  - `src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py`
-  - `src/gmail_assistant/core/ai/newsletter_cleaner.py` (renamed)
-  - `src/gmail_assistant/core/fetch/gmail_api_client.py`
+- All moved to `src/gman/` subdirectories:
+  - `src/gman/parsers/advanced_email_parser.py`
+  - `src/gman/parsers/gmail_eml_to_markdown_cleaner.py`
+  - `src/gman/core/ai/newsletter_cleaner.py` (renamed)
+  - `src/gman/core/fetch/gmail_api_client.py`
 
 **DISCREPANCY SEVERITY**: CRITICAL
 
@@ -104,22 +104,22 @@ The Gmail Assistant project documentation has significant discrepancies between 
 ```bash
 # Setup and Authentication
 pip install -r requirements.txt
-python gmail_assistant.py --auth-only
+python gman.py --auth-only
 
 # Basic Operations
-python gmail_assistant.py --query "is:unread" --max 1000
+python gman.py --query "is:unread" --max 1000
 ```
 
 **ACTUAL STATE**:
 - Installation should be `pip install -e .` (editable install)
-- CLI commands should use `gmail-assistant` entry point
+- CLI commands should use `gman` entry point
 - Correct commands per BREAKING_CHANGES.md:
   ```bash
-  gmail-assistant auth
-  gmail-assistant fetch --query "is:unread" --max-emails 1000
+  gman auth
+  gman fetch --query "is:unread" --max-emails 1000
   ```
 - **IMPORTANT**: CLI commands are currently STUB implementations (v2.1.0 pending)
-  - See `src/gmail_assistant/cli/main.py` lines 109, 134, 157, 174
+  - See `src/gman/cli/main.py` lines 109, 134, 157, 174
 
 **DISCREPANCY SEVERITY**: CRITICAL
 
@@ -167,8 +167,8 @@ python gmail_api_client.py --credentials credentials.json --max-emails 1000
 ```
 
 **ACTUAL STATE**:
-- All paths need updating to `src/gmail_assistant/` structure
-- Scripts may require module invocation: `python -m gmail_assistant.parsers.advanced_email_parser`
+- All paths need updating to `src/gman/` structure
+- Scripts may require module invocation: `python -m gman.parsers.advanced_email_parser`
 
 **DISCREPANCY SEVERITY**: CRITICAL
 
@@ -226,9 +226,9 @@ python gmail_api_client.py --credentials credentials.json --max-emails 1000
 
 **DOCUMENTED**:
 ```
-gmail_assistant/
+gman/
 ├── src/
-│   ├── gmail_assistant.py
+│   ├── gman.py
 │   ├── advanced_email_parser.py
 │   ├── gmail_ai_newsletter_cleaner.py
 │   ├── gmail_api_client.py
@@ -242,14 +242,14 @@ gmail_assistant/
 
 **ACTUAL STATE**:
 ```
-gmail_assistant/
-├── src/gmail_assistant/
+gman/
+├── src/gman/
 │   ├── cli/
 │   │   ├── main.py (entry point)
 │   │   └── commands/
 │   ├── core/
 │   │   ├── fetch/
-│   │   │   ├── gmail_assistant.py
+│   │   │   ├── gman.py
 │   │   │   └── gmail_api_client.py
 │   │   ├── ai/
 │   │   │   └── newsletter_cleaner.py
@@ -277,15 +277,15 @@ gmail_assistant/
 **DOCUMENTED**:
 ```bash
 # Download unread emails (new CLI)
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Download by date range with organization
-python src/gmail_assistant.py --query "after:2025/02/28" --organize sender --format both
+python src/gman.py --query "after:2025/02/28" --organize sender --format both
 ```
 
 **ACTUAL STATE**:
-- `gmail-assistant` CLI is correct entry point
-- `python src/gmail_assistant.py` is OBSOLETE
+- `gman` CLI is correct entry point
+- `python src/gman.py` is OBSOLETE
 - **CRITICAL**: CLI commands are STUB implementations per `main.py`:
   ```
   "[INFO] Functional fetch implementation is deferred to v2.1.0"
@@ -297,13 +297,13 @@ python src/gmail_assistant.py --query "after:2025/02/28" --organize sender --for
 
 ### Section: Tool Paths Throughout Document
 
-**DOCUMENTED**: Multiple references to `python src/gmail_assistant.py`, `python src/advanced_email_parser.py`, etc.
+**DOCUMENTED**: Multiple references to `python src/gman.py`, `python src/advanced_email_parser.py`, etc.
 
 **ACTUAL STATE**:
-- Source files are in `src/gmail_assistant/` package structure
+- Source files are in `src/gman/` package structure
 - Should use either:
-  - `gmail-assistant` CLI entry point, or
-  - `python -m gmail_assistant.cli.main`
+  - `gman` CLI entry point, or
+  - `python -m gman.cli.main`
 
 **DISCREPANCY SEVERITY**: CRITICAL
 
@@ -317,8 +317,8 @@ python src/gmail_assistant.py --query "after:2025/02/28" --organize sender --for
 ```
 
 **ACTUAL STATE**:
-- `src/gmail_assistant/core/constants.py` contains BOTH read-only AND modify scopes
-- Delete functionality exists in `src/gmail_assistant/deletion/`
+- `src/gman/core/constants.py` contains BOTH read-only AND modify scopes
+- Delete functionality exists in `src/gman/deletion/`
 
 **DISCREPANCY SEVERITY**: MODERATE (misleading)
 
@@ -369,7 +369,7 @@ Current docs assume:
 ### 4. Architecture Overview (MISSING)
 
 No document explains:
-- New package structure (`src/gmail_assistant/`)
+- New package structure (`src/gman/`)
 - Module relationships
 - Entry points and initialization flow
 
@@ -404,7 +404,7 @@ No document explains:
 
 ### Immediate Priority (P0):
 1. Update all script paths in CLAUDE.md and README.md
-2. Update CLI command examples to use `gmail-assistant` entry point
+2. Update CLI command examples to use `gman` entry point
 3. Add clear notice that CLI commands are stub implementations
 4. Fix installation instructions to use `pip install -e .`
 
@@ -426,25 +426,25 @@ No document explains:
 
 | File | Path | Exists | Notes |
 |------|------|--------|-------|
-| CLAUDE.md | `C:\_Lucx\Projects\gmail_assistant\CLAUDE.md` | Yes | Major updates needed |
-| README.md | `C:\_Lucx\Projects\gmail_assistant\README.md` | Yes | Major updates needed |
-| BREAKING_CHANGES.md | `C:\_Lucx\Projects\gmail_assistant\BREAKING_CHANGES.md` | Yes | Mostly accurate |
-| CHANGELOG.md | `C:\_Lucx\Projects\gmail_assistant\CHANGELOG.md` | Yes | Accurate |
-| pyproject.toml | `C:\_Lucx\Projects\gmail_assistant\pyproject.toml` | Yes | Source of truth |
-| requirements.txt | `C:\_Lucx\Projects\gmail_assistant\requirements.txt` | Yes | Exists |
-| requirements_advanced.txt | `C:\_Lucx\Projects\gmail_assistant\requirements_advanced.txt` | **NO** | DOES NOT EXIST |
+| CLAUDE.md | `C:\_Lucx\Projects\gman\CLAUDE.md` | Yes | Major updates needed |
+| README.md | `C:\_Lucx\Projects\gman\README.md` | Yes | Major updates needed |
+| BREAKING_CHANGES.md | `C:\_Lucx\Projects\gman\BREAKING_CHANGES.md` | Yes | Mostly accurate |
+| CHANGELOG.md | `C:\_Lucx\Projects\gman\CHANGELOG.md` | Yes | Accurate |
+| pyproject.toml | `C:\_Lucx\Projects\gman\pyproject.toml` | Yes | Source of truth |
+| requirements.txt | `C:\_Lucx\Projects\gman\requirements.txt` | Yes | Exists |
+| requirements_advanced.txt | `C:\_Lucx\Projects\gman\requirements_advanced.txt` | **NO** | DOES NOT EXIST |
 
 ---
 
 ## Appendix: Verified Actual File Locations
 
 ### Source Code
-- `src/gmail_assistant/cli/main.py` - CLI entry point
-- `src/gmail_assistant/core/fetch/gmail_assistant.py` - GmailFetcher class
-- `src/gmail_assistant/core/fetch/gmail_api_client.py` - API client
-- `src/gmail_assistant/core/ai/newsletter_cleaner.py` - Newsletter cleaner
-- `src/gmail_assistant/parsers/advanced_email_parser.py` - Advanced parser
-- `src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py` - EML converter
+- `src/gman/cli/main.py` - CLI entry point
+- `src/gman/core/fetch/gman.py` - GmailFetcher class
+- `src/gman/core/fetch/gmail_api_client.py` - API client
+- `src/gman/core/ai/newsletter_cleaner.py` - Newsletter cleaner
+- `src/gman/parsers/advanced_email_parser.py` - Advanced parser
+- `src/gman/parsers/gmail_eml_to_markdown_cleaner.py` - EML converter
 
 ### Scripts
 - `scripts/setup/quick_start.bat`
@@ -458,5 +458,5 @@ No document explains:
 
 ### Configuration
 - `config/config.json`
-- `config/gmail_assistant_config.json`
+- `config/gman_config.json`
 - `config/0922-0238_project_governance.json`

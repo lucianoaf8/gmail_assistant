@@ -32,7 +32,7 @@ This directory contains comprehensive documentation for the Gmail Fetcher test s
 ### Run All Working Tests
 ```bash
 # Navigate to project root
-cd /path/to/gmail_assistant
+cd /path/to/gman
 
 # Method 1: Use the comprehensive test runner
 python tests/docs/run_comprehensive_tests.py
@@ -80,7 +80,7 @@ python -m pytest tests/test_core_simple.py tests/test_email_processing_comprehen
 ### Module Coverage Status
 | Module | Coverage | Status | Priority |
 |--------|----------|--------|----------|
-| `gmail_assistant.py` | 39% | ✅ Good | Expand to 70% |
+| `gman.py` | 39% | ✅ Good | Expand to 70% |
 | `advanced_email_parser.py` | 18% | ⚠️ Partial | Increase to 50% |
 | `email_classifier.py` | 0% | ❌ Needs work | Start at 40% |
 | `gmail_api_client.py` | 12% | ⚠️ Partial | Increase to 30% |

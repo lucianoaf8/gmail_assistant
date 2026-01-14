@@ -14,11 +14,11 @@ import pytest
 class TestFetchEmails:
     """Tests for fetch_emails function."""
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_emails_basic(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test basic email fetching."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         # Setup mocks
         mock_fetcher = mock.MagicMock()
@@ -55,12 +55,12 @@ class TestFetchEmails:
         assert result['fetched'] == 3
         mock_fetcher.authenticate.assert_called_once()
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_emails_auth_failure(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test fetch fails on auth error."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
-        from gmail_assistant.core.exceptions import AuthError
+        from gman.cli.commands.fetch import fetch_emails
+        from gman.core.exceptions import AuthError
 
         mock_fetcher = mock.MagicMock()
         mock_fetcher.authenticate.return_value = False
@@ -82,11 +82,11 @@ class TestFetchEmails:
                 credentials_path=creds_path
             )
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_emails_no_results(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test fetch with no matching emails."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         mock_fetcher = mock.MagicMock()
         mock_fetcher.authenticate.return_value = True
@@ -114,11 +114,11 @@ class TestFetchEmails:
         assert result['total'] == 0
         mock_checkpoint_mgr.mark_completed.assert_called_once()
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_emails_resume(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test fetch with resume functionality."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         mock_fetcher = mock.MagicMock()
         mock_fetcher.authenticate.return_value = True
@@ -156,11 +156,11 @@ class TestFetchEmails:
         # 2 messages fetched (skipping first one)
         assert result['fetched'] == 2
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_emails_handles_exceptions(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test fetch marks checkpoint interrupted on exception."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         mock_fetcher = mock.MagicMock()
         mock_fetcher.authenticate.return_value = True
@@ -193,7 +193,7 @@ class TestSaveEmail:
 
     def test_save_email_json(self, tmp_path):
         """Test saving email as JSON."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -213,7 +213,7 @@ class TestSaveEmail:
 
     def test_save_email_eml(self, tmp_path):
         """Test saving email as EML."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -231,7 +231,7 @@ class TestSaveEmail:
 
     def test_save_email_mbox(self, tmp_path):
         """Test saving email as mbox."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -250,7 +250,7 @@ class TestSaveEmail:
 
     def test_save_email_appends_to_mbox(self, tmp_path):
         """Test multiple emails append to same mbox file."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         for i in range(3):
             email_data = {
@@ -271,7 +271,7 @@ class TestSaveEmail:
 
     def test_save_email_sanitizes_subject(self, tmp_path):
         """Test subject is sanitized for filename."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -292,7 +292,7 @@ class TestSaveEmail:
 
     def test_save_email_truncates_long_subject(self, tmp_path):
         """Test long subject is truncated."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -309,7 +309,7 @@ class TestSaveEmail:
 
     def test_save_email_no_subject(self, tmp_path):
         """Test email with no subject uses default."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -324,7 +324,7 @@ class TestSaveEmail:
 
     def test_save_email_index_formatting(self, tmp_path):
         """Test index is zero-padded in filename."""
-        from gmail_assistant.cli.commands.fetch import _save_email
+        from gman.cli.commands.fetch import _save_email
 
         email_data = {
             'id': 'msg123',
@@ -342,11 +342,11 @@ class TestSaveEmail:
 class TestFetchEmailsIntegration:
     """Integration tests for fetch_emails with file operations."""
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_creates_output_directory(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test fetch creates output directory if not exists."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         mock_fetcher = mock.MagicMock()
         mock_fetcher.authenticate.return_value = True
@@ -381,11 +381,11 @@ class TestFetchEmailsIntegration:
 
         assert output_dir.exists()
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_updates_checkpoint_periodically(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test checkpoint is updated every 50 emails."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         # Create 100 message IDs
         message_ids = [f'msg{i}' for i in range(100)]
@@ -421,11 +421,11 @@ class TestFetchEmailsIntegration:
         # Should update checkpoint at 50 and 100
         assert mock_checkpoint_mgr.update_progress.call_count >= 1
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
     def test_fetch_continues_on_individual_email_failure(self, mock_fetcher_class, mock_checkpoint_class, tmp_path):
         """Test fetch continues when individual email fails."""
-        from gmail_assistant.cli.commands.fetch import fetch_emails
+        from gman.cli.commands.fetch import fetch_emails
 
         mock_fetcher = mock.MagicMock()
         mock_fetcher.authenticate.return_value = True

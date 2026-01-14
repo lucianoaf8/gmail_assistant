@@ -1,7 +1,7 @@
 # Technical Reference Documentation - Delivery Summary
 
 **Date**: 2026-01-09
-**Project**: Gmail Assistant v2.0.0
+**Project**: Gman v2.0.0
 **Deliverable**: Exhaustive Technical Reference Documentation
 **Status**: Complete
 
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-Created comprehensive technical reference documentation for gmail-assistant v2.0.0, providing exhaustive API specifications, configuration schemas, CLI documentation, and constants reference. All documentation follows the project's timestamped naming convention (MMDD-HHMM_filename.md) and is organized in the `docs/` directory.
+Created comprehensive technical reference documentation for gman v2.0.0, providing exhaustive API specifications, configuration schemas, CLI documentation, and constants reference. All documentation follows the project's timestamped naming convention (MMDD-HHMM_filename.md) and is organized in the `docs/` directory.
 
 **Total Documents**: 4 comprehensive references
 **Total Content**: ~100+ KB of detailed technical documentation
@@ -49,7 +49,7 @@ Created comprehensive technical reference documentation for gmail-assistant v2.0
 **Purpose**: Complete command-line interface documentation
 
 **Contents**:
-- Entry point specification (`gmail-assistant` script)
+- Entry point specification (`gman` script)
 - Global options: `--config`, `--allow-repo-credentials`, `--version`
 - 5 Commands with full parameter documentation:
   - `auth` - Authenticate with Gmail API
@@ -100,16 +100,16 @@ config:
 - Email Organization config (priority classifications)
 - Analysis Pipeline config (quality thresholds, classification)
 - Deletion Patterns config (promotional, social, newsletters, etc.)
-- Gmail Assistant Presets (9 query examples)
+- Gman Presets (9 query examples)
 - Configuration loading and resolution process
 - Validation rules with code examples
 - Environment variable overrides
 
 **AppConfig Parameters**:
 ```
-credentials_path              Path        ~/.gmail-assistant/credentials.json
-token_path                    Path        ~/.gmail-assistant/token.json
-output_dir                    Path        ~/.gmail-assistant/backups
+credentials_path              Path        ~/.gman/credentials.json
+token_path                    Path        ~/.gman/token.json
+output_dir                    Path        ~/.gman/backups
 max_emails                    Integer     1000           [1-50000]
 rate_limit_per_second        Float       10.0           [0.1-100]
 log_level                    String      INFO           [DEBUG|INFO|WARNING|ERROR|CRITICAL]
@@ -171,7 +171,7 @@ profile = fetcher.get_profile()
 
 **Exception Handling**:
 ```python
-from gmail_assistant.core.exceptions import (
+from gman.core.exceptions import (
     ConfigError,        # exit code 5
     AuthError,          # exit code 3
     NetworkError,       # exit code 4
@@ -200,7 +200,7 @@ from gmail_assistant.core.exceptions import (
 
 **Constants Summary**:
 ```
-APP_NAME                           "gmail-assistant"
+APP_NAME                           "gman"
 APP_VERSION                        "2.0.0"
 
 GMAIL_READONLY_SCOPE               "https://www.googleapis.com/auth/gmail.readonly"
@@ -220,17 +220,17 @@ DEFAULT_OUTPUT_FORMAT              'both'
 SUPPORTED_ORGANIZATION_TYPES       ['date', 'sender', 'none']
 DEFAULT_ORGANIZATION               'date'
 
-KEYRING_SERVICE                    "gmail_assistant"
+KEYRING_SERVICE                    "gman"
 KEYRING_USERNAME                   "oauth_credentials"
 ```
 
 **Environment Variable Overrides**:
 ```
-GMAIL_ASSISTANT_CONFIG_DIR         → CONFIG_DIR
-GMAIL_ASSISTANT_DATA_DIR           → DATA_DIR
-GMAIL_ASSISTANT_BACKUP_DIR         → BACKUP_DIR
-GMAIL_ASSISTANT_CREDENTIALS_DIR    → CREDENTIALS_DIR
-GMAIL_ASSISTANT_CACHE_DIR          → CACHE_DIR
+GMAN_CONFIG_DIR         → CONFIG_DIR
+GMAN_DATA_DIR           → DATA_DIR
+GMAN_BACKUP_DIR         → BACKUP_DIR
+GMAN_CREDENTIALS_DIR    → CREDENTIALS_DIR
+GMAN_CACHE_DIR          → CACHE_DIR
 ```
 
 ---
@@ -346,26 +346,26 @@ Each document includes:
 All documentation verified against actual source files:
 
 ### CLI Reference verified against:
-- `src/gmail_assistant/cli/main.py` - All commands and options
+- `src/gman/cli/main.py` - All commands and options
 - `pyproject.toml` - Entry point specification
-- `src/gmail_assistant/core/exceptions.py` - Exit code mapping
+- `src/gman/core/exceptions.py` - Exit code mapping
 
 ### Configuration Reference verified against:
-- `src/gmail_assistant/core/config.py` - AppConfig class and validation
+- `src/gman/core/config.py` - AppConfig class and validation
 - `config/config.json` - AI cleaner configuration
-- `config/gmail_assistant_config.json` - Email presets
+- `config/gman_config.json` - Email presets
 - `config/organizer_config.json` - Organization patterns
 - `config/analysis.json` - Analysis pipeline config
 
 ### Public API Reference verified against:
-- `src/gmail_assistant/core/fetch/gmail_assistant.py` - GmailFetcher class
-- `src/gmail_assistant/core/fetch/gmail_api_client.py` - GmailAPIClient class
-- `src/gmail_assistant/core/schemas.py` - Email data models
-- `src/gmail_assistant/core/protocols.py` - Protocol definitions
-- `src/gmail_assistant/core/exceptions.py` - Exception hierarchy
+- `src/gman/core/fetch/gman.py` - GmailFetcher class
+- `src/gman/core/fetch/gmail_api_client.py` - GmailAPIClient class
+- `src/gman/core/schemas.py` - Email data models
+- `src/gman/core/protocols.py` - Protocol definitions
+- `src/gman/core/exceptions.py` - Exception hierarchy
 
 ### Constants Reference verified against:
-- `src/gmail_assistant/core/constants.py` - All constants
+- `src/gman/core/constants.py` - All constants
 - `pyproject.toml` - Package metadata and dependencies
 
 ---
@@ -459,7 +459,7 @@ All documents follow consistent formatting, making updates straightforward.
 ## Deliverable Files
 
 ### Location
-`C:\_Lucx\Projects\gmail_assistant\docs\`
+`C:\_Lucx\Projects\gman\docs\`
 
 ### Files Created
 1. `0109-1400_TECHNICAL_REFERENCE_INDEX.md` (17 KB)
@@ -472,11 +472,11 @@ All documents follow consistent formatting, making updates straightforward.
 ~93 KB of comprehensive technical documentation
 
 ### File Paths (Absolute)
-- `C:\_Lucx\Projects\gmail_assistant\docs\0109-1400_TECHNICAL_REFERENCE_INDEX.md`
-- `C:\_Lucx\Projects\gmail_assistant\docs\0109-1500_CLI_REFERENCE.md`
-- `C:\_Lucx\Projects\gmail_assistant\docs\0109-1600_CONFIGURATION_REFERENCE.md`
-- `C:\_Lucx\Projects\gmail_assistant\docs\0109-1700_PUBLIC_API_REFERENCE.md`
-- `C:\_Lucx\Projects\gmail_assistant\docs\0109-1800_CONSTANTS_REFERENCE.md`
+- `C:\_Lucx\Projects\gman\docs\0109-1400_TECHNICAL_REFERENCE_INDEX.md`
+- `C:\_Lucx\Projects\gman\docs\0109-1500_CLI_REFERENCE.md`
+- `C:\_Lucx\Projects\gman\docs\0109-1600_CONFIGURATION_REFERENCE.md`
+- `C:\_Lucx\Projects\gman\docs\0109-1700_PUBLIC_API_REFERENCE.md`
+- `C:\_Lucx\Projects\gman\docs\0109-1800_CONSTANTS_REFERENCE.md`
 
 ---
 
@@ -507,7 +507,7 @@ All documents follow consistent formatting, making updates straightforward.
 
 ## Conclusion
 
-This deliverable provides exhaustive technical reference documentation for gmail-assistant v2.0.0, covering:
+This deliverable provides exhaustive technical reference documentation for gman v2.0.0, covering:
 
 1. **Complete CLI Reference** - Every command, option, and exit code
 2. **Comprehensive Configuration Schema** - All config files and parameters

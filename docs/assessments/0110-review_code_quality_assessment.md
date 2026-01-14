@@ -1,9 +1,9 @@
 # Code Quality Assessment Report
 
-**Project**: Gmail Assistant v2.0.0
+**Project**: Gman v2.0.0
 **Assessment Date**: 2026-01-10
 **Reviewer**: Claude Code (Automated Analysis)
-**Scope**: `src/gmail_assistant/` (72 files) and `tests/` (50 files)
+**Scope**: `src/gman/` (72 files) and `tests/` (50 files)
 
 ---
 
@@ -59,15 +59,15 @@
 
 | Severity | Issue | Location | Description |
 |----------|-------|----------|-------------|
-| MEDIUM | Long Function | `src/gmail_assistant/core/fetch/gmail_assistant.py:371-475` | `download_emails()` is 105 lines - should be refactored |
-| MEDIUM | Complex Method | `src/gmail_assistant/parsers/advanced_email_parser.py:560-660` | `parse_email_content()` has high cyclomatic complexity |
-| LOW | Inconsistent Docstrings | `src/gmail_assistant/utils/cache_manager.py` | Some methods lack docstrings (e.g., `CacheEntry.to_dict`) |
-| LOW | Magic Numbers | `src/gmail_assistant/utils/input_validator.py:168` | Hard-coded `260` for MAX_PATH |
+| MEDIUM | Long Function | `src/gman/core/fetch/gman.py:371-475` | `download_emails()` is 105 lines - should be refactored |
+| MEDIUM | Complex Method | `src/gman/parsers/advanced_email_parser.py:560-660` | `parse_email_content()` has high cyclomatic complexity |
+| LOW | Inconsistent Docstrings | `src/gman/utils/cache_manager.py` | Some methods lack docstrings (e.g., `CacheEntry.to_dict`) |
+| LOW | Magic Numbers | `src/gman/utils/input_validator.py:168` | Hard-coded `260` for MAX_PATH |
 
 #### Code Sample - Long Function Issue
 
 ```python
-# src/gmail_assistant/core/fetch/gmail_assistant.py:371-475
+# src/gman/core/fetch/gman.py:371-475
 def download_emails(self, query: str = '', ...):  # 105 lines
     # RECOMMENDATION: Split into:
     # - _search_messages()
@@ -91,7 +91,7 @@ def download_emails(self, query: str = '', ...):  # 105 lines
 | Severity | Issue | Location | Recommendation |
 |----------|-------|----------|----------------|
 | LOW | Abbreviated name | Multiple files | `cfg` -> `config` for clarity |
-| LOW | Single-letter variable | `src/gmail_assistant/parsers/advanced_email_parser.py:314` | `e` -> `exception` or `error` |
+| LOW | Single-letter variable | `src/gman/parsers/advanced_email_parser.py:314` | `e` -> `exception` or `error` |
 | INFO | Inconsistent prefix | `test_*.py` files | Mix of `test_` and `Test*` prefixes (acceptable) |
 
 ### 1.3 Docstring Coverage and Quality
@@ -112,8 +112,8 @@ def download_emails(self, query: str = '', ...):  # 105 lines
 
 | Severity | Issue | Location |
 |----------|-------|----------|
-| MEDIUM | Missing Args section | `src/gmail_assistant/utils/memory_manager.py:95` |
-| MEDIUM | Outdated docstring | `src/gmail_assistant/core/protocols.py:61` |
+| MEDIUM | Missing Args section | `src/gman/utils/memory_manager.py:95` |
+| MEDIUM | Outdated docstring | `src/gman/core/protocols.py:61` |
 | LOW | No Examples | Multiple utility functions |
 
 ### 1.4 Type Hint Usage and Correctness
@@ -133,15 +133,15 @@ def download_emails(self, query: str = '', ...):  # 105 lines
 #### Critical Type Issues
 
 ```python
-# src/gmail_assistant/utils/memory_manager.py:95
+# src/gman/utils/memory_manager.py:95
 # ERROR: Function "builtins.callable" is not valid as a type
 progress_callback: callable = None  # Should be: Callable[..., None]
 
-# src/gmail_assistant/utils/secure_file.py:62
+# src/gman/utils/secure_file.py:62
 # ERROR: Module has no attribute "fchmod"
 os.fchmod(fd, 0o600)  # Windows incompatibility
 
-# src/gmail_assistant/core/protocols.py:86
+# src/gman/core/protocols.py:86
 # ERROR: Incompatible types in assignment
 errors: List[str] = None  # Should be: Optional[List[str]] = None
 ```
@@ -172,16 +172,16 @@ errors: List[str] = None  # Should be: Optional[List[str]] = None
 
 ```python
 # E722 - Bare except (6 instances)
-# src/gmail_assistant/core/fetch/gmail_assistant.py:431
+# src/gman/core/fetch/gman.py:431
 except:  # ISSUE: Should specify exception type
     date_prefix = 'unknown_date'
 
 # F401 - Unused imports (125 instances)
-# src/gmail_assistant/utils/cache_manager.py:10
+# src/gman/utils/cache_manager.py:10
 from dataclasses import dataclass, asdict  # asdict unused
 
 # B904 - raise without from (6 instances)
-# src/gmail_assistant/utils/input_validator.py:254
+# src/gman/utils/input_validator.py:254
 except (ValueError, TypeError):
     raise ValidationError(f"Invalid integer value: {value}")
     # Should be: raise ValidationError(...) from e
@@ -201,7 +201,7 @@ except (ValueError, TypeError):
 
 | Severity | Issue | Location | Recommendation |
 |----------|-------|----------|----------------|
-| HIGH | Bare except | `gmail_assistant.py:431` | Use specific exception type |
+| HIGH | Bare except | `gman.py:431` | Use specific exception type |
 | MEDIUM | Exception swallowing | `cache_manager.py:117` | Log before returning default |
 | MEDIUM | Missing from clause | `input_validator.py:254` | Add `from e` for exception chaining |
 | LOW | Generic Exception | `cli/main.py:152` | Consider more specific handling |
@@ -233,8 +233,8 @@ except (ValueError, TypeError) as e:
 
 | Severity | Issue | Location |
 |----------|-------|----------|
-| MEDIUM | Missing context manager | `src/gmail_assistant/utils/cache_manager.py:235` |
-| LOW | Potential resource leak | `src/gmail_assistant/core/processing/database.py:188` |
+| MEDIUM | Missing context manager | `src/gman/utils/cache_manager.py:235` |
+| LOW | Potential resource leak | `src/gman/core/processing/database.py:188` |
 
 ### 2.4 Import Organization
 
@@ -340,7 +340,7 @@ def mock_gmail_service():
 | Module | Missing Test Cases |
 |--------|-------------------|
 | `cache_manager.py` | Concurrent access stress test |
-| `gmail_assistant.py` | Network timeout handling |
+| `gman.py` | Network timeout handling |
 | `advanced_email_parser.py` | Malformed HTML handling |
 | `rate_limiter.py` | Boundary conditions |
 
@@ -352,15 +352,15 @@ def mock_gmail_service():
 
 | Severity | Issue | Location | Impact |
 |----------|-------|----------|--------|
-| HIGH | Synchronous API calls | `gmail_assistant.py:371` | Blocking I/O in loop |
+| HIGH | Synchronous API calls | `gman.py:371` | Blocking I/O in loop |
 | MEDIUM | Repeated regex compilation | `pii_redactor.py:40-80` | CPU overhead |
-| MEDIUM | No connection pooling | `gmail_assistant.py` | API rate limits |
+| MEDIUM | No connection pooling | `gman.py` | API rate limits |
 | LOW | Repeated BeautifulSoup parsing | `advanced_email_parser.py` | Memory allocation |
 
 #### Example - Regex Compilation Issue
 
 ```python
-# src/gmail_assistant/utils/pii_redactor.py
+# src/gman/utils/pii_redactor.py
 # CURRENT: Patterns compiled in __init__ (GOOD)
 # But some patterns are compiled per-call:
 re.search(r'<script[^>]*>', query, re.IGNORECASE)  # Line 81
@@ -402,7 +402,7 @@ re.search(r'<script[^>]*>', query, re.IGNORECASE)  # Line 81
 
 | Severity | Location | Description |
 |----------|----------|-------------|
-| MEDIUM | `src/gmail_assistant/deletion/setup.py:70` | Import of non-existent `gmail_deleter` module |
+| MEDIUM | `src/gman/deletion/setup.py:70` | Import of non-existent `gmail_deleter` module |
 | LOW | 125 unused imports | Throughout codebase |
 | LOW | 15 unused variables | Throughout codebase |
 
@@ -410,7 +410,7 @@ re.search(r'<script[^>]*>', query, re.IGNORECASE)  # Line 81
 
 | Location 1 | Location 2 | Duplicated Logic |
 |------------|------------|------------------|
-| `gmail_assistant.py:331-341` | `input_validator.py:359-368` | Filename sanitization |
+| `gman.py:331-341` | `input_validator.py:359-368` | Filename sanitization |
 | `cache_manager.py:93-99` | `memory_manager.py:45-51` | Size estimation |
 
 #### Recommendation
@@ -428,7 +428,7 @@ def sanitize_filename(filename: str, max_length: int = 200) -> str:
 
 | Function | Location | Lines | Complexity |
 |----------|----------|-------|------------|
-| `download_emails()` | `gmail_assistant.py:371-475` | 105 | HIGH |
+| `download_emails()` | `gman.py:371-475` | 105 | HIGH |
 | `parse_email_content()` | `advanced_email_parser.py:560-660` | 100 | HIGH |
 | `validate_file_path()` | `input_validator.py:100-199` | 100 | MEDIUM |
 | `clean_html()` | `advanced_email_parser.py:143-200` | 57 | MEDIUM |
@@ -459,7 +459,7 @@ def _process_and_save_email(self, msg_id, output_dir, format_type, organize_by):
 |-------|----------|----------------|
 | `260` | `input_validator.py:168` | `MAX_PATH = 260` constant |
 | `1000` | `input_validator.py:68` | `MAX_QUERY_LENGTH = 1000` |
-| `200` | `gmail_assistant.py:338` | `MAX_FILENAME_LENGTH = 200` |
+| `200` | `gman.py:338` | `MAX_FILENAME_LENGTH = 200` |
 | `500` | `cache_manager.py:440` | `DISK_CACHE_THRESHOLD_MB = 500` |
 
 ---
@@ -513,7 +513,7 @@ warn_return_any = true
 warn_unused_ignores = true
 disallow_untyped_defs = true
 mypy_path = "src"
-packages = ["gmail_assistant"]
+packages = ["gman"]
 ```
 
 #### Assessment
@@ -624,7 +624,7 @@ max-complexity = 10
 python_version = "3.10"
 strict = true
 mypy_path = "src"
-packages = ["gmail_assistant"]
+packages = ["gman"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -661,7 +661,7 @@ repos:
 
 ## 9. Conclusion
 
-The Gmail Assistant codebase demonstrates good architectural decisions with a well-organized package structure, dedicated security utilities, and comprehensive exception handling. The security posture is particularly strong with PII redaction, input validation, and secure file operations.
+The Gman codebase demonstrates good architectural decisions with a well-organized package structure, dedicated security utilities, and comprehensive exception handling. The security posture is particularly strong with PII redaction, input validation, and secure file operations.
 
 However, significant technical debt exists in the form of:
 - **2,735 linting violations** (mostly auto-fixable)

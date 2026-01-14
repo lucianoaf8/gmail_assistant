@@ -13,7 +13,7 @@ class TestPathTraversalValidation:
 
     def test_basic_traversal_blocked(self):
         """Verify basic path traversal attempts are blocked."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         traversal_paths = [
             "../../../etc/passwd",
@@ -30,7 +30,7 @@ class TestPathTraversalValidation:
 
     def test_url_encoded_traversal_blocked(self):
         """Verify URL-encoded traversal attempts are detected."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         encoded_paths = [
             "%2e%2e%2f%2e%2e%2fetc/passwd",  # ../..
@@ -45,7 +45,7 @@ class TestPathTraversalValidation:
 
     def test_double_encoded_traversal_blocked(self):
         """Verify double-URL-encoded traversal is detected."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         # Double-encoded paths that resolve to traversal after decoding
         # Note: Our validator decodes once, so test paths that contain
@@ -61,7 +61,7 @@ class TestPathTraversalValidation:
 
     def test_allowed_base_enforcement(self):
         """Verify allowed_base parameter restricts paths."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         with tempfile.TemporaryDirectory() as tmpdir:
             allowed = Path(tmpdir) / "allowed"
@@ -76,7 +76,7 @@ class TestPathTraversalValidation:
 
     def test_symlink_resolution(self):
         """Verify symlinks are resolved before validation."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         with tempfile.TemporaryDirectory() as tmpdir:
             allowed = Path(tmpdir) / "allowed"
@@ -112,7 +112,7 @@ class TestPathTraversalValidation:
 
     def test_null_byte_injection_blocked(self):
         """Verify null byte injection is blocked."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         null_paths = [
             "file.txt\x00.exe",
@@ -129,7 +129,7 @@ class TestValidPathOperations:
 
     def test_valid_relative_paths(self):
         """Verify valid relative paths are accepted."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         # Use current working directory without changing it (avoids Windows file locking)
         original_cwd = os.getcwd()
@@ -149,7 +149,7 @@ class TestValidPathOperations:
 
     def test_valid_absolute_paths(self):
         """Verify valid absolute paths are accepted."""
-        from gmail_assistant.utils.input_validator import validate_file_path
+        from gman.utils.input_validator import validate_file_path
 
         with tempfile.TemporaryDirectory() as tmpdir:
             file = Path(tmpdir) / "test.txt"

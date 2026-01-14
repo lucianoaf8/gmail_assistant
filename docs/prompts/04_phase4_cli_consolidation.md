@@ -18,12 +18,12 @@ Implement the Click-based CLI with all subcommands. Commands are argument-parsin
 ### Task 1: Create Commands Directory
 
 ```bash
-mkdir -p src/gmail_assistant/cli/commands
+mkdir -p src/gman/cli/commands
 ```
 
 ### Task 2: Create CLI Main Module
 
-Create `src/gmail_assistant/cli/main.py` with the complete content from Implementation Plan Section 10.2.
+Create `src/gman/cli/main.py` with the complete content from Implementation Plan Section 10.2.
 
 Key features:
 - Click group with version option
@@ -33,7 +33,7 @@ Key features:
 
 ### Task 3: Create Subcommand Modules
 
-Create individual subcommand files in `src/gmail_assistant/cli/commands/`:
+Create individual subcommand files in `src/gman/cli/commands/`:
 
 **fetch.py:**
 ```python
@@ -82,7 +82,7 @@ from __future__ import annotations
 
 ### Task 4: Update Commands __init__.py
 
-Create `src/gmail_assistant/cli/commands/__init__.py`:
+Create `src/gman/cli/commands/__init__.py`:
 
 ```python
 """CLI subcommand modules."""
@@ -99,24 +99,24 @@ __all__ = [
 
 ### Task 5: Update CLI __init__.py
 
-Create/update `src/gmail_assistant/cli/__init__.py`:
+Create/update `src/gman/cli/__init__.py`:
 
 ```python
-"""Command Line Interface for Gmail Assistant."""
+"""Command Line Interface for Gman."""
 from __future__ import annotations
 
-from gmail_assistant.cli.main import main
+from gman.cli.main import main
 
 __all__ = ["main"]
 ```
 
 ### Task 6: Update Package __main__.py
 
-Verify `src/gmail_assistant/__main__.py` exists with:
+Verify `src/gman/__main__.py` exists with:
 
 ```python
-"""Entry point for python -m gmail_assistant."""
-from gmail_assistant.cli.main import main
+"""Entry point for python -m gman."""
+from gman.cli.main import main
 
 if __name__ == "__main__":
     raise SystemExit(main())
@@ -124,10 +124,10 @@ if __name__ == "__main__":
 
 ### Task 7: Update Package __init__.py
 
-Verify `src/gmail_assistant/__init__.py` has:
+Verify `src/gman/__init__.py` has:
 
 ```python
-"""Gmail Assistant - Gmail backup, analysis, and management suite."""
+"""Gman - Gmail backup, analysis, and management suite."""
 __version__ = "2.0.0"
 __all__ = ["__version__"]
 ```
@@ -142,21 +142,21 @@ pip install -e .
 
 ```bash
 # Version check
-gmail-assistant --version
+gman --version
 
 # Help check
-gmail-assistant --help
+gman --help
 
 # Subcommand help checks
-gmail-assistant fetch --help
-gmail-assistant delete --help
-gmail-assistant analyze --help
-gmail-assistant auth --help
-gmail-assistant config --help
+gman fetch --help
+gman delete --help
+gman analyze --help
+gman auth --help
+gman config --help
 
 # Python module invocation
-python -m gmail_assistant --version
-python -m gmail_assistant --help
+python -m gman --version
+python -m gman --help
 ```
 
 ### Task 10: Validate Exit Codes
@@ -175,12 +175,12 @@ def test_exit(cmd, expected):
     return actual == expected
 
 # These should succeed (exit 0)
-test_exit('gmail-assistant --version', 0)
-test_exit('gmail-assistant --help', 0)
-test_exit('gmail-assistant fetch --help', 0)
+test_exit('gman --version', 0)
+test_exit('gman --help', 0)
+test_exit('gman fetch --help', 0)
 
 # Usage errors should exit 2 (Click default)
-# test_exit('gmail-assistant delete', 2)  # missing required --query
+# test_exit('gman delete', 2)  # missing required --query
 "
 ```
 
@@ -201,15 +201,15 @@ test_exit('gmail-assistant fetch --help', 0)
 
 ## Definition of Done
 
-- [ ] `gmail-assistant --version` shows version
-- [ ] `gmail-assistant --help` shows all commands
-- [ ] `gmail-assistant fetch --help` shows expected flags
-- [ ] `gmail-assistant delete --help` shows expected flags
-- [ ] `gmail-assistant analyze --help` shows expected flags
-- [ ] `gmail-assistant auth --help` shows expected flags
-- [ ] `gmail-assistant config --help` shows expected flags
-- [ ] `python -m gmail_assistant --version` works
-- [ ] All exception types imported from `gmail_assistant.core.exceptions`
+- [ ] `gman --version` shows version
+- [ ] `gman --help` shows all commands
+- [ ] `gman fetch --help` shows expected flags
+- [ ] `gman delete --help` shows expected flags
+- [ ] `gman analyze --help` shows expected flags
+- [ ] `gman auth --help` shows expected flags
+- [ ] `gman config --help` shows expected flags
+- [ ] `python -m gman --version` works
+- [ ] All exception types imported from `gman.core.exceptions`
 
 ---
 
@@ -221,7 +221,7 @@ After completing all tasks:
 git add -A
 git commit -m "phase-4: CLI consolidation with Click
 
-Phase 4 of Gmail Assistant restructuring.
+Phase 4 of Gman restructuring.
 - Implemented Click-based CLI with subcommands
 - Added fetch, delete, analyze, auth, config commands
 - Implemented error handler with exit code mapping

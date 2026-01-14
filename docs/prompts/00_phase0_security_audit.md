@@ -152,7 +152,7 @@ After completing all tasks:
 git add -A
 git commit -m "phase-0: security audit and gitignore hardening
 
-Phase 0 of Gmail Assistant restructuring.
+Phase 0 of Gman restructuring.
 See: Implementation_Plan_Final_Release_Edition.md Section 6.1
 
 Co-Authored-By: Claude <noreply@anthropic.com>"

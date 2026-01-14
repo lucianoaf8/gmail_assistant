@@ -1,4 +1,4 @@
-# Gmail Assistant Documentation
+# Gman Documentation
 
 ## Quick Navigation
 

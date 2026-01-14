@@ -14,10 +14,10 @@ class TestEnvironmentPathOverrides:
     def test_config_dir_override(self):
         """Verify CONFIG_DIR can be overridden via environment."""
         test_path = '/custom/config' if os.name != 'nt' else r'\custom\config'
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_CONFIG_DIR': test_path}):
+        with patch.dict(os.environ, {'GMAN_CONFIG_DIR': test_path}):
             # Force reimport to pick up new env var
             import importlib
-            from gmail_assistant.core import constants
+            from gman.core import constants
             importlib.reload(constants)
 
             # Normalize path separators for cross-platform comparison
@@ -26,9 +26,9 @@ class TestEnvironmentPathOverrides:
     def test_data_dir_override(self):
         """Verify DATA_DIR can be overridden via environment."""
         test_path = '/custom/data' if os.name != 'nt' else r'\custom\data'
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_DATA_DIR': test_path}):
+        with patch.dict(os.environ, {'GMAN_DATA_DIR': test_path}):
             import importlib
-            from gmail_assistant.core import constants
+            from gman.core import constants
             importlib.reload(constants)
 
             assert Path(constants.DATA_DIR).parts[-2:] == ('custom', 'data')
@@ -36,16 +36,16 @@ class TestEnvironmentPathOverrides:
     def test_backup_dir_override(self):
         """Verify BACKUP_DIR can be overridden via environment."""
         test_path = '/custom/backups' if os.name != 'nt' else r'\custom\backups'
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_BACKUP_DIR': test_path}):
+        with patch.dict(os.environ, {'GMAN_BACKUP_DIR': test_path}):
             import importlib
-            from gmail_assistant.core import constants
+            from gman.core import constants
             importlib.reload(constants)
 
             assert Path(constants.BACKUP_DIR).parts[-2:] == ('custom', 'backups')
 
     def test_env_path_function_exists(self):
         """Verify _get_env_path helper function exists."""
-        from gmail_assistant.core import constants
+        from gman.core import constants
 
         source = Path(constants.__file__).read_text(encoding='utf-8')
 
@@ -56,9 +56,9 @@ class TestEnvironmentPathOverrides:
         """Verify default paths used when env vars not set."""
         # Clear relevant env vars
         env_vars = [
-            'GMAIL_ASSISTANT_CONFIG_DIR',
-            'GMAIL_ASSISTANT_DATA_DIR',
-            'GMAIL_ASSISTANT_BACKUP_DIR',
+            'GMAN_CONFIG_DIR',
+            'GMAN_DATA_DIR',
+            'GMAN_BACKUP_DIR',
         ]
 
         clean_env = {k: v for k, v in os.environ.items()
@@ -66,7 +66,7 @@ class TestEnvironmentPathOverrides:
 
         with patch.dict(os.environ, clean_env, clear=True):
             import importlib
-            from gmail_assistant.core import constants
+            from gman.core import constants
             importlib.reload(constants)
 
             # Should use default project-relative paths
@@ -84,9 +84,9 @@ class TestEnvironmentSecurity:
         ]
 
         for malicious in malicious_paths:
-            with patch.dict(os.environ, {'GMAIL_ASSISTANT_CONFIG_DIR': malicious}):
+            with patch.dict(os.environ, {'GMAN_CONFIG_DIR': malicious}):
                 import importlib
-                from gmail_assistant.core import constants
+                from gman.core import constants
                 importlib.reload(constants)
 
                 # Path should be converted to absolute, neutralizing traversal
@@ -94,9 +94,9 @@ class TestEnvironmentSecurity:
 
     def test_empty_env_uses_default(self):
         """Verify empty environment variables use defaults."""
-        with patch.dict(os.environ, {'GMAIL_ASSISTANT_CONFIG_DIR': ''}):
+        with patch.dict(os.environ, {'GMAN_CONFIG_DIR': ''}):
             import importlib
-            from gmail_assistant.core import constants
+            from gman.core import constants
             importlib.reload(constants)
 
             # Empty string should result in default path

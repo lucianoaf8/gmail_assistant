@@ -8,10 +8,10 @@ import subprocess
 import sys
 from datetime import datetime, timedelta
 
-def run_gmail_assistant(query, max_emails, output_dir, format_type="both", organize="date"):
-    """Helper function to run gmail_assistant with parameters"""
+def run_gman(query, max_emails, output_dir, format_type="both", organize="date"):
+    """Helper function to run gman with parameters"""
     cmd = [
-        "python", "../src/gmail_assistant.py",
+        "python", "../src/gman.py",
         "--query", query,
         "--max", str(max_emails),
         "--output", output_dir,
@@ -27,7 +27,7 @@ def scenario_unread_cleanup():
     print("📧 Scenario: Unread Email Backup")
     print("Purpose: Backup all unread emails before mass archiving")
     
-    run_gmail_assistant(
+    run_gman(
         query="is:unread",
         max_emails=2000,
         output_dir="backup_unread",
@@ -41,7 +41,7 @@ def scenario_newsletter_archive():
     print("Purpose: Organize newsletters by sender for easy browsing")
     
     # AI/Tech newsletters
-    run_gmail_assistant(
+    run_gman(
         query="from:(theresanaiforthat.com OR mindstream.news OR futurepedia.io OR newsletter.futurepedia.io)",
         max_emails=1000,
         output_dir="newsletters_ai",
@@ -50,7 +50,7 @@ def scenario_newsletter_archive():
     )
     
     # Other common newsletters
-    run_gmail_assistant(
+    run_gman(
         query="subject:newsletter OR subject:digest OR from:substack.com",
         max_emails=1000,
         output_dir="newsletters_general",
@@ -76,7 +76,7 @@ def scenario_service_notifications():
     
     query = f"from:({' OR '.join(services)})"
     
-    run_gmail_assistant(
+    run_gman(
         query=query,
         max_emails=1000,
         output_dir="service_notifications",
@@ -89,7 +89,7 @@ def scenario_important_backup():
     print("⭐ Scenario: Important Email Backup")
     print("Purpose: Secure backup of starred and important emails")
     
-    run_gmail_assistant(
+    run_gman(
         query="is:important OR is:starred",
         max_emails=500,
         output_dir="important_emails",
@@ -102,7 +102,7 @@ def scenario_large_emails():
     print("📎 Scenario: Large Email Backup")
     print("Purpose: Backup emails with large attachments")
     
-    run_gmail_assistant(
+    run_gman(
         query="larger:10M",
         max_emails=200,
         output_dir="large_emails",
@@ -116,7 +116,7 @@ def scenario_time_period():
     print("Purpose: Backup emails from specific date ranges")
     
     # Last 6 months
-    run_gmail_assistant(
+    run_gman(
         query="newer_than:6m",
         max_emails=2000,
         output_dir="last_6_months",
@@ -125,7 +125,7 @@ def scenario_time_period():
     )
     
     # Previous year
-    run_gmail_assistant(
+    run_gman(
         query="after:2024/01/01 before:2025/01/01",
         max_emails=3000,
         output_dir="year_2024",
@@ -154,7 +154,7 @@ def scenario_ai_content_analysis():
     # Create query with AI keywords
     keyword_query = " OR ".join([f'subject:"{keyword}"' for keyword in ai_keywords])
     
-    run_gmail_assistant(
+    run_gman(
         query=f"({keyword_query}) AND newer_than:1y",
         max_emails=1000,
         output_dir="ai_content_analysis",
@@ -176,7 +176,7 @@ def scenario_comprehensive_backup():
         month_str = f"{month:02d}"
         query = f"after:{current_year}/{month_str}/01 before:{current_year}/{month_str}/31"
         
-        run_gmail_assistant(
+        run_gman(
             query=query,
             max_emails=1000,
             output_dir=f"backup_{current_year}_{month_str}",
@@ -190,7 +190,7 @@ def scenario_cleanup_preparation():
     print("Purpose: Backup before mass deletion/archiving")
     
     # Backup promotions before deletion
-    run_gmail_assistant(
+    run_gman(
         query="category:promotions",
         max_emails=1000,
         output_dir="backup_promotions",
@@ -199,7 +199,7 @@ def scenario_cleanup_preparation():
     )
     
     # Backup old updates
-    run_gmail_assistant(
+    run_gman(
         query="category:updates older_than:3m",
         max_emails=2000,
         output_dir="backup_old_updates",
@@ -208,7 +208,7 @@ def scenario_cleanup_preparation():
     )
     
     # Backup social notifications
-    run_gmail_assistant(
+    run_gman(
         query="category:social",
         max_emails=500,
         output_dir="backup_social",

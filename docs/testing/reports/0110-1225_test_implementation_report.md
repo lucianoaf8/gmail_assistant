@@ -157,7 +157,7 @@ Cleaned during execution:
 pytest tests/unit/utils/ tests/unit/fetch/ tests/unit/cli/ tests/unit/core/ tests/unit/processing/ -v
 
 # Run with coverage
-pytest tests/unit/ --cov=src/gmail_assistant --cov-report=html
+pytest tests/unit/ --cov=src/gman --cov-report=html
 
 # Run specific phase
 pytest tests/unit/utils/ -v  # Phase 1

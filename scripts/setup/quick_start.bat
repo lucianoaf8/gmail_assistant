@@ -1,5 +1,5 @@
 @echo off
-echo Gmail Fetcher - Quick Setup and Run
+echo Gman - Quick Setup and Run
 echo =====================================
 
 REM Check if Python is installed
@@ -43,7 +43,7 @@ if not exist ..\credentials.json (
 REM Run authentication check
 echo.
 echo Testing Gmail API authentication...
-python ..\src\gmail_assistant.py --auth-only
+gman --auth-only
 if errorlevel 1 (
     echo Authentication failed
     pause
@@ -94,7 +94,7 @@ echo Max emails: %max%
 echo Output folder: %output%
 echo.
 
-python ..\src\gmail_assistant.py --query "%query%" --max %max% --output "%output%" --format both --organize date
+gman --query "%query%" --max %max% --output "%output%" --format both --organize date
 
 echo.
 echo Download complete! Check the '%output%' folder.

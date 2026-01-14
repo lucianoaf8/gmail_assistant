@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Configuration: `config/`
   - Utilities: `scripts/` or `tools/`
   - Examples: `examples/`
-  - Data/Logs: `data/`, `logs/`, `backups/`
+  - Data/Logs: `data/`, `logs/`
 
 ### 3. Test File Placement
 - **ALL test-related scripts must be inside the `tests/` folder**
@@ -53,7 +53,7 @@ Before creating any file, Claude must:
 
 ## Project Overview
 
-Gmail Assistant is a Python tool for downloading, backing up, analyzing, and managing Gmail emails. The tool uses the Gmail API for authentication and email operations.
+Gman is a Python tool for downloading, backing up, analyzing, and managing Gmail emails. The tool uses the Gmail API for authentication and email operations.
 
 ## Implementation Status (v2.0.0)
 
@@ -63,7 +63,7 @@ The v2.0.0 release restructured the project with a new Click-based CLI and src-l
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Package structure | ✅ Complete | `src/gmail_assistant/` layout |
+| Package structure | ✅ Complete | `src/gman/` layout |
 | CLI framework | ✅ Complete | Click-based with subcommands |
 | CLI `fetch` command | ✅ Complete | Email fetching with query support |
 | CLI `delete` command | ✅ Complete | Email deletion with dry-run mode |
@@ -72,26 +72,26 @@ The v2.0.0 release restructured the project with a new Click-based CLI and src-l
 | CLI `config` command | ✅ Complete | `--init`, `--show`, `--validate` |
 | Core `GmailFetcher` class | ✅ Complete | Direct usage available |
 | Parsers | ✅ Complete | Direct module usage available |
-| Configuration | ✅ Complete | `~/.gmail-assistant/` defaults |
+| Configuration | ✅ Complete | `~/.gman/` defaults |
 
 Direct module imports are also available:
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-from gmail_assistant.core.config import AppConfig
+from gman.core.fetch.gman import GmailFetcher
+from gman.core.config import AppConfig
 ```
 
 ## Core Architecture
 
 ### Main Components
 
-- **`src/gmail_assistant/cli/main.py`**: Click-based CLI entry point with subcommands
+- **`src/gman/cli/main.py`**: Click-based CLI entry point with subcommands
   - `fetch`: Download emails from Gmail
   - `delete`: Delete emails matching query
   - `analyze`: Analyze fetched emails
   - `auth`: Authenticate with Gmail API
   - `config`: Manage configuration
 
-- **`src/gmail_assistant/core/fetch/gmail_assistant.py`**: Core `GmailFetcher` class
+- **`src/gman/core/fetch/gman.py`**: Core `GmailFetcher` class
   - Authentication with Google OAuth 2.0 via `ReadOnlyGmailAuth`
   - Email search using Gmail API queries
   - Email content extraction (plain text and HTML)
@@ -108,7 +108,7 @@ from gmail_assistant.core.config import AppConfig
 
 ### Configuration Files
 
-- **`config/gmail_assistant_config.json`**: Main fetcher configuration
+- **`config/gman_config.json`**: Main fetcher configuration
   - Predefined search queries (newsletters, AI content, services)
   - Default output settings (max emails, format, organization)
   - Cleanup suggestions for Gmail management
@@ -120,25 +120,25 @@ from gmail_assistant.core.config import AppConfig
 
 ### Advanced Processing Tools
 
-- **`src/gmail_assistant/parsers/advanced_email_parser.py`**: Multi-strategy email content parsing with intelligent HTML to Markdown conversion
+- **`src/gman/parsers/advanced_email_parser.py`**: Multi-strategy email content parsing with intelligent HTML to Markdown conversion
   - Smart email type detection (newsletter, notification, marketing, simple)
   - Multiple parsing strategies (readability, trafilatura, html2text, markdownify)
   - Newsletter-specific content extraction rules
   - Quality scoring and automatic best-result selection
 
-- **`src/gmail_assistant/parsers/gmail_eml_to_markdown_cleaner.py`**: Professional EML to Markdown converter with front matter
+- **`src/gman/parsers/gmail_eml_to_markdown_cleaner.py`**: Professional EML to Markdown converter with front matter
   - Converts .eml files to clean, consistent Markdown format
   - Extracts and preserves email metadata in YAML front matter
   - Handles attachments and inline images (CID references)
   - Configurable content cleaning and formatting rules
 
-- **`src/gmail_assistant/core/ai/newsletter_cleaner.py`**: AI newsletter identification and deletion system
+- **`src/gman/core/ai/newsletter_cleaner.py`**: AI newsletter identification and deletion system
   - Pattern-based detection of AI newsletters using keywords and domains
   - Configurable confidence scoring and thresholds
   - Dry-run mode with detailed logging for safety
   - Support for JSON/CSV email data formats
 
-- **`src/gmail_assistant/core/fetch/gmail_api_client.py`**: Live Gmail API integration for direct inbox operations
+- **`src/gman/core/fetch/gmail_api_client.py`**: Live Gmail API integration for direct inbox operations
   - Real-time email fetching and analysis
   - Batch operations for efficient processing
   - Trash vs permanent deletion options
@@ -148,8 +148,8 @@ from gmail_assistant.core.config import AppConfig
 
 - **`examples/example_usage.py`**: Demonstration script with sample data generation
 - **`examples/samples.py`**: Pre-built backup scenarios for common use cases
-- **`scripts/backup/move_backup_years.ps1`**: PowerShell script for merging backup folders by year
-- **`scripts/backup/dedupe_merge.ps1`**: PowerShell script for deduplicating emails across backup folders
+- **`scripts/email-management/move_backup_years.ps1`**: PowerShell script for merging backup folders by year
+- **`scripts/email-management/dedupe_merge.ps1`**: PowerShell script for deduplicating emails across backup folders
 - **`scripts/setup/quick_start.bat`** & **`scripts/setup/quick_start.ps1`**: Cross-platform setup and run scripts
 
 ## Essential Commands
@@ -166,34 +166,34 @@ pip install -e ".[all]"
 pip install -e ".[dev]"
 
 # First-time authentication
-gmail-assistant auth
+gman auth
 ```
 
 ### Basic Operations (v2.0.0 CLI)
 
 ```bash
 # Fetch unread emails
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Fetch by date range
-gmail-assistant fetch --query "after:2025/02/28 before:2025/04/01" --max-emails 500
+gman fetch --query "after:2025/02/28 before:2025/04/01" --max-emails 500
 
 # Fetch with specific format
-gmail-assistant fetch --query "is:unread" --format json --output-dir ./backups
+gman fetch --query "is:unread" --format json --output-dir ./backups
 
 # Delete emails (dry run first)
-gmail-assistant delete --query "from:spam@example.com" --dry-run
+gman delete --query "from:spam@example.com" --dry-run
 
 # Manage configuration
-gmail-assistant config --show
-gmail-assistant config --init
-gmail-assistant config --validate
+gman config --show
+gman config --init
+gman config --validate
 ```
 
 ### Direct Module Usage
 
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 fetcher = GmailFetcher('credentials.json')
 fetcher.authenticate()
@@ -224,28 +224,28 @@ python examples/samples.py important
 ### Advanced Email Processing
 ```bash
 # Advanced HTML to Markdown parsing
-python -m gmail_assistant.parsers.advanced_email_parser email_file.html
+python -m gman.parsers.advanced_email_parser email_file.html
 
 # Convert EML files to clean Markdown with front matter
-python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
+python -m gman.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
 
 # AI newsletter detection and cleanup (dry run)
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json
+python -m gman.core.ai.newsletter_cleaner email_data.json
 
 # Actually delete AI newsletters
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json --delete
+python -m gman.core.ai.newsletter_cleaner email_data.json --delete
 
 # Live Gmail API operations
-python -m gmail_assistant.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000 --dry-run
+python -m gman.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000 --dry-run
 ```
 
 ### Backup Management
 ```powershell
 # Merge backup folders by year (PowerShell)
-.\scripts\backup\move_backup_years.ps1 -Source backup_part2 -Destination backup_main -Years 2024,2025 -DryRun
+.\scripts\email-management\move_backup_years.ps1 -Source backup_part2 -Destination backup_main -Years 2024,2025 -DryRun
 
 # Deduplicate emails across backup folders
-.\scripts\backup\dedupe_merge.ps1 -Source backup_part2 -Destination backup_main -Years 2024,2025 -Prefer larger -DryRun
+.\scripts\email-management\dedupe_merge.ps1 -Source backup_part2 -Destination backup_main -Years 2024,2025 -Prefer larger -DryRun
 ```
 
 ## Key Configuration
@@ -343,33 +343,33 @@ pip install -e ".[advanced-parsing,ui]"   # Specific groups
 pytest tests/
 
 # Run with coverage
-pytest tests/ --cov=gmail_assistant --cov-report=html
+pytest tests/ --cov=gman --cov-report=html
 
 # Run linting
 ruff check src/
 
 # Run type checking
-mypy src/gmail_assistant
+mypy src/gman
 ```
 
 ## Advanced Workflows
 
 ### AI Newsletter Management
 1. **Export email data** from Gmail or use existing backup
-2. **Analyze newsletters** with `python -m gmail_assistant.core.ai.newsletter_cleaner` (dry-run first)
+2. **Analyze newsletters** with `python -m gman.core.ai.newsletter_cleaner` (dry-run first)
 3. **Review detection log** to verify accuracy
 4. **Delete AI newsletters** using `--delete` flag
 
 ### Professional Email Archive Creation
 1. **Download emails** using `GmailFetcher` class directly
-2. **Convert to clean Markdown** with `python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner`
-3. **Apply advanced parsing** using `python -m gmail_assistant.parsers.advanced_email_parser` for complex content
-4. **Organize and deduplicate** using PowerShell management scripts in `scripts/backup/`
+2. **Convert to clean Markdown** with `python -m gman.parsers.gmail_eml_to_markdown_cleaner`
+3. **Apply advanced parsing** using `python -m gman.parsers.advanced_email_parser` for complex content
+4. **Organize and deduplicate** using PowerShell management scripts in `scripts/email-management/`
 
 ### Multi-Backup Management
 1. **Create separate backups** for different time periods or criteria
-2. **Merge backups** using `scripts/backup/move_backup_years.ps1`
-3. **Deduplicate emails** using `scripts/backup/dedupe_merge.ps1` with conflict resolution
+2. **Merge backups** using `scripts/email-management/move_backup_years.ps1`
+3. **Deduplicate emails** using `scripts/email-management/dedupe_merge.ps1` with conflict resolution
 4. **Clean and format** using EML to Markdown converter for consistency
 
 ### Content Analysis Pipeline

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from gmail_assistant.deletion.ui import clean_unread_inbox, main
+from gman.deletion.ui import clean_unread_inbox, main
 
 
 @pytest.fixture
@@ -77,9 +77,9 @@ class TestCleanUnreadInbox:
 
         monkeypatch.setattr('builtins.input', lambda _: 'DELETE')
 
-        with patch('gmail_assistant.deletion.ui.Table'), \
-             patch('gmail_assistant.deletion.ui.Panel'), \
-             patch('gmail_assistant.deletion.ui.Console'):
+        with patch('gman.deletion.ui.Table'), \
+             patch('gman.deletion.ui.Panel'), \
+             patch('gman.deletion.ui.Console'):
             result = clean_unread_inbox(mock_deleter, dry_run=False, keep_recent_days=7)
 
         # Should use query with older_than
@@ -125,7 +125,7 @@ class TestMainFunction:
 
     def test_main_dry_run(self, monkeypatch):
         """Test main function in dry run mode."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter') as mock_deleter_class:
+        with patch('gman.deletion.ui.GmailDeleter') as mock_deleter_class:
             deleter = MagicMock()
             deleter.get_email_count.return_value = 100
             mock_deleter_class.return_value = deleter
@@ -139,8 +139,8 @@ class TestMainFunction:
 
     def test_main_with_keep_recent(self):
         """Test main function with keep-recent option."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter') as mock_deleter_class, \
-             patch('gmail_assistant.deletion.ui.clean_unread_inbox') as mock_clean:
+        with patch('gman.deletion.ui.GmailDeleter') as mock_deleter_class, \
+             patch('gman.deletion.ui.clean_unread_inbox') as mock_clean:
 
             deleter = MagicMock()
             mock_deleter_class.return_value = deleter
@@ -158,8 +158,8 @@ class TestMainFunction:
 
     def test_main_successful_deletion(self, monkeypatch):
         """Test main function with successful deletion."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter') as mock_deleter_class, \
-             patch('gmail_assistant.deletion.ui.clean_unread_inbox') as mock_clean:
+        with patch('gman.deletion.ui.GmailDeleter') as mock_deleter_class, \
+             patch('gman.deletion.ui.clean_unread_inbox') as mock_clean:
 
             deleter = MagicMock()
             mock_deleter_class.return_value = deleter
@@ -175,7 +175,7 @@ class TestMainFunction:
 
     def test_main_keyboard_interrupt(self):
         """Test main function handles keyboard interrupt."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter') as mock_deleter_class:
+        with patch('gman.deletion.ui.GmailDeleter') as mock_deleter_class:
             mock_deleter_class.side_effect = KeyboardInterrupt()
 
             # Should not raise exception
@@ -184,7 +184,7 @@ class TestMainFunction:
 
     def test_main_general_exception(self):
         """Test main function handles general exceptions."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter') as mock_deleter_class:
+        with patch('gman.deletion.ui.GmailDeleter') as mock_deleter_class:
             mock_deleter_class.side_effect = Exception("Test error")
 
             # Should not raise exception
@@ -193,8 +193,8 @@ class TestMainFunction:
 
     def test_main_no_deletion_in_dry_run(self):
         """Test main function doesn't delete in dry run."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter') as mock_deleter_class, \
-             patch('gmail_assistant.deletion.ui.clean_unread_inbox') as mock_clean:
+        with patch('gman.deletion.ui.GmailDeleter') as mock_deleter_class, \
+             patch('gman.deletion.ui.clean_unread_inbox') as mock_clean:
 
             deleter = MagicMock()
             mock_deleter_class.return_value = deleter
@@ -223,7 +223,7 @@ class TestUIDisplay:
             150,  # Target count
         ]
 
-        with patch('gmail_assistant.deletion.ui.Console') as mock_console:
+        with patch('gman.deletion.ui.Console') as mock_console:
             console_instance = MagicMock()
             mock_console.return_value = console_instance
 
@@ -236,7 +236,7 @@ class TestUIDisplay:
         """Test that dry run panel is displayed."""
         mock_deleter.get_email_count.return_value = 100
 
-        with patch('gmail_assistant.deletion.ui.Console') as mock_console:
+        with patch('gman.deletion.ui.Console') as mock_console:
             console_instance = MagicMock()
             mock_console.return_value = console_instance
 
@@ -255,9 +255,9 @@ class TestUIDisplay:
         ]
         monkeypatch.setattr('builtins.input', lambda _: 'CANCEL')
 
-        with patch('gmail_assistant.deletion.ui.Console') as mock_console, \
-             patch('gmail_assistant.deletion.ui.Table'), \
-             patch('gmail_assistant.deletion.ui.Panel'):
+        with patch('gman.deletion.ui.Console') as mock_console, \
+             patch('gman.deletion.ui.Table'), \
+             patch('gman.deletion.ui.Panel'):
             console_instance = MagicMock()
             mock_console.return_value = console_instance
 
@@ -290,9 +290,9 @@ class TestUIEdgeCases:
 
         monkeypatch.setattr('builtins.input', lambda _: 'DELETE')
 
-        with patch('gmail_assistant.deletion.ui.Table'), \
-             patch('gmail_assistant.deletion.ui.Panel'), \
-             patch('gmail_assistant.deletion.ui.Console'):
+        with patch('gman.deletion.ui.Table'), \
+             patch('gman.deletion.ui.Panel'), \
+             patch('gman.deletion.ui.Console'):
             result = clean_unread_inbox(mock_deleter, dry_run=False, keep_recent_days=0)
 
         # Should handle large numbers correctly
@@ -322,7 +322,7 @@ class TestUIConsoleFormatting:
 
     def test_uses_rich_console(self, mock_deleter):
         """Test that Rich Console is used for formatting."""
-        with patch('gmail_assistant.deletion.ui.Console') as mock_console:
+        with patch('gman.deletion.ui.Console') as mock_console:
             console_instance = MagicMock()
             mock_console.return_value = console_instance
 
@@ -335,7 +335,7 @@ class TestUIConsoleFormatting:
 
     def test_displays_panels(self, mock_deleter):
         """Test that panels are used for important information."""
-        with patch('gmail_assistant.deletion.ui.Panel') as mock_panel:
+        with patch('gman.deletion.ui.Panel') as mock_panel:
             mock_deleter.get_email_count.return_value = 100
 
             clean_unread_inbox(mock_deleter, dry_run=True, keep_recent_days=0)
@@ -345,7 +345,7 @@ class TestUIConsoleFormatting:
 
     def test_displays_tables(self, mock_deleter):
         """Test that tables are used for category breakdown."""
-        with patch('gmail_assistant.deletion.ui.Table') as mock_table:
+        with patch('gman.deletion.ui.Table') as mock_table:
             mock_deleter.get_email_count.side_effect = [
                 150,  # Total
                 20, 50, 40, 10, 15,  # Categories
@@ -448,7 +448,7 @@ class TestUIErrorHandling:
 
     def test_handles_keyboard_interrupt_in_main(self):
         """Test keyboard interrupt handling in main."""
-        with patch('gmail_assistant.deletion.ui.GmailDeleter', side_effect=KeyboardInterrupt()):
+        with patch('gman.deletion.ui.GmailDeleter', side_effect=KeyboardInterrupt()):
             # Should catch and handle gracefully
             with patch('sys.argv', ['ui.py', '--dry-run']):
                 main()  # Should not raise

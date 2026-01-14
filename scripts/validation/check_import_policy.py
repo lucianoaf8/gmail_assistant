@@ -79,7 +79,7 @@ def check_file(path: Path) -> list[Violation]:
                 elif root in OLD_PACKAGE_ROOTS:
                     violations.append(Violation(
                         path, node.lineno,
-                        f"Old import '{alias.name}' - use 'gmail_assistant.{alias.name}'"
+                        f"Old import '{alias.name}' - use 'gman.{alias.name}'"
                     ))
       
         # Check ImportFrom statements
@@ -95,29 +95,29 @@ def check_file(path: Path) -> list[Violation]:
                 elif root in OLD_PACKAGE_ROOTS:
                     violations.append(Violation(
                         path, node.lineno,
-                        f"Old import 'from {node.module}' - use 'from gmail_assistant.{node.module}'"
+                        f"Old import 'from {node.module}' - use 'from gman.{node.module}'"
                     ))
 
             # Check relative imports
             if node.level > 0:
-                # Relative imports are only allowed within src/gmail_assistant
+                # Relative imports are only allowed within src/gman
                 try:
-                    rel = path.relative_to(Path.cwd() / "src" / "gmail_assistant")
+                    rel = path.relative_to(Path.cwd() / "src" / "gman")
                     # Check that relative import doesn't escape package
                     # depth = number of parent directories available
                     depth = len(rel.parts) - 1  # -1 for the file itself
                     # For files in subpackages like core/auth/base.py, depth=2
                     # from ...utils (level=3) would escape, from ..auth (level=2) is OK
-                    if node.level > depth + 1:  # +1 because gmail_assistant is the package root
+                    if node.level > depth + 1:  # +1 because gman is the package root
                         violations.append(Violation(
                             path, node.lineno,
                             f"Relative import level {node.level} escapes package boundary"
                         ))
                 except ValueError:
-                    # File not in src/gmail_assistant - relative imports not allowed
+                    # File not in src/gman - relative imports not allowed
                     violations.append(Violation(
                         path, node.lineno,
-                        "Relative imports only allowed within src/gmail_assistant/"
+                        "Relative imports only allowed within src/gman/"
                     ))
   
     return violations

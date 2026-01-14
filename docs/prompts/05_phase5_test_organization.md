@@ -29,7 +29,7 @@ mkdir -p tests/fixtures
 Create `tests/conftest.py`:
 
 ```python
-"""Shared test fixtures for Gmail Assistant."""
+"""Shared test fixtures for Gman."""
 from __future__ import annotations
 
 import json
@@ -86,7 +86,7 @@ def mock_credentials(temp_dir: Path) -> Path:
 **Use the test-suite-generator agent:**
 
 ```
-Generate comprehensive unit tests for the exception hierarchy in gmail_assistant.core.exceptions.
+Generate comprehensive unit tests for the exception hierarchy in gman.core.exceptions.
 
 The module defines:
 - GmailAssistantError (base)
@@ -111,11 +111,11 @@ Save to: tests/unit/test_exceptions.py
 **Use the test-suite-generator agent:**
 
 ```
-Generate comprehensive unit tests for gmail_assistant.core.config.AppConfig.
+Generate comprehensive unit tests for gman.core.config.AppConfig.
 
 The config loader has these features:
 - Resolution order: CLI → env var → project → home → defaults
-- Default directory: ~/.gmail-assistant/
+- Default directory: ~/.gman/
 - Path expansion (~ and relative paths)
 - Type validation (max_emails must be int, etc.)
 - Unknown key rejection
@@ -142,7 +142,7 @@ Save to: tests/unit/test_config.py
 **Use the test-suite-generator agent:**
 
 ```
-Generate unit tests for gmail_assistant.cli.main using Click's testing utilities.
+Generate unit tests for gman.cli.main using Click's testing utilities.
 
 The CLI has:
 - Main group with --version, --config, --allow-repo-credentials options
@@ -162,7 +162,7 @@ Tests should verify:
 
 Use Click's CliRunner for testing:
 from click.testing import CliRunner
-from gmail_assistant.cli.main import main
+from gman.cli.main import main
 
 runner = CliRunner()
 result = runner.invoke(main, ['--version'])
@@ -219,7 +219,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["src/gmail_assistant"]
+source = ["src/gman"]
 branch = true
 
 [tool.coverage.report]
@@ -233,7 +233,7 @@ fail_under = 70
 pytest tests/unit/ -v
 
 # Run with coverage
-pytest tests/ -m "not integration and not api" --cov=gmail_assistant --cov-report=term --cov-fail-under=70
+pytest tests/ -m "not integration and not api" --cov=gman --cov-report=term --cov-fail-under=70
 
 # Check markers are registered
 pytest --markers | grep -E "(unit|integration|api)"
@@ -269,7 +269,7 @@ After completing all tasks:
 git add -A
 git commit -m "phase-5: test organization and coverage gate
 
-Phase 5 of Gmail Assistant restructuring.
+Phase 5 of Gman restructuring.
 - Created test directory structure (unit/integration)
 - Added shared fixtures in conftest.py
 - Implemented tests for exceptions, config, CLI

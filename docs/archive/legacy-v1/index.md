@@ -1,4 +1,4 @@
-# Gmail Assistant Documentation
+# Gman Documentation
 
 **Version**: 2.0.0
 **Status**: Beta (Packaging Release)
@@ -10,10 +10,10 @@
 pip install -e .
 
 # Authenticate
-gmail-assistant auth
+gman auth
 
 # Fetch emails
-gmail-assistant fetch --query "is:unread" --max 100
+gman fetch --query "is:unread" --max 100
 ```
 
 ## Documentation Index
@@ -56,7 +56,7 @@ Historical and internal documents are in [claude-docs/](claude-docs/).
 ## CLI Reference
 
 ```
-gmail-assistant [OPTIONS] COMMAND [ARGS]
+gman [OPTIONS] COMMAND [ARGS]
 
 Commands:
   auth      Run OAuth authentication flow
@@ -85,7 +85,7 @@ Options:
 ## Package Structure
 
 ```
-src/gmail_assistant/
+src/gman/
 ├── __init__.py          # Package root, __version__
 ├── __main__.py          # python -m entry point
 ├── cli/                 # Click-based CLI
@@ -109,5 +109,5 @@ src/gmail_assistant/
 
 ## Support
 
-- [GitHub Issues](https://github.com/yourusername/gmail-assistant/issues)
+- [GitHub Issues](https://github.com/yourusername/gman/issues)
 - [CLAUDE.md](../CLAUDE.md) - AI assistant context

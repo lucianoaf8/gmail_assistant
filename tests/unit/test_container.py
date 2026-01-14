@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.container module."""
+"""Unit tests for gman.core.container module."""
 from __future__ import annotations
 
 from typing import Protocol
@@ -6,7 +6,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.core.container import (
+from gman.core.container import (
     ServiceContainer,
     ServiceDescriptor,
     ServiceLifetime,
@@ -456,28 +456,28 @@ class TestCreateDefaultContainer:
         """Default container should have CacheManager registered."""
         container = create_default_container()
 
-        from gmail_assistant.utils.cache_manager import CacheManager
+        from gman.utils.cache_manager import CacheManager
         assert container.has_service(CacheManager)
 
     def test_default_container_has_rate_limiter(self):
         """Default container should have GmailRateLimiter registered."""
         container = create_default_container()
 
-        from gmail_assistant.utils.rate_limiter import GmailRateLimiter
+        from gman.utils.rate_limiter import GmailRateLimiter
         assert container.has_service(GmailRateLimiter)
 
     def test_default_container_has_input_validator(self):
         """Default container should have InputValidator registered."""
         container = create_default_container()
 
-        from gmail_assistant.utils.input_validator import InputValidator
+        from gman.utils.input_validator import InputValidator
         assert container.has_service(InputValidator)
 
     def test_default_container_has_error_handler(self):
         """Default container should have ErrorHandler registered."""
         container = create_default_container()
 
-        from gmail_assistant.utils.error_handler import ErrorHandler
+        from gman.utils.error_handler import ErrorHandler
         assert container.has_service(ErrorHandler)
 
 

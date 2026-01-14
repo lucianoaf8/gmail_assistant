@@ -2,7 +2,7 @@
   "project_governance": {
     "version": "1.0",
     "created": "2025-09-22T02:38:00Z",
-    "description": "Comprehensive governance rules for gmail_assistant project development",
+    "description": "Comprehensive governance rules for gman project development",
 
     "critical_rules": {
       "resource_discovery": {

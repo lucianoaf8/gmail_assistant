@@ -90,9 +90,9 @@ function Get-SysPathInsertCount {
 # Checks for expected post-migration package structure
 function Get-PostMigrationPackageModuleCount {
     $expectedModules = @(
-        "src/gmail_assistant/core",
-        "src/gmail_assistant/cli",
-        "src/gmail_assistant/analysis"
+        "src/gman/core",
+        "src/gman/cli",
+        "src/gman/analysis"
     )
     return @($expectedModules | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
 }
@@ -119,8 +119,8 @@ function Get-TestFileCount {
 
 function Get-PostMigrationEntryPointCount {
     $entryPoints = @(
-        "src/gmail_assistant/cli/main.py",
-        "src/gmail_assistant/__main__.py"
+        "src/gman/cli/main.py",
+        "src/gman/__main__.py"
     )
     return @($entryPoints | Where-Object { Test-Path (Join-Path $repoRoot $_) }).Count
 }

@@ -1,5 +1,5 @@
 """
-Comprehensive tests for gmail_assistant.py module.
+Comprehensive tests for gman.py module.
 Tests GmailFetcher class for email downloading and processing.
 """
 
@@ -10,7 +10,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 
 class TestGmailFetcherInit:
@@ -18,25 +18,25 @@ class TestGmailFetcherInit:
 
     def test_fetcher_init_default_credentials(self):
         """Test GmailFetcher initializes with default credentials path."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             fetcher = GmailFetcher()
             assert fetcher.auth is not None
 
     def test_fetcher_init_custom_credentials(self):
         """Test GmailFetcher with custom credentials path."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             fetcher = GmailFetcher('custom_creds.json')
             assert fetcher.auth is not None
 
     def test_fetcher_has_memory_tracker(self):
         """Test GmailFetcher has memory tracker."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             fetcher = GmailFetcher()
             assert fetcher.memory_tracker is not None
 
     def test_fetcher_has_html_converter(self):
         """Test GmailFetcher has HTML converter."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             fetcher = GmailFetcher()
             assert fetcher.html_converter is not None
 
@@ -47,7 +47,7 @@ class TestAuthentication:
     @pytest.fixture
     def mock_auth(self):
         """Create mock auth."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth') as mock_cls:
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth') as mock_cls:
             mock_instance = mock.Mock()
             mock_cls.return_value = mock_instance
             yield mock_instance
@@ -90,7 +90,7 @@ class TestGetProfile:
     @pytest.fixture
     def fetcher_with_service(self, mock_service):
         """Create fetcher with mocked service."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth') as mock_cls:
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth') as mock_cls:
             mock_auth = mock.Mock()
             mock_auth.service = mock_service
             mock_cls.return_value = mock_auth
@@ -129,7 +129,7 @@ class TestSearchMessages:
     @pytest.fixture
     def fetcher_with_service(self, mock_service):
         """Create fetcher with mocked service."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth') as mock_cls:
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth') as mock_cls:
             mock_auth = mock.Mock()
             mock_auth.service = mock_service
             mock_cls.return_value = mock_auth
@@ -192,7 +192,7 @@ class TestDecodeBase64:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_decode_base64_standard(self, fetcher):
@@ -228,7 +228,7 @@ class TestExtractHeaders:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_extract_headers_basic(self, fetcher):
@@ -266,7 +266,7 @@ class TestSanitizeFilename:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_sanitize_basic(self, fetcher):
@@ -306,7 +306,7 @@ class TestValidateApiResponse:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_validate_response_success(self, fetcher):
@@ -338,7 +338,7 @@ class TestGetMessageBody:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_get_body_plain_text(self, fetcher):
@@ -390,7 +390,7 @@ class TestAtomicWrite:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     @pytest.fixture
@@ -430,7 +430,7 @@ class TestCreateEmlContent:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_create_eml_basic(self, fetcher):
@@ -492,7 +492,7 @@ class TestCreateMarkdownContent:
     @pytest.fixture
     def fetcher(self):
         """Create fetcher instance."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth'):
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth'):
             return GmailFetcher()
 
     def test_create_markdown_basic(self, fetcher):
@@ -548,7 +548,7 @@ class TestDownloadEmails:
     @pytest.fixture
     def fetcher_with_service(self, mock_service):
         """Create fetcher with mocked service."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth') as mock_cls:
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth') as mock_cls:
             mock_auth = mock.Mock()
             mock_auth.service = mock_service
             mock_cls.return_value = mock_auth
@@ -563,7 +563,7 @@ class TestDownloadEmails:
 
     def test_download_not_authenticated(self, mock_service, temp_dir):
         """Test download fails when not authenticated."""
-        with mock.patch('gmail_assistant.core.fetch.gmail_assistant.ReadOnlyGmailAuth') as mock_cls:
+        with mock.patch('gman.core.fetch.gman.ReadOnlyGmailAuth') as mock_cls:
             mock_auth = mock.Mock()
             mock_auth.service = None  # Not authenticated
             mock_cls.return_value = mock_auth

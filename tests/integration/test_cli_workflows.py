@@ -19,14 +19,14 @@ class TestCLIFetchWorkflow:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_fetch_workflow_end_to_end(
         self, mock_config, mock_checkpoint_class, mock_fetcher_class, runner, integration_temp_dir
     ):
         """Test complete fetch workflow from CLI to file creation."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         # Setup config mock
         mock_cfg = mock.MagicMock()
@@ -68,14 +68,14 @@ class TestCLIFetchWorkflow:
         assert 'Fetched' in result.output
         mock_fetcher.authenticate.assert_called_once()
 
-    @mock.patch('gmail_assistant.cli.commands.fetch.GmailFetcher')
-    @mock.patch('gmail_assistant.cli.commands.fetch.CheckpointManager')
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.commands.fetch.GmailFetcher')
+    @mock.patch('gman.cli.commands.fetch.CheckpointManager')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_fetch_creates_files(
         self, mock_config, mock_checkpoint_class, mock_fetcher_class, runner, integration_temp_dir
     ):
         """Test fetch actually creates email files."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         output_dir = integration_temp_dir / "emails"
 
@@ -122,12 +122,12 @@ class TestCLIAnalyzeWorkflow:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_analyze_workflow_with_sample_files(
         self, mock_config, runner, sample_email_files
     ):
         """Test complete analyze workflow with sample files."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.output_dir = str(sample_email_files)
@@ -143,12 +143,12 @@ class TestCLIAnalyzeWorkflow:
         assert 'SUMMARY' in result.output
         assert 'files' in result.output.lower()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_analyze_json_output(
         self, mock_config, runner, sample_email_files, integration_temp_dir
     ):
         """Test analyze with JSON output file."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         output_file = integration_temp_dir / "report.json"
 
@@ -172,12 +172,12 @@ class TestCLIAnalyzeWorkflow:
         assert 'metadata' in report
         assert 'file_statistics' in report
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_analyze_sender_analysis(
         self, mock_config, runner, sample_email_files
     ):
         """Test analyze extracts sender information."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.output_dir = str(sample_email_files)
@@ -201,13 +201,13 @@ class TestCLIDeleteWorkflow:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_delete_dry_run_workflow(
         self, mock_config, mock_client_class, runner, integration_temp_dir
     ):
         """Test delete dry run shows preview."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = integration_temp_dir / "creds.json"
@@ -239,14 +239,14 @@ class TestCLIDeleteWorkflow:
         assert result.exit_code == 0
         assert 'dry run' in result.output.lower() or 'would be' in result.output.lower()
 
-    @mock.patch('gmail_assistant.cli.commands.delete.GmailAPIClient')
-    @mock.patch('gmail_assistant.cli.main.get_email_count')
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.commands.delete.GmailAPIClient')
+    @mock.patch('gman.cli.main.get_email_count')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_delete_confirm_workflow(
         self, mock_config, mock_count, mock_client_class, runner, integration_temp_dir
     ):
         """Test delete with confirmation."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = integration_temp_dir / "creds.json"
@@ -281,13 +281,13 @@ class TestCLIAuthWorkflow:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.commands.auth.SecureCredentialManager')
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.commands.auth.SecureCredentialManager')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_auth_status_check(
         self, mock_config, mock_manager_class, runner, integration_temp_dir
     ):
         """Test auth status check workflow."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         creds_path = integration_temp_dir / "credentials.json"
         creds_path.write_text('{}')
@@ -307,13 +307,13 @@ class TestCLIAuthWorkflow:
         assert result.exit_code == 0
         assert 'Authenticated' in result.output or 'Status' in result.output
 
-    @mock.patch('gmail_assistant.cli.commands.auth.SecureCredentialManager')
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.commands.auth.SecureCredentialManager')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_auth_revoke_workflow(
         self, mock_config, mock_manager_class, runner, integration_temp_dir
     ):
         """Test auth revoke workflow."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = integration_temp_dir / "creds.json"
@@ -338,12 +338,12 @@ class TestCLIConfigWorkflow:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_config_show_workflow(
         self, mock_config, runner, integration_temp_dir
     ):
         """Test config show workflow."""
-        from gmail_assistant.cli.main import main
+        from gman.cli.main import main
 
         mock_cfg = mock.MagicMock()
         mock_cfg.credentials_path = integration_temp_dir / "creds.json"
@@ -362,7 +362,7 @@ class TestCLIConfigWorkflow:
 
     def test_config_init_workflow(self, runner, integration_temp_dir, monkeypatch):
         """Test config init creates default config."""
-        from gmail_assistant.cli.main import main, AppConfig
+        from gman.cli.main import main, AppConfig
 
         monkeypatch.setattr(AppConfig, 'default_dir', lambda: integration_temp_dir)
 
@@ -387,11 +387,11 @@ class TestCLIErrorHandling:
         """Create CLI runner."""
         return CliRunner()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_network_error_handling(self, mock_config, runner, integration_temp_dir):
         """Test CLI handles network errors gracefully."""
-        from gmail_assistant.cli.main import main
-        from gmail_assistant.core.exceptions import NetworkError
+        from gman.cli.main import main
+        from gman.core.exceptions import NetworkError
 
         mock_config.load.side_effect = NetworkError("Connection refused")
 
@@ -400,11 +400,11 @@ class TestCLIErrorHandling:
         assert result.exit_code == 4  # Network error code
         assert 'Network error' in result.output or 'error' in result.output.lower()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_auth_error_handling(self, mock_config, runner, integration_temp_dir):
         """Test CLI handles auth errors gracefully."""
-        from gmail_assistant.cli.main import main
-        from gmail_assistant.core.exceptions import AuthError
+        from gman.cli.main import main
+        from gman.core.exceptions import AuthError
 
         mock_config.load.side_effect = AuthError("Invalid credentials")
 
@@ -413,11 +413,11 @@ class TestCLIErrorHandling:
         assert result.exit_code == 3  # Auth error code
         assert 'Authentication error' in result.output or 'error' in result.output.lower()
 
-    @mock.patch('gmail_assistant.cli.main.AppConfig')
+    @mock.patch('gman.cli.main.AppConfig')
     def test_config_error_handling(self, mock_config, runner):
         """Test CLI handles config errors gracefully."""
-        from gmail_assistant.cli.main import main
-        from gmail_assistant.core.exceptions import ConfigError
+        from gman.cli.main import main
+        from gman.core.exceptions import ConfigError
 
         mock_config.load.side_effect = ConfigError("Invalid configuration")
 

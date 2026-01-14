@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from gmail_assistant.utils.metrics import (
+from gman.utils.metrics import (
     MetricsCollector,
     MetricPoint,
     HistogramStats,
@@ -92,7 +92,7 @@ class TestMetricsCollector:
     def test_collector_default_name(self):
         """Test MetricsCollector default name."""
         collector = MetricsCollector()
-        assert collector.name == "gmail_assistant"
+        assert collector.name == "gman"
 
 
 class TestCounterMetrics:

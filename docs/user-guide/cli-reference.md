@@ -1,6 +1,6 @@
-# Gmail Assistant CLI Reference
+# Gman CLI Reference
 
-Complete command-line interface documentation for gmail-assistant version 2.0.0.
+Complete command-line interface documentation for gman version 2.0.0.
 
 **Version**: 2.0.0
 **Status**: Production
@@ -24,33 +24,33 @@ Complete command-line interface documentation for gmail-assistant version 2.0.0.
 
 ```bash
 # Authenticate with Gmail
-gmail-assistant auth
+gman auth
 
 # Fetch emails with query
-gmail-assistant fetch --query "is:unread" --max-emails 100
+gman fetch --query "is:unread" --max-emails 100
 
 # Delete emails (dry-run safe)
-gmail-assistant delete --query "subject:test" --dry-run
+gman delete --query "subject:test" --dry-run
 
 # Analyze fetched emails
-gmail-assistant analyze --input-dir ./backups --report summary
+gman analyze --input-dir ./backups --report summary
 
 # Manage configuration
-gmail-assistant config --init
-gmail-assistant config --show
-gmail-assistant config --validate
+gman config --init
+gman config --show
+gman config --validate
 ```
 
 ---
 
 ## Entry Point
 
-**Module**: `gmail_assistant.cli.main:main`
-**Package Script**: `gmail-assistant`
+**Module**: `gman.cli.main:main`
+**Package Script**: `gman`
 **Pyproject.toml Reference**:
 ```toml
 [project.scripts]
-gmail-assistant = "gmail_assistant.cli.main:main"
+gman = "gman.cli.main:main"
 ```
 
 ### Overview
@@ -59,11 +59,11 @@ The `main` command establishes a Click command group with global options and con
 
 ```python
 @click.group()
-@click.version_option(version=__version__, prog_name="gmail-assistant")
+@click.version_option(version=__version__, prog_name="gman")
 @click.option(...)
 @click.pass_context
 def main(ctx: click.Context, config: Path | None, allow_repo_credentials: bool) -> None:
-    """Gmail Assistant - Backup, analyze, and manage your Gmail."""
+    """Gman - Backup, analyze, and manage your Gmail."""
 ```
 
 ---
@@ -82,7 +82,7 @@ These options apply to ALL subcommands and must appear BEFORE the subcommand nam
 Path to configuration file. If provided, overrides all other config resolution sources.
 
 ```bash
-gmail-assistant --config /path/to/config.json fetch --query "is:unread"
+gman --config /path/to/config.json fetch --query "is:unread"
 ```
 
 ### --allow-repo-credentials
@@ -94,7 +94,7 @@ gmail-assistant --config /path/to/config.json fetch --query "is:unread"
 Allow credentials to be stored inside a git repository. By default, credentials inside git repos trigger an error for security. This flag suppresses that check and allows credentials anywhere.
 
 ```bash
-gmail-assistant --allow-repo-credentials fetch --query "is:unread"
+gman --allow-repo-credentials fetch --query "is:unread"
 ```
 
 ### --version / -v
@@ -106,8 +106,8 @@ gmail-assistant --allow-repo-credentials fetch --query "is:unread"
 Display version information and exit.
 
 ```bash
-gmail-assistant --version
-# Output: gmail-assistant, version 2.0.0
+gman --version
+# Output: gman, version 2.0.0
 ```
 
 ---
@@ -122,7 +122,7 @@ gmail-assistant --version
 #### Usage
 
 ```bash
-gmail-assistant auth
+gman auth
 ```
 
 #### Behavior
@@ -139,7 +139,7 @@ None (uses global options only)
 #### Example
 
 ```bash
-gmail-assistant --config ~/.gmail-assistant/config.json auth
+gman --config ~/.gman/config.json auth
 ```
 
 #### Related
@@ -157,7 +157,7 @@ gmail-assistant --config ~/.gmail-assistant/config.json auth
 #### Usage
 
 ```bash
-gmail-assistant fetch [OPTIONS]
+gman fetch [OPTIONS]
 ```
 
 #### Options
@@ -201,7 +201,7 @@ Path must be valid (created if not exists). Supports both absolute and relative 
 
 If not provided, uses:
 1. Config file value (from `output_dir`)
-2. Built-in default: `~/.gmail-assistant/backups`
+2. Built-in default: `~/.gman/backups`
 
 ##### --format
 
@@ -217,17 +217,17 @@ Output format choice:
 
 ```bash
 # Fetch unread emails (up to 1000)
-gmail-assistant fetch --query "is:unread"
+gman fetch --query "is:unread"
 
 # Fetch with explicit limits
-gmail-assistant fetch \
+gman fetch \
   --query "after:2025/01/01 before:2025/02/01" \
   --max-emails 500 \
   --output-dir ./january_backup \
   --format eml
 
 # Using config, with query override
-gmail-assistant --config config.json fetch --query "subject:important"
+gman --config config.json fetch --query "subject:important"
 ```
 
 #### Behavior
@@ -253,7 +253,7 @@ gmail-assistant --config config.json fetch --query "subject:important"
 #### Usage
 
 ```bash
-gmail-assistant delete [OPTIONS]
+gman delete [OPTIONS]
 ```
 
 #### Options
@@ -283,10 +283,10 @@ Preview which emails would be deleted without actually deleting them. Recommende
 
 ```bash
 # Preview deletion
-gmail-assistant delete --query "from:newsletter@example.com" --dry-run
+gman delete --query "from:newsletter@example.com" --dry-run
 
 # Actually delete after reviewing
-gmail-assistant delete --query "from:newsletter@example.com"
+gman delete --query "from:newsletter@example.com"
 ```
 
 #### --confirm
@@ -300,16 +300,16 @@ Skip the confirmation prompt. Combined with --dry-run=False, this allows destruc
 
 ```bash
 # Safe: preview what would be deleted
-gmail-assistant delete \
+gman delete \
   --query "subject:newsletter older_than:6m" \
   --dry-run
 
 # Destructive: delete after confirming prompt
-gmail-assistant delete \
+gman delete \
   --query "category:promotions older_than:1y"
 
 # Destructive without prompt (dangerous!)
-gmail-assistant delete \
+gman delete \
   --query "from:test@example.com" \
   --confirm
 ```
@@ -336,7 +336,7 @@ gmail-assistant delete \
 #### Usage
 
 ```bash
-gmail-assistant analyze [OPTIONS]
+gman analyze [OPTIONS]
 ```
 
 #### Options
@@ -368,13 +368,13 @@ Report generation format:
 
 ```bash
 # Analyze with defaults (from config)
-gmail-assistant analyze
+gman analyze
 
 # Analyze specific directory
-gmail-assistant analyze --input-dir ./backups --report detailed
+gman analyze --input-dir ./backups --report detailed
 
 # Generate JSON report
-gmail-assistant analyze --input-dir ./march_backup --report json
+gman analyze --input-dir ./march_backup --report json
 ```
 
 #### Behavior
@@ -398,7 +398,7 @@ gmail-assistant analyze --input-dir ./march_backup --report json
 #### Usage
 
 ```bash
-gmail-assistant config [OPTIONS]
+gman config [OPTIONS]
 ```
 
 #### Options
@@ -417,9 +417,9 @@ Display all configuration values from loaded config file (or defaults).
 
 **Output Format**:
 ```
-credentials_path: /home/user/.gmail-assistant/credentials.json
-token_path: /home/user/.gmail-assistant/token.json
-output_dir: /home/user/.gmail-assistant/backups
+credentials_path: /home/user/.gman/credentials.json
+token_path: /home/user/.gman/token.json
+output_dir: /home/user/.gman/backups
 max_emails: 1000
 rate_limit_per_second: 10.0
 log_level: INFO
@@ -447,14 +447,14 @@ Configuration invalid: [error message]
 
 Create default configuration file in user home directory.
 
-**Target Location**: `~/.gmail-assistant/config.json`
+**Target Location**: `~/.gman/config.json`
 
 **Contents**:
 ```json
 {
-  "credentials_path": "/home/user/.gmail-assistant/credentials.json",
-  "token_path": "/home/user/.gmail-assistant/token.json",
-  "output_dir": "/home/user/.gmail-assistant/backups",
+  "credentials_path": "/home/user/.gman/credentials.json",
+  "token_path": "/home/user/.gman/token.json",
+  "output_dir": "/home/user/.gman/backups",
   "max_emails": 1000,
   "rate_limit_per_second": 10.0,
   "log_level": "INFO"
@@ -462,7 +462,7 @@ Create default configuration file in user home directory.
 ```
 
 **Behavior**:
-- Creates `~/.gmail-assistant/` directory if missing
+- Creates `~/.gman/` directory if missing
 - Fails if config.json already exists (exit code 5)
 - Creates file with write permissions for user only
 
@@ -470,16 +470,16 @@ Create default configuration file in user home directory.
 
 ```bash
 # Initialize default config
-gmail-assistant config --init
+gman config --init
 
 # Verify it was created
-gmail-assistant config --show
+gman config --show
 
 # Validate it
-gmail-assistant config --validate
+gman config --validate
 
 # View from custom location
-gmail-assistant --config /etc/gmail-assistant/config.json config --show
+gman --config /etc/gman/config.json config --show
 ```
 
 #### Related
@@ -520,9 +520,9 @@ ClickException        → Handled by Click (usually 2)
 Configuration is resolved using this priority order (highest to lowest):
 
 1. **CLI Argument**: `--config /path/to/config.json`
-2. **Environment Variable**: `gmail_assistant_CONFIG=/path/to/config.json`
-3. **Project Config**: `./gmail-assistant.json` (current directory)
-4. **User Config**: `~/.gmail-assistant/config.json`
+2. **Environment Variable**: `gman_CONFIG=/path/to/config.json`
+3. **Project Config**: `./gman.json` (current directory)
+4. **User Config**: `~/.gman/config.json`
 5. **Built-in Defaults**: Secure defaults in user home directory
 
 ### Resolution Details
@@ -530,7 +530,7 @@ Configuration is resolved using this priority order (highest to lowest):
 #### Priority 1: CLI Argument
 
 ```bash
-gmail-assistant --config /etc/gmail-assistant/config.json fetch
+gman --config /etc/gman/config.json fetch
 ```
 
 - Must point to existing file
@@ -540,8 +540,8 @@ gmail-assistant --config /etc/gmail-assistant/config.json fetch
 #### Priority 2: Environment Variable
 
 ```bash
-export gmail_assistant_CONFIG=/custom/config.json
-gmail-assistant fetch
+export gman_CONFIG=/custom/config.json
+gman fetch
 ```
 
 - Must point to existing file
@@ -549,11 +549,11 @@ gmail-assistant fetch
 
 #### Priority 3: Project Config
 
-File: `gmail-assistant.json` in current working directory
+File: `gman.json` in current working directory
 
 ```bash
 cd /my/project
-gmail-assistant fetch  # Uses ./gmail-assistant.json if exists
+gman fetch  # Uses ./gman.json if exists
 ```
 
 - Useful for per-project configuration
@@ -561,7 +561,7 @@ gmail-assistant fetch  # Uses ./gmail-assistant.json if exists
 
 #### Priority 4: User Config
 
-File: `~/.gmail-assistant/config.json`
+File: `~/.gman/config.json`
 
 - Per-user configuration
 - Persistent across sessions
@@ -570,9 +570,9 @@ File: `~/.gmail-assistant/config.json`
 #### Priority 5: Built-in Defaults
 
 If no config file found:
-- credentials_path: `~/.gmail-assistant/credentials.json`
-- token_path: `~/.gmail-assistant/token.json`
-- output_dir: `~/.gmail-assistant/backups`
+- credentials_path: `~/.gman/credentials.json`
+- token_path: `~/.gman/token.json`
+- output_dir: `~/.gman/backups`
 - max_emails: 1000
 - rate_limit_per_second: 10.0
 - log_level: INFO
@@ -586,7 +586,7 @@ If config is in a git repository, credentials path checking:
 - Requires `--allow-repo-credentials` flag to allow repo-local credentials
 - Otherwise fails with ConfigError
 
-Credentials should be in `~/.gmail-assistant/` (outside any repo).
+Credentials should be in `~/.gman/` (outside any repo).
 
 #### Git Detection
 
@@ -602,85 +602,85 @@ Credentials should be in `~/.gmail-assistant/` (outside any repo).
 
 ```bash
 # 1. Initialize configuration
-gmail-assistant config --init
+gman config --init
 
 # 2. Display configuration
-gmail-assistant config --show
+gman config --show
 
 # 3. Authenticate
-gmail-assistant auth
+gman auth
 
 # 4. Fetch unread emails
-gmail-assistant fetch --query "is:unread" --max-emails 500
+gman fetch --query "is:unread" --max-emails 500
 
 # 5. Analyze
-gmail-assistant analyze --report summary
+gman analyze --report summary
 ```
 
 ### Advanced Queries
 
 ```bash
 # Time-based
-gmail-assistant fetch --query "after:2025/01/01 before:2025/02/01"
+gman fetch --query "after:2025/01/01 before:2025/02/01"
 
 # Subject keywords
-gmail-assistant fetch --query "subject:(AI OR machine learning)"
+gman fetch --query "subject:(AI OR machine learning)"
 
 # From domain
-gmail-assistant fetch --query "from:news@example.com"
+gman fetch --query "from:news@example.com"
 
 # Combined
-gmail-assistant fetch --query 'is:unread from:work.com after:2025/01/01'
+gman fetch --query 'is:unread from:work.com after:2025/01/01'
 
 # With attachments
-gmail-assistant fetch --query "has:attachment larger:5M"
+gman fetch --query "has:attachment larger:5M"
 ```
 
 ### Deletion Workflows
 
 ```bash
 # 1. Preview what would be deleted
-gmail-assistant delete --query "from:newsletter@example.com" --dry-run
+gman delete --query "from:newsletter@example.com" --dry-run
 
 # 2. Review the output carefully
 
 # 3. Actually delete
-gmail-assistant delete --query "from:newsletter@example.com"
+gman delete --query "from:newsletter@example.com"
 
 # 4. Delete old promotions
-gmail-assistant delete --query "category:promotions older_than:6m"
+gman delete --query "category:promotions older_than:6m"
 ```
 
 ### Configuration Management
 
 ```bash
 # Use custom config
-gmail-assistant --config ~/.work/config.json fetch --query "is:unread"
+gman --config ~/.work/config.json fetch --query "is:unread"
 
 # Override via environment
-export gmail_assistant_CONFIG=/etc/gmail-assistant/config.json
-gmail-assistant config --show
+export gman_CONFIG=/etc/gman/config.json
+gman config --show
 
 # Per-project config
 cd ~/project
-echo '{"output_dir": "./backups"}' > gmail-assistant.json
-gmail-assistant fetch --query "is:unread"
+echo '{"output_dir": "./backups"}' > gman.json
+gman fetch --query "is:unread"
 ```
 
 ### Error Handling
 
 ```bash
 # Auth error (exit 3)
-gmail-assistant auth  # credentials.json not found
+gman auth  # credentials.json not found
 
 # Config error (exit 5)
-gmail-assistant --config /nonexistent/config.json fetch
+gman --config /nonexistent/config.json fetch
 
 # Network error (exit 4)
-gmail-assistant fetch  # Gmail API unreachable
+gman fetch  # Gmail API unreachable
 
 # Success (exit 0)
-gmail-assistant fetch --query "is:unread"
+gman fetch --query "is:unread"
 ```
 
 ---

@@ -1,4 +1,4 @@
-# Gmail Assistant - Test Suite Quick Reference
+# Gman - Test Suite Quick Reference
 
 **Last Run**: 2026-01-10 09:52:06
 **Platform**: Windows 10, Python 3.13.9
@@ -69,7 +69,7 @@ pytest tests/analysis/ -v
 
 ### With Coverage
 ```bash
-pytest tests/unit/ --cov=gmail_assistant --cov-report=html
+pytest tests/unit/ --cov=gman --cov-report=html
 ```
 
 ## Test Results Location

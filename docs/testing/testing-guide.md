@@ -78,7 +78,7 @@ All test config lives in `pyproject.toml`:
 
 ```python
 import pytest
-from gmail_assistant.core import Container
+from gman.core import Container
 
 @pytest.mark.unit
 def test_container_initialization():

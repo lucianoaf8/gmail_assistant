@@ -15,10 +15,10 @@ import sys
 import os
 from datetime import datetime
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 try:
-    from gmail_assistant.parsers.advanced_email_parser import EmailContentParser
+    from gman.parsers.advanced_email_parser import EmailContentParser
 except ImportError:
     EmailContentParser = None
 

@@ -1,9 +1,9 @@
-# Security Audit Report: Gmail Assistant
+# Security Audit Report: Gman
 
 **Audit Date:** 2026-01-10
 **Auditor:** Security Assessment (DevSecOps)
 **Version Assessed:** 2.0.0
-**Project:** Gmail Assistant - Python CLI for Gmail backup, analysis, and management
+**Project:** Gman - Python CLI for Gmail backup, analysis, and management
 
 ---
 
@@ -11,7 +11,7 @@
 
 ### Overall Risk Rating: **MEDIUM**
 
-The Gmail Assistant project demonstrates a **mature security posture** with multiple security controls already implemented. The codebase shows evidence of prior security remediation efforts (H-1, H-2, L-1, L-2, M-1 through M-7 fixes), indicating a proactive security culture.
+The Gman project demonstrates a **mature security posture** with multiple security controls already implemented. The codebase shows evidence of prior security remediation efforts (H-1, H-2, L-1, L-2, M-1 through M-7 fixes), indicating a proactive security culture.
 
 **Key Strengths:**
 - Secure credential storage using OS keyring (H-1 fix)
@@ -55,7 +55,7 @@ Prior security fixes (H-1: Credential Security, H-2: Subprocess Injection) have 
 **CWE-863:** Incorrect Authorization
 **OWASP:** A01:2021 - Broken Access Control
 
-**Location:** `src/gmail_assistant/core/auth/base.py:277-302`
+**Location:** `src/gman/core/auth/base.py:277-302`
 
 **Description:**
 The authentication classes (`ReadOnlyGmailAuth`, `GmailModifyAuth`, `FullGmailAuth`) declare required scopes but do not validate that the obtained credentials actually have those scopes after OAuth flow completion. An attacker who modifies the OAuth flow could potentially obtain broader permissions than intended.
@@ -84,7 +84,7 @@ class ReadOnlyGmailAuth(AuthenticationBase):
 **CWE-732:** Incorrect Permission Assignment for Critical Resource
 **OWASP:** A01:2021 - Broken Access Control
 
-**Location:** `src/gmail_assistant/utils/secure_file.py:228-238`
+**Location:** `src/gman/utils/secure_file.py:228-238`
 
 **Description:**
 On Windows systems without `pywin32` installed, the secure file writer falls back to basic `os.chmod()` which has limited effectiveness on Windows NTFS. The fallback may not properly restrict file access.
@@ -122,7 +122,7 @@ except ImportError:
 **CWE-532:** Insertion of Sensitive Information into Log File
 **OWASP:** A09:2021 - Security Logging and Monitoring Failures
 
-**Location:** `src/gmail_assistant/utils/pii_redactor.py:39-62`
+**Location:** `src/gman/utils/pii_redactor.py:39-62`
 
 **Description:**
 The email redaction preserves the first two characters of the local part and the full domain, which could leak partial PII. For high-security environments, this may be excessive disclosure.
@@ -150,7 +150,7 @@ def redact_email(email: str) -> str:
 **CWE-307:** Improper Restriction of Excessive Authentication Attempts
 **OWASP:** A07:2021 - Identification and Authentication Failures
 
-**Location:** `src/gmail_assistant/core/auth/rate_limiter.py:37-40`
+**Location:** `src/gman/core/auth/rate_limiter.py:37-40`
 
 **Description:**
 The `AuthRateLimiter` stores state in memory (`self._states: Dict[str, RateLimitState]`). Rate limit counters reset on application restart, allowing attackers to bypass limits by repeatedly launching the application.
@@ -178,7 +178,7 @@ def __init__(self):
 **CWE-22:** Improper Limitation of a Pathname to a Restricted Directory
 **OWASP:** A01:2021 - Broken Access Control
 
-**Location:** `src/gmail_assistant/core/ai/newsletter_cleaner.py:78-79`
+**Location:** `src/gman/core/ai/newsletter_cleaner.py:78-79`
 
 **Description:**
 The `AINewsletterDetector` accepts a config path directly without validation through `InputValidator.validate_file_path()`, potentially allowing path traversal when config path is user-supplied.
@@ -205,7 +205,7 @@ def __init__(self, config_path: str = None):
 **CWE-404:** Improper Resource Shutdown or Release
 **OWASP:** A05:2021 - Security Misconfiguration
 
-**Location:** `src/gmail_assistant/core/fetch/gmail_api_client.py:68-76`
+**Location:** `src/gman/core/fetch/gmail_api_client.py:68-76`
 
 **Description:**
 The migration notice for legacy tokens warns users to manually delete old `token.json` files but does not offer secure automatic removal or verify deletion.
@@ -235,7 +235,7 @@ def _migrate_legacy_tokens(self):
 
 #### I-AUDIT-01: Deprecated EmailData Class Still Present
 
-**Location:** `src/gmail_assistant/core/ai/newsletter_cleaner.py:39-60`
+**Location:** `src/gman/core/ai/newsletter_cleaner.py:39-60`
 
 **Description:**
 The `EmailData` dataclass is marked deprecated with a runtime warning but remains in active code paths. This adds maintenance burden and potential confusion.
@@ -244,7 +244,7 @@ The `EmailData` dataclass is marked deprecated with a runtime warning but remain
 ```python
 @dataclass
 class EmailData:
-    """DEPRECATED (H-1): Use Email from gmail_assistant.core.schemas instead."""
+    """DEPRECATED (H-1): Use Email from gman.core.schemas instead."""
     def __post_init__(self):
         warnings.warn("EmailData is deprecated...", DeprecationWarning)
 ```
@@ -255,14 +255,14 @@ class EmailData:
 
 #### I-AUDIT-02: Hardcoded Keyring Service Names
 
-**Location:** `src/gmail_assistant/core/constants.py:127-128`
+**Location:** `src/gman/core/constants.py:127-128`
 
 **Description:**
 Keyring service and username are hardcoded constants. Multiple installations could conflict if using the same OS keyring.
 
 **Evidence:**
 ```python
-KEYRING_SERVICE: str = "gmail_assistant"
+KEYRING_SERVICE: str = "gman"
 KEYRING_USERNAME: str = "oauth_credentials"
 ```
 
@@ -272,7 +272,7 @@ KEYRING_USERNAME: str = "oauth_credentials"
 
 #### I-AUDIT-03: No Certificate Pinning for Google API
 
-**Location:** `src/gmail_assistant/core/fetch/gmail_api_client.py`
+**Location:** `src/gman/core/fetch/gmail_api_client.py`
 
 **Description:**
 The Google API client library handles TLS but the application does not implement additional certificate pinning for defense-in-depth against MITM attacks.
@@ -283,7 +283,7 @@ The Google API client library handles TLS but the application does not implement
 
 #### I-AUDIT-04: Batch Size Default May Cause Memory Issues
 
-**Location:** `src/gmail_assistant/core/constants.py:117`
+**Location:** `src/gman/core/constants.py:117`
 
 **Description:**
 The default `BATCH_SIZE: int = 100` combined with `MAX_EMAILS_LIMIT: int = 100000` could lead to memory pressure when processing large mailboxes.
@@ -499,7 +499,7 @@ While the test suite verifies sanitization functions exist, the actual PowerShel
 
 ## Conclusion
 
-The Gmail Assistant project exhibits **strong security fundamentals** with comprehensive input validation, secure credential management, and defense-in-depth protections. The prior remediation efforts (H-1/H-2/M-1 through M-7/L-1/L-2) demonstrate commitment to security.
+The Gman project exhibits **strong security fundamentals** with comprehensive input validation, secure credential management, and defense-in-depth protections. The prior remediation efforts (H-1/H-2/M-1 through M-7/L-1/L-2) demonstrate commitment to security.
 
 The identified medium-severity findings relate to edge cases (OAuth scope validation, Windows permissions fallback) rather than fundamental security flaws. The low-severity findings are improvement opportunities rather than critical risks.
 

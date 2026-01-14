@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.utils.memory_manager module."""
+"""Unit tests for gman.utils.memory_manager module."""
 from __future__ import annotations
 
 import gc
@@ -9,7 +9,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.utils.memory_manager import (
+from gman.utils.memory_manager import (
     MemoryTracker,
     StreamingEmailProcessor,
     ProgressiveLoader,

@@ -61,7 +61,7 @@ Completed cleanup of stale code, dead files, and legacy remnants after v2.0.0 mi
 | Original | New Location |
 |----------|--------------|
 | `config/app/config.json` | `config/config.json` |
-| `config/app/gmail_assistant_config.json` | `config/gmail_assistant_config.json` |
+| `config/app/gman_config.json` | `config/gman_config.json` |
 | `config/app/organizer_config.json` | `config/organizer_config.json` |
 | `config/app/analysis.json` | `config/analysis.json` |
 | `config/app/deletion.json` | `config/deletion.json` |
@@ -96,7 +96,7 @@ Completed cleanup of stale code, dead files, and legacy remnants after v2.0.0 mi
 
 | File | Issue |
 |------|-------|
-| `tests/test_plugins.py` | Imports `gmail_assistant.plugins.*` (not in package) |
+| `tests/test_plugins.py` | Imports `gman.plugins.*` (not in package) |
 | `tests/test_cli_help.py` | References removed `main.py` in root |
 | `tests/test_cli_main_orchestrator.py` | 20+ references to removed `main.py` |
 | `tests/test_cleanup_markdown_functional.py` | Imports from legacy `src/tools/` |
@@ -108,15 +108,15 @@ Completed cleanup of stale code, dead files, and legacy remnants after v2.0.0 mi
 #### Duplicate
 | File | Issue |
 |------|-------|
-| `src/gmail_assistant/analysis/setup.py` | Identical to `setup_email_analysis.py` |
+| `src/gman/analysis/setup.py` | Identical to `setup_email_analysis.py` |
 
 #### Dead Code (0 imports, marked for v2.1.0)
 | File | Issue |
 |------|-------|
-| `src/gmail_assistant/utils/comprehensive_email_processor.py` | No imports from package |
-| `src/gmail_assistant/utils/ultimate_email_processor.py` | No imports from package |
-| `src/gmail_assistant/utils/gmail_organizer.py` | No imports from package |
-| `src/gmail_assistant/utils/audit_logger.py` | No imports from package |
+| `src/gman/utils/comprehensive_email_processor.py` | No imports from package |
+| `src/gman/utils/ultimate_email_processor.py` | No imports from package |
+| `src/gman/utils/gmail_organizer.py` | No imports from package |
+| `src/gman/utils/audit_logger.py` | No imports from package |
 
 ---
 
@@ -134,8 +134,8 @@ Run after cleanup:
 pip install -e .
 
 # Verify CLI works
-gmail-assistant --version
-gmail-assistant --help
+gman --version
+gman --help
 
 # Verify tests pass
 pytest tests/ -m "not integration"
@@ -148,7 +148,7 @@ pytest tests/ -m "not integration"
 | Plan §5.2 Item | Expected | Actual |
 |----------------|----------|--------|
 | `main.py` (repo root) | REMOVED | ✅ Verified removed |
-| `src/cli/main.py` | REMOVED | ✅ Verified (moved to gmail_assistant) |
+| `src/cli/main.py` | REMOVED | ✅ Verified (moved to gman) |
 | `src/handlers/` | REMOVED | ✅ Verified removed |
 | `src/tools/` | REMOVED | ✅ **NOW REMOVED** |
 | `src/plugins/` | REMOVED | ✅ **NOW REMOVED** |

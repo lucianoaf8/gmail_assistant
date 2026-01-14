@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Unified verification pipeline for Gmail Assistant.
+    Unified verification pipeline for Gman.
 .DESCRIPTION
     Executes the complete verification sequence:
     1. Baseline measurements
@@ -58,7 +58,7 @@ function Write-Step {
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "    Gmail Assistant - Unified Verification Pipeline            " -ForegroundColor Cyan
+Write-Host "    Gman - Unified Verification Pipeline            " -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Repo: $repoRoot"
@@ -184,7 +184,7 @@ try {
     $tempDir = [System.IO.Path]::GetTempPath()
     Push-Location $tempDir
     try {
-        $output = & $venvPython -c "import gmail_assistant; print(gmail_assistant.__version__)"
+        $output = & $venvPython -c "import gman; print(gman.__version__)"
         if ($LASTEXITCODE -ne 0) { throw "Import failed" }
         Write-Step "Install Test" "PASS"
         Write-Host "  Version: $output" -ForegroundColor Gray
@@ -277,7 +277,7 @@ if ($SkipTests) {
         pip install -e ".[dev]" --quiet
 
         # Run tests with coverage (disable playwright plugin to avoid conflicts)
-        python -m pytest tests/unit/ -q --tb=short --cov=src/gmail_assistant --cov-report=term --cov-fail-under=70 -p no:playwright 2>&1
+        python -m pytest tests/unit/ -q --tb=short --cov=src/gman --cov-report=term --cov-fail-under=70 -p no:playwright 2>&1
 
         if ($LASTEXITCODE -eq 0) {
             Write-Step "Tests" "PASS"
@@ -359,17 +359,17 @@ try {
     pip install -e . --quiet 2>&1 | Out-Null
 
     # Test --version
-    $version = gmail-assistant --version 2>&1
+    $version = gman --version 2>&1
     if ($LASTEXITCODE -ne 0) { throw "CLI --version failed" }
 
     # Test --help
-    $help = gmail-assistant --help 2>&1
+    $help = gman --help 2>&1
     if ($LASTEXITCODE -ne 0) { throw "CLI --help failed" }
 
     # Test subcommand helps
     $subcommands = @("fetch", "delete", "analyze", "auth", "config")
     foreach ($cmd in $subcommands) {
-        $subHelp = gmail-assistant $cmd --help 2>&1
+        $subHelp = gman $cmd --help 2>&1
         if ($LASTEXITCODE -ne 0) { throw "CLI $cmd --help failed" }
     }
 

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f tmpclaude-*-cwd */tmpclaude-*-cwd nul */nul 2>/dev/null; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -12,7 +12,7 @@ class TestReDoSProtection:
 
     def test_regex_module_import(self):
         """Verify regex module with timeout is used."""
-        from gmail_assistant.core.ai import newsletter_cleaner
+        from gman.core.ai import newsletter_cleaner
 
         source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
@@ -22,7 +22,7 @@ class TestReDoSProtection:
 
     def test_regex_timeout_configured(self):
         """Verify regex timeout is configured."""
-        from gmail_assistant.core.ai import newsletter_cleaner
+        from gman.core.ai import newsletter_cleaner
 
         source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
@@ -33,7 +33,7 @@ class TestReDoSProtection:
 
     def test_input_length_limits(self):
         """Verify input length limits for regex operations."""
-        from gmail_assistant.core.ai import newsletter_cleaner
+        from gman.core.ai import newsletter_cleaner
 
         source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
@@ -43,7 +43,7 @@ class TestReDoSProtection:
     def test_evil_regex_patterns_handled(self):
         """Verify potentially evil patterns don't cause catastrophic backtracking."""
         try:
-            from gmail_assistant.core.ai.newsletter_cleaner import AINewsletterCleaner
+            from gman.core.ai.newsletter_cleaner import AINewsletterCleaner
             cleaner = AINewsletterCleaner()
         except (ImportError, TypeError) as e:
             # If class not available, create mock with _safe_regex_search
@@ -72,7 +72,7 @@ class TestReDoSProtection:
 
     def test_fallback_to_standard_regex(self):
         """Verify graceful fallback if regex module unavailable."""
-        from gmail_assistant.core.ai import newsletter_cleaner
+        from gman.core.ai import newsletter_cleaner
 
         source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 
@@ -89,20 +89,20 @@ class TestSafeRegexWrapper:
     def test_safe_regex_search_exists(self):
         """Verify _safe_regex_search method exists."""
         try:
-            from gmail_assistant.core.ai.newsletter_cleaner import AINewsletterCleaner
+            from gman.core.ai.newsletter_cleaner import AINewsletterCleaner
             cleaner = AINewsletterCleaner()
             assert hasattr(cleaner, '_safe_regex_search'), \
                 "_safe_regex_search method should exist"
         except (ImportError, TypeError):
             # If class not available, check that module has safe regex functionality
-            from gmail_assistant.core.ai import newsletter_cleaner
+            from gman.core.ai import newsletter_cleaner
             # Module should have regex timeout support
             assert hasattr(newsletter_cleaner, 'HAS_REGEX_TIMEOUT'), \
                 "Module should have HAS_REGEX_TIMEOUT flag"
 
     def test_truncation_applied(self):
         """Verify input truncation is applied."""
-        from gmail_assistant.core.ai import newsletter_cleaner
+        from gman.core.ai import newsletter_cleaner
 
         source = Path(newsletter_cleaner.__file__).read_text(encoding='utf-8')
 

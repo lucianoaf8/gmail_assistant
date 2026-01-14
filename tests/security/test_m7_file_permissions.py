@@ -14,7 +14,7 @@ class TestSecureFileModule:
 
     def test_secure_file_module_exists(self):
         """Verify secure file module exists."""
-        from gmail_assistant.utils import secure_file
+        from gman.utils import secure_file
 
         assert hasattr(secure_file, 'secure_write') or \
                hasattr(secure_file, 'SecureFileWriter'), \
@@ -22,7 +22,7 @@ class TestSecureFileModule:
 
     def test_file_permissions_restrictive(self):
         """Verify files are created with restrictive permissions."""
-        from gmail_assistant.utils.secure_file import secure_write
+        from gman.utils.secure_file import secure_write
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "sensitive.txt"
@@ -41,7 +41,7 @@ class TestSecureFileModule:
 
     def test_directory_permissions_restrictive(self):
         """Verify directories are created with restrictive permissions."""
-        from gmail_assistant.utils.secure_file import secure_mkdir
+        from gman.utils.secure_file import secure_mkdir
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_dir = Path(tmpdir) / "sensitive_dir"
@@ -58,7 +58,7 @@ class TestSecureFileModule:
 
     def test_existing_file_permissions_fixed(self):
         """Verify existing files have permissions corrected on appropriate platforms."""
-        from gmail_assistant.utils.secure_file import secure_write
+        from gman.utils.secure_file import secure_write
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "existing.txt"
@@ -85,7 +85,7 @@ class TestSensitiveFileHandling:
 
     def test_credential_files_secured(self):
         """Verify credential files use secure permissions."""
-        from gmail_assistant.utils import secure_file
+        from gman.utils import secure_file
 
         source = Path(secure_file.__file__).read_text(encoding='utf-8')
 

@@ -1,4 +1,4 @@
-# Gmail Assistant Comprehensive Remediation Plan
+# Gman Comprehensive Remediation Plan
 
 **Document ID**: 0110-0300_comprehensive_remediation_plan.md
 **Date**: 2026-01-10
@@ -28,9 +28,9 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 - **8 LOW** (L-1 to L-8): Polish and best practices
 
 ### Key Files Already Scaffolded (Ready for Integration)
-- `src/gmail_assistant/core/fetch/batch_api.py` - GmailBatchClient (450 lines, complete)
-- `src/gmail_assistant/core/fetch/checkpoint.py` - CheckpointManager (441 lines, complete)
-- `src/gmail_assistant/core/schemas.py` - Canonical Email model (359 lines, complete)
+- `src/gman/core/fetch/batch_api.py` - GmailBatchClient (450 lines, complete)
+- `src/gman/core/fetch/checkpoint.py` - CheckpointManager (441 lines, complete)
+- `src/gman/core/schemas.py` - Canonical Email model (359 lines, complete)
 
 ---
 
@@ -48,15 +48,15 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 - Not integrated into existing fetch workflows
 
 **Files to Modify**:
-- `src/gmail_assistant/core/fetch/gmail_api_client.py`
-- `src/gmail_assistant/core/fetch/gmail_assistant.py`
-- `src/gmail_assistant/core/fetch/__init__.py`
+- `src/gman/core/fetch/gmail_api_client.py`
+- `src/gman/core/fetch/gman.py`
+- `src/gman/core/fetch/__init__.py`
 
 **Implementation Steps**:
 
 - [ ] **Step 1.1**: Update `gmail_api_client.py` to use `GmailBatchClient`
   ```python
-  # File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  # File: src/gman/core/fetch/gmail_api_client.py
   # Add import at line 14:
   from .batch_api import GmailBatchClient, BatchAPIError
 
@@ -133,7 +133,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 1.5**: Update `__init__.py` exports
   ```python
-  # File: src/gmail_assistant/core/fetch/__init__.py
+  # File: src/gman/core/fetch/__init__.py
   # Add:
   from .batch_api import GmailBatchClient, BatchAPIError, BatchResult
   ```
@@ -165,14 +165,14 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 **Current State**:
 - `cli/commands/fetch.py`, `delete.py`, `analyze.py`, `auth.py` are stub files (6 lines each)
 - `cli/main.py` contains Click decorators but prints "deferred to v2.1.0"
-- Core functionality exists in `core/fetch/gmail_assistant.py` (GmailFetcher class)
+- Core functionality exists in `core/fetch/gman.py` (GmailFetcher class)
 
 **Files to Modify**:
-- `src/gmail_assistant/cli/commands/fetch.py`
-- `src/gmail_assistant/cli/commands/delete.py`
-- `src/gmail_assistant/cli/commands/analyze.py`
-- `src/gmail_assistant/cli/commands/auth.py`
-- `src/gmail_assistant/cli/main.py`
+- `src/gman/cli/commands/fetch.py`
+- `src/gman/cli/commands/delete.py`
+- `src/gman/cli/commands/analyze.py`
+- `src/gman/cli/commands/auth.py`
+- `src/gman/cli/main.py`
 
 **Implementation Steps**:
 
@@ -180,7 +180,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 2.1.1**: Create fetch command implementation
   ```python
-  # File: src/gmail_assistant/cli/commands/fetch.py
+  # File: src/gman/cli/commands/fetch.py
   """Fetch command implementation."""
   from __future__ import annotations
 
@@ -191,11 +191,11 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
   import click
   from rich.progress import Progress, SpinnerColumn, TextColumn
 
-  from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-  from gmail_assistant.core.fetch.batch_api import GmailBatchClient
-  from gmail_assistant.core.fetch.checkpoint import CheckpointManager, SyncState
-  from gmail_assistant.core.config import AppConfig
-  from gmail_assistant.core.exceptions import AuthError, NetworkError
+  from gman.core.fetch.gman import GmailFetcher
+  from gman.core.fetch.batch_api import GmailBatchClient
+  from gman.core.fetch.checkpoint import CheckpointManager, SyncState
+  from gman.core.config import AppConfig
+  from gman.core.exceptions import AuthError, NetworkError
 
   logger = logging.getLogger(__name__)
 
@@ -297,10 +297,10 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 2.1.2**: Update `main.py` fetch command to use implementation
   ```python
-  # File: src/gmail_assistant/cli/main.py
+  # File: src/gman/cli/main.py
   # Replace lines 88-110 (fetch command body):
 
-  from gmail_assistant.cli.commands.fetch import execute_fetch
+  from gman.cli.commands.fetch import execute_fetch
 
   @main.command()
   @click.option("--query", "-q", default="", help="Gmail search query.")
@@ -334,7 +334,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 2.2.1**: Create delete command implementation
   ```python
-  # File: src/gmail_assistant/cli/commands/delete.py
+  # File: src/gman/cli/commands/delete.py
   """Delete command implementation."""
   from __future__ import annotations
 
@@ -345,9 +345,9 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
   from rich.console import Console
   from rich.table import Table
 
-  from gmail_assistant.core.fetch.gmail_api_client import GmailAPIClient
-  from gmail_assistant.core.config import AppConfig
-  from gmail_assistant.core.exceptions import AuthError
+  from gman.core.fetch.gmail_api_client import GmailAPIClient
+  from gman.core.config import AppConfig
+  from gman.core.exceptions import AuthError
 
   logger = logging.getLogger(__name__)
   console = Console()
@@ -436,7 +436,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 2.3.1**: Create auth command implementation
   ```python
-  # File: src/gmail_assistant/cli/commands/auth.py
+  # File: src/gman/cli/commands/auth.py
   """Auth command implementation."""
   from __future__ import annotations
 
@@ -447,10 +447,10 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
   from rich.console import Console
   from rich.panel import Panel
 
-  from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-  from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
-  from gmail_assistant.core.config import AppConfig
-  from gmail_assistant.core.exceptions import AuthError, ConfigError
+  from gman.core.fetch.gman import GmailFetcher
+  from gman.core.auth.credential_manager import SecureCredentialManager
+  from gman.core.config import AppConfig
+  from gman.core.exceptions import AuthError, ConfigError
 
   logger = logging.getLogger(__name__)
   console = Console()
@@ -479,7 +479,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
                   return 0
 
           console.print(Panel(
-              "Not authenticated. Run 'gmail-assistant auth' to authenticate.",
+              "Not authenticated. Run 'gman auth' to authenticate.",
               title="[yellow]Not Authenticated[/yellow]",
               border_style="yellow"
           ))
@@ -548,7 +548,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 2.4.1**: Create analyze command implementation
   ```python
-  # File: src/gmail_assistant/cli/commands/analyze.py
+  # File: src/gman/cli/commands/analyze.py
   """Analyze command implementation."""
   from __future__ import annotations
 
@@ -563,7 +563,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
   from rich.console import Console
   from rich.table import Table
 
-  from gmail_assistant.core.config import AppConfig
+  from gman.core.config import AppConfig
 
   logger = logging.getLogger(__name__)
   console = Console()
@@ -656,11 +656,11 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
   ```
 
 **Validation Criteria**:
-- [ ] `gmail-assistant fetch --help` shows all options
-- [ ] `gmail-assistant fetch -q "is:unread" -m 10` successfully fetches emails
-- [ ] `gmail-assistant delete -q "test" --dry-run` shows preview without deleting
-- [ ] `gmail-assistant auth` runs OAuth flow and saves credentials
-- [ ] `gmail-assistant analyze -i ./backup` generates report
+- [ ] `gman fetch --help` shows all options
+- [ ] `gman fetch -q "is:unread" -m 10` successfully fetches emails
+- [ ] `gman delete -q "test" --dry-run` shows preview without deleting
+- [ ] `gman auth` runs OAuth flow and saves credentials
+- [ ] `gman analyze -i ./backup` generates report
 
 **Acceptance Criteria**:
 - All four CLI commands fully functional (not stubs)
@@ -682,16 +682,16 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 - Failed fetches restart from beginning
 
 **Files to Modify**:
-- `src/gmail_assistant/core/fetch/incremental.py`
-- `src/gmail_assistant/core/fetch/__init__.py`
+- `src/gman/core/fetch/incremental.py`
+- `src/gman/core/fetch/__init__.py`
 
 **Implementation Steps**:
 
 - [ ] **Step 3.1**: Integrate CheckpointManager into IncrementalGmailFetcher
   ```python
-  # File: src/gmail_assistant/core/fetch/incremental.py
+  # File: src/gman/core/fetch/incremental.py
   # Add import after line 27:
-  from gmail_assistant.core.fetch.checkpoint import CheckpointManager, SyncCheckpoint, SyncState
+  from gman.core.fetch.checkpoint import CheckpointManager, SyncCheckpoint, SyncState
 
   # Modify __init__ (line 42-44):
   def __init__(self, db_path: str = "data/databases/emails_final.db"):
@@ -817,15 +817,15 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 - `schemas.py` contains canonical `Email` Pydantic model with compatibility wrappers
 
 **Files to Modify**:
-- `src/gmail_assistant/core/ai/newsletter_cleaner.py`
-- `src/gmail_assistant/core/fetch/gmail_api_client.py`
-- `src/gmail_assistant/core/protocols.py`
+- `src/gman/core/ai/newsletter_cleaner.py`
+- `src/gman/core/fetch/gmail_api_client.py`
+- `src/gman/core/protocols.py`
 
 **Implementation Steps**:
 
 - [ ] **Step 4.1**: Update newsletter_cleaner.py to use schemas.Email
   ```python
-  # File: src/gmail_assistant/core/ai/newsletter_cleaner.py
+  # File: src/gman/core/ai/newsletter_cleaner.py
   # Replace lines 36-45 (EmailData class) with import:
 
   # Remove: @dataclass class EmailData...
@@ -837,7 +837,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 4.2**: Update gmail_api_client.py to use schemas.Email
   ```python
-  # File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  # File: src/gman/core/fetch/gmail_api_client.py
   # Replace import at line 14:
   # OLD: from ..ai.newsletter_cleaner import EmailData
   # NEW:
@@ -848,19 +848,19 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 
 - [ ] **Step 4.3**: Add deprecation notice to protocols.py EmailMetadata
   ```python
-  # File: src/gmail_assistant/core/protocols.py
+  # File: src/gman/core/protocols.py
   # Add deprecation warning at line 43:
   import warnings
 
   @dataclass
   class EmailMetadata:
       """
-      DEPRECATED: Use gmail_assistant.core.schemas.Email instead.
+      DEPRECATED: Use gman.core.schemas.Email instead.
       This class remains for backward compatibility only.
       """
       def __post_init__(self):
           warnings.warn(
-              "EmailMetadata is deprecated. Use Email from gmail_assistant.core.schemas",
+              "EmailMetadata is deprecated. Use Email from gman.core.schemas",
               DeprecationWarning,
               stacklevel=2
           )
@@ -870,7 +870,7 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
 - [ ] **Step 4.4**: Update all internal usages to schemas.Email
   ```bash
   # Find all usages:
-  grep -r "EmailMetadata\|EmailData" src/gmail_assistant --include="*.py"
+  grep -r "EmailMetadata\|EmailData" src/gman --include="*.py"
   # Update each file to import from schemas.py
   ```
 
@@ -880,11 +880,11 @@ This plan provides step-by-step remediation for 24 issues identified in the Mast
   """
   Migration Guide:
 
-  OLD: from gmail_assistant.core.protocols import EmailMetadata
-  NEW: from gmail_assistant.core.schemas import Email
+  OLD: from gman.core.protocols import EmailMetadata
+  NEW: from gman.core.schemas import Email
 
-  OLD: from gmail_assistant.core.ai.newsletter_cleaner import EmailData
-  NEW: from gmail_assistant.core.schemas import Email
+  OLD: from gman.core.ai.newsletter_cleaner import EmailData
+  NEW: from gman.core.schemas import Email
 
   Compatibility:
       email.to_email_metadata()  # Returns EmailMetadataCompat
@@ -923,14 +923,14 @@ Exception definitions scattered across 7 files:
 - `export/parquet_exporter.py:38`: `ParquetExportError`
 
 **Files to Modify**:
-- `src/gmail_assistant/core/exceptions.py` (add all exceptions)
+- `src/gman/core/exceptions.py` (add all exceptions)
 - All files defining local exceptions (update imports)
 
 **Implementation Steps**:
 
 - [ ] **Step 5.1**: Expand core/exceptions.py with full hierarchy
   ```python
-  # File: src/gmail_assistant/core/exceptions.py
+  # File: src/gman/core/exceptions.py
   """
   Centralized exception definitions - SINGLE SOURCE OF TRUTH.
 
@@ -986,7 +986,7 @@ Exception definitions scattered across 7 files:
 
 
   class GmailAssistantError(Exception):
-      """Base exception for Gmail Assistant."""
+      """Base exception for Gman."""
       pass
 
 
@@ -1082,11 +1082,11 @@ Exception definitions scattered across 7 files:
 
   # utils/input_validator.py:
   # Remove: class ValidationError(Exception)
-  # Add: from gmail_assistant.core.exceptions import ValidationError
+  # Add: from gman.core.exceptions import ValidationError
 
   # utils/circuit_breaker.py:
   # Remove: class CircuitBreakerError(Exception)
-  # Add: from gmail_assistant.core.exceptions import CircuitBreakerError
+  # Add: from gman.core.exceptions import CircuitBreakerError
 
   # (Repeat for all 7 files)
   ```
@@ -1098,7 +1098,7 @@ Exception definitions scattered across 7 files:
   ```
 
 **Validation Criteria**:
-- [ ] `python -c "from gmail_assistant.core.exceptions import *"` succeeds
+- [ ] `python -c "from gman.core.exceptions import *"` succeeds
 - [ ] All tests pass with new exception imports
 - [ ] No duplicate exception class definitions
 
@@ -1119,7 +1119,7 @@ Exception definitions scattered across 7 files:
 8 bare `except:` handlers found in:
 - `analysis/email_data_converter.py`: lines 124, 138, 156, 165
 - `core/processing/extractor.py`: line 112
-- `core/fetch/gmail_assistant.py`: line 431
+- `core/fetch/gman.py`: line 431
 - `core/fetch/incremental.py`: line 144
 - `core/fetch/dead_letter_queue.py`: line 16
 
@@ -1129,7 +1129,7 @@ Exception definitions scattered across 7 files:
 
 - [ ] **Step 6.1**: Fix email_data_converter.py (4 instances)
   ```python
-  # File: src/gmail_assistant/analysis/email_data_converter.py
+  # File: src/gman/analysis/email_data_converter.py
 
   # Line 124: Date parsing
   # OLD: except:
@@ -1158,7 +1158,7 @@ Exception definitions scattered across 7 files:
 
 - [ ] **Step 6.2**: Fix core/processing/extractor.py
   ```python
-  # File: src/gmail_assistant/core/processing/extractor.py
+  # File: src/gman/core/processing/extractor.py
   # Line 112
   # OLD: except:
   # NEW:
@@ -1166,9 +1166,9 @@ Exception definitions scattered across 7 files:
       logger.warning(f"Content extraction failed: {e}")
   ```
 
-- [ ] **Step 6.3**: Fix core/fetch/gmail_assistant.py
+- [ ] **Step 6.3**: Fix core/fetch/gman.py
   ```python
-  # File: src/gmail_assistant/core/fetch/gmail_assistant.py
+  # File: src/gman/core/fetch/gman.py
   # Line 431 (date parsing in download_emails)
   # OLD: except:
   # NEW:
@@ -1180,7 +1180,7 @@ Exception definitions scattered across 7 files:
 
 - [ ] **Step 6.4**: Fix core/fetch/incremental.py
   ```python
-  # File: src/gmail_assistant/core/fetch/incremental.py
+  # File: src/gman/core/fetch/incremental.py
   # Line 144 (date parsing in fetch loop)
   # OLD: except:
   # NEW:
@@ -1191,7 +1191,7 @@ Exception definitions scattered across 7 files:
 
 - [ ] **Step 6.5**: Fix core/fetch/dead_letter_queue.py
   ```python
-  # File: src/gmail_assistant/core/fetch/dead_letter_queue.py
+  # File: src/gman/core/fetch/dead_letter_queue.py
   # Line 16
   # OLD: except:
   # NEW:
@@ -1236,8 +1236,8 @@ Three overlapping modules with ~70% code duplication:
 - `analysis/email_analyzer.py` (850 lines)
 
 **Files to Modify**:
-- Create: `src/gmail_assistant/analysis/unified_analyzer.py`
-- Modify: `src/gmail_assistant/analysis/__init__.py`
+- Create: `src/gman/analysis/unified_analyzer.py`
+- Modify: `src/gman/analysis/__init__.py`
 - Deprecate: The three duplicate modules
 
 **Implementation Steps**:
@@ -1254,7 +1254,7 @@ Three overlapping modules with ~70% code duplication:
 
 - [ ] **Step 7.2**: Create unified analyzer with strategy pattern
   ```python
-  # File: src/gmail_assistant/analysis/unified_analyzer.py
+  # File: src/gman/analysis/unified_analyzer.py
   """
   Unified Email Analyzer - Consolidates analysis functionality.
 
@@ -1273,7 +1273,7 @@ Three overlapping modules with ~70% code duplication:
   from typing import Dict, List, Any, Optional, Protocol
   from collections import Counter
 
-  from gmail_assistant.core.schemas import Email
+  from gman.core.schemas import Email
 
   logger = logging.getLogger(__name__)
 
@@ -1443,7 +1443,7 @@ Three overlapping modules with ~70% code duplication:
 
 - [ ] **Step 7.3**: Update __init__.py to expose unified analyzer
   ```python
-  # File: src/gmail_assistant/analysis/__init__.py
+  # File: src/gman/analysis/__init__.py
   """Email analysis module."""
 
   from .unified_analyzer import (
@@ -1473,7 +1473,7 @@ Three overlapping modules with ~70% code duplication:
   # At top of each deprecated module:
   import warnings
   warnings.warn(
-      f"{__name__} is deprecated. Use gmail_assistant.analysis.UnifiedEmailAnalyzer",
+      f"{__name__} is deprecated. Use gman.analysis.UnifiedEmailAnalyzer",
       DeprecationWarning,
       stacklevel=2
   )
@@ -1513,7 +1513,7 @@ Three overlapping modules with ~70% code duplication:
 **Priority**: P2 | **Effort**: 32-40 hours | **Risk**: High
 
 **Current State**:
-`core/fetch/gmail_assistant.py` has 18+ responsibilities:
+`core/fetch/gman.py` has 18+ responsibilities:
 - Authentication
 - Search
 - Download
@@ -1534,16 +1534,16 @@ Three overlapping modules with ~70% code duplication:
 - CLI entry point
 
 **Files to Create**:
-- `src/gmail_assistant/core/fetch/message_processor.py`
-- `src/gmail_assistant/core/fetch/file_writer.py`
-- `src/gmail_assistant/core/fetch/formatters/eml.py`
-- `src/gmail_assistant/core/fetch/formatters/markdown.py`
+- `src/gman/core/fetch/message_processor.py`
+- `src/gman/core/fetch/file_writer.py`
+- `src/gman/core/fetch/formatters/eml.py`
+- `src/gman/core/fetch/formatters/markdown.py`
 
 **Implementation Steps**:
 
 - [ ] **Step 8.1**: Extract message processing logic
   ```python
-  # File: src/gmail_assistant/core/fetch/message_processor.py
+  # File: src/gman/core/fetch/message_processor.py
   """Message processing utilities extracted from GmailFetcher."""
 
   from typing import Dict, List, Tuple, Optional
@@ -1599,7 +1599,7 @@ Three overlapping modules with ~70% code duplication:
 
 - [ ] **Step 8.2**: Extract file writing logic
   ```python
-  # File: src/gmail_assistant/core/fetch/file_writer.py
+  # File: src/gman/core/fetch/file_writer.py
   """File writing utilities with atomic operations."""
 
   import os
@@ -1648,7 +1648,7 @@ Three overlapping modules with ~70% code duplication:
 
 - [ ] **Step 8.3**: Extract format generators
   ```python
-  # File: src/gmail_assistant/core/fetch/formatters/eml.py
+  # File: src/gman/core/fetch/formatters/eml.py
   """EML format generator."""
 
   from typing import Dict
@@ -1689,7 +1689,7 @@ Three overlapping modules with ~70% code duplication:
 
 - [ ] **Step 8.4**: Refactor GmailFetcher to use extracted classes
   ```python
-  # File: src/gmail_assistant/core/fetch/gmail_assistant.py
+  # File: src/gman/core/fetch/gman.py
   # Simplify to orchestration role only
 
   from .message_processor import MessageProcessor
@@ -1805,7 +1805,7 @@ Three overlapping modules with ~70% code duplication:
 #### L-5: TODO/FIXME Cleanup
 - [ ] Resolve or remove all TODO markers
 - [ ] File: parsers/gmail_eml_to_markdown_cleaner.py
-- [ ] File: core/fetch/gmail_assistant.py (and 3 others)
+- [ ] File: core/fetch/gman.py (and 3 others)
 
 #### L-6: Mutable Defaults in Dataclasses
 - [ ] Change `labels: List[str] = []` to `labels: List[str] = field(default_factory=list)`
@@ -1860,11 +1860,11 @@ Phase 4 (After Phase 3):
 ### Functionality Verification
 - [ ] All CLI commands functional:
   ```bash
-  gmail-assistant fetch --help
-  gmail-assistant delete --help
-  gmail-assistant analyze --help
-  gmail-assistant auth --help
-  gmail-assistant config --show
+  gman fetch --help
+  gman delete --help
+  gman analyze --help
+  gman auth --help
+  gman config --show
   ```
 - [ ] Checkpoint resume works after Ctrl+C
 - [ ] OAuth flow completes successfully
@@ -1872,7 +1872,7 @@ Phase 4 (After Phase 3):
 ### Code Quality Verification
 ```bash
 # Run full test suite
-pytest tests/ -v --cov=gmail_assistant --cov-report=term-missing
+pytest tests/ -v --cov=gman --cov-report=term-missing
 
 # Verify coverage > 90%
 coverage report --fail-under=90
@@ -1881,13 +1881,13 @@ coverage report --fail-under=90
 ruff check src/
 
 # Run type checking
-mypy src/gmail_assistant
+mypy src/gman
 
 # Check for bare exceptions
 ruff check src/ --select=BLE
 
 # Check for TODO markers
-grep -r "TODO\|FIXME" src/gmail_assistant --include="*.py" | wc -l
+grep -r "TODO\|FIXME" src/gman --include="*.py" | wc -l
 # Should return 0
 ```
 

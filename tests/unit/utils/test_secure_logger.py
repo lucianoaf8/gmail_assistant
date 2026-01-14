@@ -7,7 +7,7 @@ import logging
 import pytest
 from unittest import mock
 
-from gmail_assistant.utils.secure_logger import SecureLogger, get_secure_logger
+from gman.utils.secure_logger import SecureLogger, get_secure_logger
 
 
 class TestSecureLogger:

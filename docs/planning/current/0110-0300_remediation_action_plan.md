@@ -1,4 +1,4 @@
-# Gmail Assistant - Comprehensive Remediation Action Plan
+# Gman - Comprehensive Remediation Action Plan
 
 **Document ID**: 0110-0300_remediation_action_plan.md
 **Generated**: 2026-01-10 03:00
@@ -33,7 +33,7 @@
 
 - [ ] **1.1 Add batch_api import to gmail_api_client.py**
   ```
-  File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  File: src/gman/core/fetch/gmail_api_client.py
   Line: 17 (after existing imports)
   Action: Add import statement
   ```
@@ -41,7 +41,7 @@
 
 - [ ] **1.2 Initialize GmailBatchClient in GmailAPIClient.__init__**
   ```
-  File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  File: src/gman/core/fetch/gmail_api_client.py
   Line: 36-38 (after self.service initialization)
   ```
   - [ ] Add after `self.service = None`:
@@ -56,7 +56,7 @@
 
 - [ ] **1.3 Replace sequential _fetch_email_batch with batch API**
   ```
-  File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  File: src/gman/core/fetch/gmail_api_client.py
   Lines: 95-124
   Action: Replace entire method
   ```
@@ -103,7 +103,7 @@
 
 - [ ] **1.5 Replace sequential delete_emails with batch API**
   ```
-  File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  File: src/gman/core/fetch/gmail_api_client.py
   Lines: 126-148
   ```
   - [ ] Update `delete_emails` method to use `self.batch_client.batch_delete_messages`
@@ -111,7 +111,7 @@
 
 - [ ] **1.6 Replace sequential trash_emails with batch API**
   ```
-  File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  File: src/gman/core/fetch/gmail_api_client.py
   Lines: 150-172
   ```
   - [ ] Update `trash_emails` method to use `self.batch_client.batch_trash_messages`
@@ -141,7 +141,7 @@
 
 - [ ] **2.1.1 Add imports to fetch.py**
   ```
-  File: src/gmail_assistant/cli/commands/fetch.py
+  File: src/gman/cli/commands/fetch.py
   ```
   - [ ] Add complete imports:
     ```python
@@ -151,16 +151,16 @@
     from typing import Optional
     import click
 
-    from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
-    from gmail_assistant.core.fetch.batch_api import GmailBatchClient
-    from gmail_assistant.core.fetch.checkpoint import CheckpointManager
-    from gmail_assistant.core.config import AppConfig
-    from gmail_assistant.core.exceptions import AuthError, NetworkError
+    from gman.core.fetch.gman import GmailFetcher
+    from gman.core.fetch.batch_api import GmailBatchClient
+    from gman.core.fetch.checkpoint import CheckpointManager
+    from gman.core.config import AppConfig
+    from gman.core.exceptions import AuthError, NetworkError
     ```
 
 - [ ] **2.1.2 Implement fetch_emails function**
   ```
-  File: src/gmail_assistant/cli/commands/fetch.py
+  File: src/gman/cli/commands/fetch.py
   ```
   - [ ] Create main fetch function:
     ```python
@@ -253,7 +253,7 @@
 
 - [ ] **2.2.1 Add imports to delete.py**
   ```
-  File: src/gmail_assistant/cli/commands/delete.py
+  File: src/gman/cli/commands/delete.py
   ```
   - [ ] Add imports for GmailAPIClient, batch operations
 
@@ -296,10 +296,10 @@
   - [ ] Add `--status` flag to check current auth state
 
 **Validation Criteria**:
-- [ ] `gmail-assistant fetch --query "is:unread" --max-emails 10` works
-- [ ] `gmail-assistant delete --query "subject:test" --dry-run` works
-- [ ] `gmail-assistant analyze --report summary` works
-- [ ] `gmail-assistant auth` completes OAuth flow
+- [ ] `gman fetch --query "is:unread" --max-emails 10` works
+- [ ] `gman delete --query "subject:test" --dry-run` works
+- [ ] `gman analyze --report summary` works
+- [ ] `gman auth` completes OAuth flow
 
 **Acceptance Criteria**:
 - [ ] All 4 CLI commands fully functional
@@ -324,14 +324,14 @@
 
 - [ ] **3.1 Add checkpoint import to incremental.py**
   ```
-  File: src/gmail_assistant/core/fetch/incremental.py
+  File: src/gman/core/fetch/incremental.py
   Line: 28 (after existing imports)
   ```
   - [ ] Add: `from .checkpoint import CheckpointManager, SyncCheckpoint, SyncState`
 
 - [ ] **3.2 Add CheckpointManager to IncrementalGmailFetcher.__init__**
   ```
-  File: src/gmail_assistant/core/fetch/incremental.py
+  File: src/gman/core/fetch/incremental.py
   Line: 43-44
   ```
   - [ ] Add after `self.fetcher = None`:
@@ -342,7 +342,7 @@
 
 - [ ] **3.3 Create checkpoint at fetch start**
   ```
-  File: src/gmail_assistant/core/fetch/incremental.py
+  File: src/gman/core/fetch/incremental.py
   Method: fetch_incremental_emails
   Line: ~107 (after query construction)
   ```
@@ -370,7 +370,7 @@
 
 - [ ] **3.4 Update checkpoint during fetch loop**
   ```
-  File: src/gmail_assistant/core/fetch/incremental.py
+  File: src/gman/core/fetch/incremental.py
   Method: fetch_incremental_emails
   Line: ~132 (inside for loop)
   ```
@@ -387,7 +387,7 @@
 
 - [ ] **3.5 Mark checkpoint complete on success**
   ```
-  File: src/gmail_assistant/core/fetch/incremental.py
+  File: src/gman/core/fetch/incremental.py
   Line: ~170 (after successful completion)
   ```
   - [ ] Add before return:
@@ -398,7 +398,7 @@
 
 - [ ] **3.6 Mark checkpoint interrupted on failure**
   ```
-  File: src/gmail_assistant/core/fetch/incremental.py
+  File: src/gman/core/fetch/incremental.py
   Line: ~173 (in except block)
   ```
   - [ ] Add in exception handler:
@@ -446,7 +446,7 @@
 
 - [ ] **1.1 Update newsletter_cleaner.py to use schemas.Email**
   ```
-  File: src/gmail_assistant/core/ai/newsletter_cleaner.py
+  File: src/gman/core/ai/newsletter_cleaner.py
   Lines: 37-46 (EmailData dataclass)
   ```
   - [ ] Replace import:
@@ -466,7 +466,7 @@
 
 - [ ] **1.3 Deprecate EmailMetadata in protocols.py**
   ```
-  File: src/gmail_assistant/core/protocols.py
+  File: src/gman/core/protocols.py
   Lines: 43-55
   ```
   - [ ] Add deprecation warning:
@@ -476,7 +476,7 @@
     @dataclass
     class EmailMetadata:
         """
-        DEPRECATED: Use gmail_assistant.core.schemas.Email instead.
+        DEPRECATED: Use gman.core.schemas.Email instead.
         """
         def __post_init__(self):
             warnings.warn(
@@ -489,18 +489,18 @@
 
 - [ ] **1.4 Update all importers of EmailMetadata**
   - [ ] Search: `from.*protocols.*import.*EmailMetadata`
-  - [ ] Replace with: `from gmail_assistant.core.schemas import Email`
+  - [ ] Replace with: `from gman.core.schemas import Email`
 
 - [ ] **1.5 Update gmail_api_client.py to use schemas.Email**
   ```
-  File: src/gmail_assistant/core/fetch/gmail_api_client.py
+  File: src/gman/core/fetch/gmail_api_client.py
   Line: 14
   ```
   - [ ] Change: `from ..ai.newsletter_cleaner import EmailData`
   - [ ] To: `from ..schemas import Email as EmailData`
 
 - [ ] **1.6 Run deprecation warning scan**
-  - [ ] `python -W default::DeprecationWarning -c "import gmail_assistant"`
+  - [ ] `python -W default::DeprecationWarning -c "import gman"`
   - [ ] Fix all warnings
 
 **Validation Criteria**:
@@ -531,8 +531,8 @@
 
 - [ ] **2.1 Search for exception definitions outside core/exceptions.py**
   ```bash
-  grep -r "class.*Error.*Exception" src/gmail_assistant --include="*.py" | grep -v exceptions.py
-  grep -r "class.*Exception" src/gmail_assistant --include="*.py" | grep -v exceptions.py
+  grep -r "class.*Error.*Exception" src/gman --include="*.py" | grep -v exceptions.py
+  grep -r "class.*Exception" src/gman --include="*.py" | grep -v exceptions.py
   ```
 
 - [ ] **2.2 Add missing exception types to core/exceptions.py**
@@ -543,7 +543,7 @@
 
 - [ ] **2.3 Move BatchAPIError from batch_api.py**
   ```
-  File: src/gmail_assistant/core/fetch/batch_api.py
+  File: src/gman/core/fetch/batch_api.py
   Lines: 28-34
   ```
   - [ ] Move `BatchAPIError` class to `exceptions.py`
@@ -563,7 +563,7 @@
   ]
 
   class GmailAssistantError(Exception):
-      """Base exception for Gmail Assistant."""
+      """Base exception for Gman."""
       pass
 
   class ConfigError(GmailAssistantError):
@@ -687,7 +687,7 @@
 
 - [ ] **3.7 Verify no bare `except:` statements**
   ```bash
-  grep -r "except:" src/gmail_assistant --include="*.py" | grep -v "except:$"
+  grep -r "except:" src/gman --include="*.py" | grep -v "except:$"
   ```
 
 **Validation Criteria**:
@@ -727,7 +727,7 @@
 
 - [ ] **4.2 Create unified EmailAnalyzer with Strategy pattern**
   ```
-  File: src/gmail_assistant/analysis/unified_analyzer.py (new)
+  File: src/gman/analysis/unified_analyzer.py (new)
   ```
   - [ ] Create abstract base:
     ```python
@@ -784,7 +784,7 @@
 
 - [ ] **4.8 Update __init__.py exports**
   ```
-  File: src/gmail_assistant/analysis/__init__.py
+  File: src/gman/analysis/__init__.py
   ```
   - [ ] Export unified analyzer
   - [ ] Maintain backward compatibility aliases
@@ -809,7 +809,7 @@
 
 **Status**: 🟡 MEDIUM
 **Effort**: 32-40 hours
-**Files**: `core/fetch/gmail_assistant.py`
+**Files**: `core/fetch/gman.py`
 **Dependency**: C-1, C-2, C-3
 
 **Current State**: GmailFetcher has 18+ responsibilities
@@ -831,7 +831,7 @@
 
 - [ ] **1.3 Create OutputPluginManager**
   ```
-  File: src/gmail_assistant/core/output/plugin_manager.py (new)
+  File: src/gman/core/output/plugin_manager.py (new)
   ```
   - [ ] Implement `OutputPluginProtocol` from protocols.py
   - [ ] Create EMLOutputPlugin
@@ -867,15 +867,15 @@
 
 - [ ] **5.1 Add --async flag to fetch command**
   ```
-  File: src/gmail_assistant/cli/main.py
+  File: src/gman/cli/main.py
   ```
   - [ ] Add option: `@click.option("--async", "use_async", is_flag=True)`
 
 - [ ] **5.2 Import async fetcher in CLI**
   ```
-  File: src/gmail_assistant/cli/commands/fetch.py
+  File: src/gman/cli/commands/fetch.py
   ```
-  - [ ] Add: `from gmail_assistant.core.fetch.async_fetcher import AsyncGmailFetcher`
+  - [ ] Add: `from gman.core.fetch.async_fetcher import AsyncGmailFetcher`
 
 - [ ] **5.3 Implement async fetch path**
   - [ ] When `use_async=True`, use `AsyncGmailFetcher`
@@ -886,7 +886,7 @@
   - [ ] Pass to async fetcher
 
 **Validation Criteria**:
-- [ ] `gmail-assistant fetch --async --query "is:unread"` works
+- [ ] `gman fetch --async --query "is:unread"` works
 - [ ] Async 2-3x faster than sync for large fetches
 - [ ] Error handling works in async mode
 
@@ -920,7 +920,7 @@
 
 - [ ] **9.3 Register in DI container**
   ```
-  File: src/gmail_assistant/core/container.py
+  File: src/gman/core/container.py
   ```
   - [ ] Register EmailRepositoryProtocol → DatabaseManager
 
@@ -964,7 +964,7 @@
 
 - [ ] **2.1 Identify modules not using SecureLogger**
   ```bash
-  grep -l "logging.getLogger" src/gmail_assistant --include="*.py"
+  grep -l "logging.getLogger" src/gman --include="*.py"
   ```
 
 - [ ] **2.2 Replace with SecureLogger**
@@ -974,7 +974,7 @@
   logger = logging.getLogger(__name__)
 
   # After
-  from gmail_assistant.utils.secure_logger import SecureLogger
+  from gman.utils.secure_logger import SecureLogger
   logger = SecureLogger(__name__)
   ```
 
@@ -986,18 +986,18 @@
 
 **Critical (C-1, C-2, C-3)**:
 - [ ] Batch API integration working (C-1)
-  - Command: `python -c "from gmail_assistant.core.fetch.batch_api import GmailBatchClient; print('OK')"`
+  - Command: `python -c "from gman.core.fetch.batch_api import GmailBatchClient; print('OK')"`
 - [ ] CLI commands functional (C-2)
-  - Command: `gmail-assistant fetch --help` (shows usage, not stub message)
-  - Command: `gmail-assistant delete --help` (shows usage, not stub message)
-  - Command: `gmail-assistant analyze --help` (shows usage, not stub message)
-  - Command: `gmail-assistant auth --help` (shows usage, not stub message)
+  - Command: `gman fetch --help` (shows usage, not stub message)
+  - Command: `gman delete --help` (shows usage, not stub message)
+  - Command: `gman analyze --help` (shows usage, not stub message)
+  - Command: `gman auth --help` (shows usage, not stub message)
 - [ ] Checkpoint/resume working (C-3)
   - Command: `ls data/checkpoints/` shows checkpoint files after fetch
 
 **High (H-1, H-2, H-3, H-4)**:
 - [ ] Single Email schema (H-1)
-  - Command: `python -c "from gmail_assistant.core.schemas import Email; print('OK')"`
+  - Command: `python -c "from gman.core.schemas import Email; print('OK')"`
   - No deprecation warnings in normal usage
 - [ ] Exception hierarchy consolidated (H-2)
   - Command: `grep -r "class.*Error.*Exception" src | wc -l` = 1 file
@@ -1005,7 +1005,7 @@
   - Command: `ruff check --select=E722 src/` passes
   - `except Exception` count < 20
 - [ ] Analysis modules consolidated (H-4)
-  - Command: `wc -l src/gmail_assistant/analysis/*.py` total < 1500 lines
+  - Command: `wc -l src/gman/analysis/*.py` total < 1500 lines
 
 ### Test Suite
 
@@ -1026,7 +1026,7 @@
 
 - [ ] **Coverage maintained**:
   ```bash
-  pytest tests/ --cov=gmail_assistant --cov-report=term-missing
+  pytest tests/ --cov=gman --cov-report=term-missing
   # Coverage should be ≥90%
   ```
 
@@ -1039,12 +1039,12 @@
 
 - [ ] **Type checking passes**:
   ```bash
-  mypy src/gmail_assistant
+  mypy src/gman
   ```
 
 - [ ] **No TODO/FIXME in critical paths**:
   ```bash
-  grep -r "TODO\|FIXME" src/gmail_assistant/core src/gmail_assistant/cli | wc -l
+  grep -r "TODO\|FIXME" src/gman/core src/gman/cli | wc -l
   # Should be 0 or documented exceptions
   ```
 

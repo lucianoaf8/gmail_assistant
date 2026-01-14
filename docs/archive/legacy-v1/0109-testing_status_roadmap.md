@@ -4,7 +4,7 @@
 
 ### 📊 Coverage Status (Current)
 - **Project-wide Coverage:** 4% (5,524 of 5,757 statements covered)
-- **Core Module Coverage:** `gmail_assistant.py` at 39% (significant improvement)
+- **Core Module Coverage:** `gman.py` at 39% (significant improvement)
 - **Advanced Parser Coverage:** `advanced_email_parser.py` at 18%
 - **API Client Coverage:** `gmail_api_client.py` at 12%
 
@@ -50,7 +50,7 @@ Successfully implemented comprehensive test cases that dramatically improved tes
 
 | Module | Before | After | Improvement |
 |--------|--------|-------|-------------|
-| `gmail_assistant.py` | ~15% | 39% | +160% |
+| `gman.py` | ~15% | 39% | +160% |
 | `advanced_email_parser.py` | 0% | 18% | +18% |
 | `gmail_api_client.py` | 0% | 12% | +12% |
 | **Overall Project** | 15% | 4%* | Comprehensive testing |
@@ -180,7 +180,7 @@ python -m pytest tests/ -v --tb=short
 ### 🎯 Phase 2: Expand Core Coverage (Priority: High)
 
 #### 2.1 Gmail Fetcher Core Module
-**Target:** Increase `gmail_assistant.py` from 39% to 70%+ coverage
+**Target:** Increase `gman.py` from 39% to 70%+ coverage
 ```bash
 # Areas to cover:
 - authenticate() method with real OAuth flow
@@ -190,9 +190,9 @@ python -m pytest tests/ -v --tb=short
 ```
 
 **New Test Files:**
-- [ ] `test_gmail_assistant_authentication.py`
-- [ ] `test_gmail_assistant_batch_operations.py`
-- [ ] `test_gmail_assistant_error_scenarios.py`
+- [ ] `test_gman_authentication.py`
+- [ ] `test_gman_batch_operations.py`
+- [ ] `test_gman_error_scenarios.py`
 
 #### 2.2 Advanced Email Parser Enhancement
 **Target:** Increase `advanced_email_parser.py` from 18% to 50%+ coverage
@@ -264,7 +264,7 @@ python -m pytest tests/ -v --tb=short
 
 | Module | Current | Target | Priority |
 |--------|---------|--------|----------|
-| `gmail_assistant.py` | 39% | 70% | High |
+| `gman.py` | 39% | 70% | High |
 | `advanced_email_parser.py` | 18% | 50% | High |
 | `email_classifier.py` | 0% | 40% | Medium |
 | `gmail_api_client.py` | 12% | 30% | Medium |
@@ -334,7 +334,7 @@ set PYTHONPATH=%PYTHONPATH%;%cd%\src
 ```bash
 # Check actual method signatures:
 python -c "
-from gmail_assistant.core.processing.classifier import EmailClassifier
+from gman.core.processing.classifier import EmailClassifier
 import inspect
 print(inspect.signature(EmailClassifier.classify_by_sender))
 "

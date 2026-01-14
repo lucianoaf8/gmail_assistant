@@ -5,7 +5,7 @@
 ### Run All Working Tests
 ```bash
 # Navigate to project root
-cd /path/to/gmail_assistant
+cd /path/to/gman
 
 # Run core working tests with coverage
 python -m pytest tests/test_core_simple.py tests/test_email_processing_comprehensive.py tests/test_gmail_api_integration_comprehensive.py --cov=src --cov-report=term-missing -v
@@ -34,7 +34,7 @@ tests/test_gmail_api_integration_comprehensive.py::TestGmailAPIAuthentication::t
 python -m pytest tests/test_core_simple.py tests/test_email_processing_comprehensive.py --cov=src/core --cov-report=term
 
 # Specific module
-python -m pytest tests/test_email_processing_comprehensive.py --cov=src/core/gmail_assistant.py --cov-report=term
+python -m pytest tests/test_email_processing_comprehensive.py --cov=src/core/gman.py --cov-report=term
 ```
 
 ### HTML Coverage Report
@@ -82,7 +82,7 @@ python -m pytest tests/test_email_classification_comprehensive.py -v
 #### 1. "No such file" errors
 ```bash
 # Make sure you're in project root
-pwd  # Should show .../gmail_assistant
+pwd  # Should show .../gman
 ls src/  # Should show core/, parsers/, etc.
 ```
 
@@ -142,8 +142,8 @@ ls data/databases/emails_final.db
 # Test everything that works reliably
 python -m pytest tests/test_core_simple.py tests/test_email_processing_comprehensive.py -v
 
-# Get coverage for core gmail_assistant module
-python -m pytest tests/test_core_simple.py tests/test_email_processing_comprehensive.py --cov=src/core/gmail_assistant.py --cov-report=term
+# Get coverage for core gman module
+python -m pytest tests/test_core_simple.py tests/test_email_processing_comprehensive.py --cov=src/core/gman.py --cov-report=term
 
 # Test with real Gmail API (if credentials available)
 python -m pytest tests/test_gmail_api_integration_comprehensive.py -v -s

@@ -5,7 +5,7 @@ Validates subprocess path validation and safe execution.
 import pytest
 from pathlib import Path
 import tempfile
-from gmail_assistant.core.exceptions import ValidationError
+from gman.core.exceptions import ValidationError
 
 
 class TestSubprocessPathValidation:
@@ -14,7 +14,7 @@ class TestSubprocessPathValidation:
     @pytest.fixture
     def incremental_fetcher(self):
         """Create incremental fetcher instance for testing."""
-        from gmail_assistant.core.fetch.incremental import IncrementalFetcher
+        from gman.core.fetch.incremental import IncrementalFetcher
 
         # IncrementalFetcher takes db_path, not service
         return IncrementalFetcher(db_path="test_db.db")
@@ -63,7 +63,7 @@ class TestSubprocessPathValidation:
 
     def test_shell_false_enforcement(self):
         """Verify shell=False is enforced in subprocess calls."""
-        from gmail_assistant.core.fetch import incremental
+        from gman.core.fetch import incremental
 
         source = Path(incremental.__file__).read_text(encoding='utf-8')
 
@@ -77,7 +77,7 @@ class TestSafeSubprocessExecution:
 
     def test_subprocess_timeout_enforced(self):
         """Verify subprocess calls have timeout protection."""
-        from gmail_assistant.core.fetch import incremental
+        from gman.core.fetch import incremental
 
         source = Path(incremental.__file__).read_text(encoding='utf-8')
 
@@ -87,7 +87,7 @@ class TestSafeSubprocessExecution:
 
     def test_no_shell_expansion(self):
         """Verify no shell expansion vulnerabilities."""
-        from gmail_assistant.core.fetch import incremental
+        from gman.core.fetch import incremental
 
         source = Path(incremental.__file__).read_text(encoding='utf-8')
 

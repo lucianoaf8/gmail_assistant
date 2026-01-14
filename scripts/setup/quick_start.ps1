@@ -1,8 +1,8 @@
-# Gmail Fetcher - Quick Setup and Run (PowerShell)
+# Gman - Quick Setup and Run (PowerShell)
 # Usage: .\quick_start.ps1
 # Security: Implements input sanitization (M-6 fix)
 
-Write-Host "Gmail Fetcher - Quick Setup and Run" -ForegroundColor Cyan
+Write-Host "Gman - Quick Setup and Run" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 
 # Security: Input sanitization functions (M-6 fix)
@@ -91,7 +91,7 @@ if (-not (Test-Path "../credentials.json")) {
 Write-Host ""
 Write-Host "🔐 Testing Gmail API authentication..." -ForegroundColor Blue
 try {
-    python ../src/gmail_assistant.py --auth-only
+    gman --auth-only
     Write-Host "✅ Authentication successful" -ForegroundColor Green
 } catch {
     Write-Host "❌ Authentication failed" -ForegroundColor Red
@@ -165,7 +165,7 @@ Write-Host ""
 
 # Run the main script
 try {
-    python ../src/gmail_assistant.py --query "$query" --max $max --output "$output" --format both --organize date
+    gman --query "$query" --max $max --output "$output" --format both --organize date
     
     Write-Host ""
     Write-Host "✅ Download complete! Check the '$output' folder." -ForegroundColor Green

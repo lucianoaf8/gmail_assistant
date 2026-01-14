@@ -1,11 +1,11 @@
-"""Unit tests for gmail_assistant.core.constants module."""
+"""Unit tests for gman.core.constants module."""
 from __future__ import annotations
 
 from pathlib import Path
 
 import pytest
 
-from gmail_assistant.core.constants import (
+from gman.core.constants import (
     # Application Metadata
     APP_NAME,
     APP_VERSION,
@@ -63,7 +63,7 @@ class TestApplicationMetadata:
 
     def test_app_name_value(self):
         """APP_NAME should have expected value."""
-        assert APP_NAME == "gmail-assistant"
+        assert APP_NAME == "gman"
 
     def test_app_version_format(self):
         """APP_VERSION should follow semantic versioning format."""

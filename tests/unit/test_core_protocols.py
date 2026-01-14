@@ -9,7 +9,7 @@ import sys
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-from gmail_assistant.core.protocols import (
+from gman.core.protocols import (
     # Data Transfer Objects
     EmailMetadata,
     FetchResult,

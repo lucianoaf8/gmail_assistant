@@ -10,8 +10,8 @@ from core.config import Config
 from handlers.fetch import FetchHandler
 
 # New (v2.0.0)
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.cli.commands.fetch import ...
+from gman.core.config import AppConfig
+from gman.cli.commands.fetch import ...
 ```
 
 ## CLI Interface
@@ -21,67 +21,67 @@ The CLI has been completely redesigned using Click:
 ```bash
 # Old
 python main.py --fetch --query "is:unread"
-python src/gmail_assistant.py --query "is:unread" --max 1000
+python src/gman.py --query "is:unread" --max 1000
 
 # New
-gmail-assistant fetch --query "is:unread" --max-emails 1000
-gmail-assistant delete --query "from:spam@example.com" --dry-run
-gmail-assistant analyze --report json
-gmail-assistant auth
-gmail-assistant config --show
+gman fetch --query "is:unread" --max-emails 1000
+gman delete --query "from:spam@example.com" --dry-run
+gman analyze --report json
+gman auth
+gman config --show
 ```
 
 ### New CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `gmail-assistant fetch` | Fetch and backup emails |
-| `gmail-assistant delete` | Delete emails matching query |
-| `gmail-assistant analyze` | Analyze email content |
-| `gmail-assistant auth` | Run OAuth authentication flow |
-| `gmail-assistant config` | Manage configuration |
+| `gman fetch` | Fetch and backup emails |
+| `gman delete` | Delete emails matching query |
+| `gman analyze` | Analyze email content |
+| `gman auth` | Run OAuth authentication flow |
+| `gman config` | Manage configuration |
 
 ### Global Options
 
 ```bash
-gmail-assistant --version              # Show version
-gmail-assistant --config PATH          # Use custom config file
-gmail-assistant --allow-repo-credentials  # Allow credentials in repo
+gman --version              # Show version
+gman --config PATH          # Use custom config file
+gman --allow-repo-credentials  # Allow credentials in repo
 ```
 
 ## Configuration
 
-Configuration now defaults to `~/.gmail-assistant/` for security:
+Configuration now defaults to `~/.gman/` for security:
 
 | File | Old Location | New Location |
 |------|-------------|--------------|
-| Credentials | `./credentials.json` | `~/.gmail-assistant/credentials.json` |
-| Token | `./token.json` | `~/.gmail-assistant/token.json` |
-| Config | `./config.json` | `~/.gmail-assistant/config.json` |
-| Backups | `./gmail_backup/` | `~/.gmail-assistant/backups/` |
+| Credentials | `./credentials.json` | `~/.gman/credentials.json` |
+| Token | `./token.json` | `~/.gman/token.json` |
+| Config | `./config.json` | `~/.gman/config.json` |
+| Backups | `./gmail_backup/` | `~/.gman/backups/` |
 
 ### Using Repo-Local Credentials
 
 If you need credentials in the repository (not recommended), use the flag:
 
 ```bash
-gmail-assistant --allow-repo-credentials fetch --query "is:unread"
+gman --allow-repo-credentials fetch --query "is:unread"
 ```
 
 ## Entry Points
 
 | Old | New |
 |-----|-----|
-| `python main.py` | `gmail-assistant` |
-| `python src/gmail_assistant.py` | `gmail-assistant fetch` |
-| `python -m src.cli.main` | `python -m gmail_assistant` |
+| `python main.py` | `gman` |
+| `python src/gman.py` | `gman fetch` |
+| `python -m src.cli.main` | `python -m gman` |
 
 ## Exception Hierarchy
 
 A new centralized exception hierarchy has been introduced:
 
 ```python
-from gmail_assistant.core.exceptions import (
+from gman.core.exceptions import (
     GmailAssistantError,  # Base exception
     ConfigError,          # Configuration errors (exit code 5)
     AuthError,            # Authentication errors (exit code 3)
@@ -96,7 +96,7 @@ from gmail_assistant.core.exceptions import (
 
 ```bash
 # Remove old installation
-pip uninstall gmail-fetcher  # if previously installed
+pip uninstall gman  # if previously installed
 
 # Install new package
 pip install -e .
@@ -106,11 +106,11 @@ pip install -e .
 
 ```bash
 # Create new config directory
-mkdir -p ~/.gmail-assistant
+mkdir -p ~/.gman
 
 # Move credentials (recommended)
-mv credentials.json ~/.gmail-assistant/
-mv token.json ~/.gmail-assistant/
+mv credentials.json ~/.gman/
+mv token.json ~/.gman/
 
 # Or use --allow-repo-credentials flag
 ```
@@ -125,8 +125,8 @@ from core.config import Config
 from core.exceptions import ConfigError
 
 # New
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.config import AppConfig
+from gman.core.exceptions import ConfigError
 ```
 
 ### Step 4: Update Scripts
@@ -135,24 +135,24 @@ Replace old CLI calls:
 
 ```bash
 # Old
-python src/gmail_assistant.py --query "is:unread" --max 1000
+python src/gman.py --query "is:unread" --max 1000
 
 # New
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 ```
 
 ### Step 5: Verify Installation
 
 ```bash
 # Check version
-gmail-assistant --version
+gman --version
 
 # Verify imports work
-python -c "from gmail_assistant.core.config import AppConfig; print('OK')"
+python -c "from gman.core.config import AppConfig; print('OK')"
 ```
 
 ## Getting Help
 
-- Run `gmail-assistant --help` for CLI usage
-- Run `gmail-assistant <command> --help` for command-specific help
+- Run `gman --help` for CLI usage
+- Run `gman <command> --help` for command-specific help
 - Check [README.md](README.md) for full documentation

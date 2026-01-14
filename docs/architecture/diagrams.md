@@ -1,6 +1,6 @@
-# Gmail Assistant Architecture Diagrams
+# Gman Architecture Diagrams
 
-**Document**: Architecture visualization for the Gmail Assistant project
+**Document**: Architecture visualization for the Gman project
 **Generated**: 2026-01-09 22:00 UTC
 **Purpose**: Visual representation of package structure, component relationships, data flow, authentication flow, and CLI command flow
 
@@ -8,11 +8,11 @@
 
 ## 1. Package Structure Diagram
 
-Shows the actual module hierarchy in `src/gmail_assistant/`:
+Shows the actual module hierarchy in `src/gman/`:
 
 ```mermaid
 graph TB
-    subgraph gmail_assistant["gmail_assistant (root)"]
+    subgraph gman["gman (root)"]
         direction TB
 
         subgraph cli["📋 cli"]
@@ -31,7 +31,7 @@ graph TB
 
             subgraph fetch["fetch/"]
                 fetch_client["gmail_api_client.py<br/>(GmailAPIClient)"]
-                fetch_asst["gmail_assistant.py<br/>(GmailFetcher)"]
+                fetch_asst["gman.py<br/>(GmailFetcher)"]
                 fetch_async["async_fetcher.py"]
                 fetch_batch["batch_api.py"]
                 fetch_checkpoint["checkpoint.py"]
@@ -598,7 +598,7 @@ graph LR
 - **rate_limiter.py**: Brute-force protection with lockout mechanism
 
 ### Email Fetching (`core/fetch/`)
-- **gmail_assistant.py**: `GmailFetcher` - main fetching engine using `ReadOnlyGmailAuth`
+- **gman.py**: `GmailFetcher` - main fetching engine using `ReadOnlyGmailAuth`
 - **gmail_api_client.py**: `GmailAPIClient` - direct API operations with batch processing
 - **async_fetcher.py**: Async batch processing
 - **batch_api.py**: Batch operation client
@@ -747,7 +747,7 @@ Handles rate limiting & credential management
 |--------|-------------|---------|
 | `cli/main.py` | click, AppConfig, exceptions | CLI command interface |
 | `core/auth/base.py` | SecureCredentialManager, AuthRateLimiter | OAuth flow management |
-| `core/fetch/gmail_assistant.py` | ReadOnlyGmailAuth, MemoryTracker | Email fetching |
+| `core/fetch/gman.py` | ReadOnlyGmailAuth, MemoryTracker | Email fetching |
 | `core/fetch/gmail_api_client.py` | SecureCredentialManager, AINewsletterDetector | Direct API operations |
 | `core/processing/extractor.py` | EmailDataExtractor, EmailParser | Email metadata extraction |
 | `parsers/advanced_email_parser.py` | BeautifulSoup, html2text, markdownify | Content parsing |

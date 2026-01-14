@@ -1,9 +1,9 @@
-# Gmail Assistant Constants Reference
+# Gman Constants Reference
 
-Complete reference of all constants and hardcoded values in gmail-assistant v2.0.0.
+Complete reference of all constants and hardcoded values in gman v2.0.0.
 
 **Version**: 2.0.0
-**Module**: `gmail_assistant.core.constants`
+**Module**: `gman.core.constants`
 **Status**: Production
 **Last Updated**: 2026-01-09
 
@@ -29,14 +29,14 @@ Complete reference of all constants and hardcoded values in gmail-assistant v2.0
 ### APP_NAME
 
 **Type**: `str`
-**Value**: `"gmail-assistant"`
+**Value**: `"gman"`
 **Purpose**: Application name identifier
 **Usage**: Command name, error messages, logging
 
 ```python
-from gmail_assistant.core.constants import APP_NAME
+from gman.core.constants import APP_NAME
 
-print(f"Running {APP_NAME}")  # "Running gmail-assistant"
+print(f"Running {APP_NAME}")  # "Running gman"
 ```
 
 ### APP_VERSION
@@ -47,7 +47,7 @@ print(f"Running {APP_NAME}")  # "Running gmail-assistant"
 **Usage**: --version flag, release tracking
 
 ```python
-from gmail_assistant.core.constants import APP_VERSION
+from gman.core.constants import APP_VERSION
 
 print(f"Version: {APP_VERSION}")  # "Version: 2.0.0"
 ```
@@ -66,7 +66,7 @@ print(f"Version: {APP_VERSION}")  # "Version: 2.0.0"
 **Permissions**: View emails, read labels, search messages
 
 ```python
-from gmail_assistant.core.constants import GMAIL_READONLY_SCOPE
+from gman.core.constants import GMAIL_READONLY_SCOPE
 
 scopes = [GMAIL_READONLY_SCOPE]
 ```
@@ -79,7 +79,7 @@ scopes = [GMAIL_READONLY_SCOPE]
 **Permissions**: Read/write emails, modify labels, delete emails, trash emails
 
 ```python
-from gmail_assistant.core.constants import GMAIL_MODIFY_SCOPE
+from gman.core.constants import GMAIL_MODIFY_SCOPE
 
 scopes = [GMAIL_MODIFY_SCOPE]
 ```
@@ -94,7 +94,7 @@ scopes = [GMAIL_MODIFY_SCOPE]
 **Use Case**: Backup operations, analysis, reporting
 
 ```python
-from gmail_assistant.core.constants import SCOPES_READONLY
+from gman.core.constants import SCOPES_READONLY
 
 # Use for fetcher
 auth = ReadOnlyGmailAuth(credentials_file)
@@ -109,7 +109,7 @@ auth.scopes = SCOPES_READONLY
 **Use Case**: Deletion, labeling, archive operations
 
 ```python
-from gmail_assistant.core.constants import SCOPES_MODIFY
+from gman.core.constants import SCOPES_MODIFY
 
 # Use for deleter
 client = GmailAPIClient(credentials_file)
@@ -124,7 +124,7 @@ client.SCOPES = SCOPES_MODIFY
 **Use Case**: Full-featured Gmail operations (sending deferred to v2.1.0)
 
 ```python
-from gmail_assistant.core.constants import SCOPES_FULL
+from gman.core.constants import SCOPES_FULL
 ```
 
 #### DEFAULT_SCOPES
@@ -135,7 +135,7 @@ from gmail_assistant.core.constants import SCOPES_FULL
 **Rationale**: Principle of least privilege - read-only by default
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_SCOPES
+from gman.core.constants import DEFAULT_SCOPES
 
 # Used if no scope explicitly specified
 scopes = DEFAULT_SCOPES  # SCOPES_READONLY
@@ -150,12 +150,12 @@ scopes = DEFAULT_SCOPES  # SCOPES_READONLY
 #### CONFIG_DIR
 
 **Type**: `Path`
-**Value**: `PROJECT_ROOT / 'config'` (or `GMAIL_ASSISTANT_CONFIG_DIR` env var)
+**Value**: `PROJECT_ROOT / 'config'` (or `GMAN_CONFIG_DIR` env var)
 **Purpose**: Directory containing configuration files
-**Environment Override**: `GMAIL_ASSISTANT_CONFIG_DIR`
+**Environment Override**: `GMAN_CONFIG_DIR`
 
 ```python
-from gmail_assistant.core.constants import CONFIG_DIR
+from gman.core.constants import CONFIG_DIR
 
 # Resolves to project config directory
 print(CONFIG_DIR)  # Path("/path/to/project/config")
@@ -164,12 +164,12 @@ print(CONFIG_DIR)  # Path("/path/to/project/config")
 #### DEFAULT_CONFIG_PATH
 
 **Type**: `Path`
-**Value**: `CONFIG_DIR / 'gmail_assistant_config.json'`
+**Value**: `CONFIG_DIR / 'gman_config.json'`
 **Purpose**: Default application configuration file location
 **Contains**: Query presets, default settings
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_CONFIG_PATH
+from gman.core.constants import DEFAULT_CONFIG_PATH
 
 config_data = json.loads(DEFAULT_CONFIG_PATH.read_text())
 ```
@@ -182,7 +182,7 @@ config_data = json.loads(DEFAULT_CONFIG_PATH.read_text())
 **Contains**: Keywords, domains, confidence weights
 
 ```python
-from gmail_assistant.core.constants import AI_CONFIG_PATH
+from gman.core.constants import AI_CONFIG_PATH
 
 ai_config = json.loads(AI_CONFIG_PATH.read_text())
 ```
@@ -192,12 +192,12 @@ ai_config = json.loads(AI_CONFIG_PATH.read_text())
 #### DATA_DIR
 
 **Type**: `Path`
-**Value**: `PROJECT_ROOT / 'data'` (or `GMAIL_ASSISTANT_DATA_DIR` env var)
+**Value**: `PROJECT_ROOT / 'data'` (or `GMAN_DATA_DIR` env var)
 **Purpose**: Directory for application data files
-**Environment Override**: `GMAIL_ASSISTANT_DATA_DIR`
+**Environment Override**: `GMAN_DATA_DIR`
 
 ```python
-from gmail_assistant.core.constants import DATA_DIR
+from gman.core.constants import DATA_DIR
 
 # Create if missing
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -211,7 +211,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 **Format**: SQLite database
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_DB_PATH
+from gman.core.constants import DEFAULT_DB_PATH
 
 # Database path for caching/analysis
 db_conn = sqlite3.connect(DEFAULT_DB_PATH)
@@ -222,12 +222,12 @@ db_conn = sqlite3.connect(DEFAULT_DB_PATH)
 #### BACKUP_DIR
 
 **Type**: `Path`
-**Value**: `PROJECT_ROOT / 'backups'` (or `GMAIL_ASSISTANT_BACKUP_DIR` env var)
+**Value**: `PROJECT_ROOT / 'backups'` (or `GMAN_BACKUP_DIR` env var)
 **Purpose**: Default directory for email backups
-**Environment Override**: `GMAIL_ASSISTANT_BACKUP_DIR`
+**Environment Override**: `GMAN_BACKUP_DIR`
 
 ```python
-from gmail_assistant.core.constants import BACKUP_DIR
+from gman.core.constants import BACKUP_DIR
 
 # Download emails to backup directory
 output_dir = BACKUP_DIR / "2025-01"
@@ -238,13 +238,13 @@ output_dir = BACKUP_DIR / "2025-01"
 #### CREDENTIALS_DIR
 
 **Type**: `Path`
-**Value**: `CONFIG_DIR / 'security'` (or `GMAIL_ASSISTANT_CREDENTIALS_DIR` env var)
+**Value**: `CONFIG_DIR / 'security'` (or `GMAN_CREDENTIALS_DIR` env var)
 **Purpose**: Directory for OAuth credentials and tokens
-**Environment Override**: `GMAIL_ASSISTANT_CREDENTIALS_DIR`
+**Environment Override**: `GMAN_CREDENTIALS_DIR`
 **Security**: Should be outside git repository, mode 0700
 
 ```python
-from gmail_assistant.core.constants import CREDENTIALS_DIR
+from gman.core.constants import CREDENTIALS_DIR
 
 # Credentials stored here
 credentials_file = CREDENTIALS_DIR / "credentials.json"
@@ -258,7 +258,7 @@ credentials_file = CREDENTIALS_DIR / "credentials.json"
 **Format**: JSON from Google Cloud Console
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_CREDENTIALS_PATH
+from gman.core.constants import DEFAULT_CREDENTIALS_PATH
 
 # String path for compatibility
 fetcher = GmailFetcher(DEFAULT_CREDENTIALS_PATH)
@@ -273,7 +273,7 @@ fetcher = GmailFetcher(DEFAULT_CREDENTIALS_PATH)
 **Rationale**: Plaintext token storage security risk
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_TOKEN_PATH
+from gman.core.constants import DEFAULT_TOKEN_PATH
 
 # Now stored in OS keyring instead
 # This path maintained for backward compatibility
@@ -284,13 +284,13 @@ from gmail_assistant.core.constants import DEFAULT_TOKEN_PATH
 #### CACHE_DIR
 
 **Type**: `Path`
-**Value**: `~/.gmail_assistant_cache` (or `GMAIL_ASSISTANT_CACHE_DIR` env var)
+**Value**: `~/.gman_cache` (or `GMAN_CACHE_DIR` env var)
 **Purpose**: Directory for temporary cache files
-**Environment Override**: `GMAIL_ASSISTANT_CACHE_DIR`
+**Environment Override**: `GMAN_CACHE_DIR`
 **Cleanup**: Not automatically cleaned
 
 ```python
-from gmail_assistant.core.constants import CACHE_DIR
+from gman.core.constants import CACHE_DIR
 
 cache_file = CACHE_DIR / "message_cache.db"
 ```
@@ -308,7 +308,7 @@ cache_file = CACHE_DIR / "message_cache.db"
 **Rationale**: Gmail API safe limit
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_RATE_LIMIT
+from gman.core.constants import DEFAULT_RATE_LIMIT
 
 # Use in rate limiter
 limiter = RateLimiter(requests_per_second=DEFAULT_RATE_LIMIT)
@@ -322,7 +322,7 @@ limiter = RateLimiter(requests_per_second=DEFAULT_RATE_LIMIT)
 **Usage**: Alternative naming convention
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_REQUESTS_PER_SECOND
+from gman.core.constants import DEFAULT_REQUESTS_PER_SECOND
 ```
 
 ### CONSERVATIVE_REQUESTS_PER_SECOND
@@ -333,7 +333,7 @@ from gmail_assistant.core.constants import DEFAULT_REQUESTS_PER_SECOND
 **Use Case**: Production deployments, high-volume operations
 
 ```python
-from gmail_assistant.core.constants import CONSERVATIVE_REQUESTS_PER_SECOND
+from gman.core.constants import CONSERVATIVE_REQUESTS_PER_SECOND
 
 # More conservative than default
 rate = CONSERVATIVE_REQUESTS_PER_SECOND
@@ -348,7 +348,7 @@ rate = CONSERVATIVE_REQUESTS_PER_SECOND
 **Enforcement**: Validated in AppConfig
 
 ```python
-from gmail_assistant.core.constants import MAX_RATE_LIMIT
+from gman.core.constants import MAX_RATE_LIMIT
 
 # Used in configuration validation
 if rate > MAX_RATE_LIMIT:
@@ -367,7 +367,7 @@ if rate > MAX_RATE_LIMIT:
 **Usage**: Fetching multiple emails, bulk deletions
 
 ```python
-from gmail_assistant.core.constants import BATCH_SIZE
+from gman.core.constants import BATCH_SIZE
 
 # Process emails in batches
 for i in range(0, len(email_ids), BATCH_SIZE):
@@ -383,7 +383,7 @@ for i in range(0, len(email_ids), BATCH_SIZE):
 **Enforcement**: Validated in AppConfig
 
 ```python
-from gmail_assistant.core.constants import MAX_EMAILS_LIMIT
+from gman.core.constants import MAX_EMAILS_LIMIT
 
 if max_emails > MAX_EMAILS_LIMIT:
     raise ConfigError(f"max_emails {max_emails} exceeds limit {MAX_EMAILS_LIMIT}")
@@ -397,7 +397,7 @@ if max_emails > MAX_EMAILS_LIMIT:
 **Alternative**: `MAX_EMAILS_DEFAULT` (alias)
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_MAX_EMAILS
+from gman.core.constants import DEFAULT_MAX_EMAILS
 
 # Used if not specified in config
 max_fetch = DEFAULT_MAX_EMAILS
@@ -410,7 +410,7 @@ max_fetch = DEFAULT_MAX_EMAILS
 **Purpose**: Alias for DEFAULT_MAX_EMAILS
 
 ```python
-from gmail_assistant.core.constants import MAX_EMAILS_DEFAULT
+from gman.core.constants import MAX_EMAILS_DEFAULT
 ```
 
 ---
@@ -425,7 +425,7 @@ from gmail_assistant.core.constants import MAX_EMAILS_DEFAULT
 **Usage**: CLI validation, format selection
 
 ```python
-from gmail_assistant.core.constants import SUPPORTED_OUTPUT_FORMATS
+from gman.core.constants import SUPPORTED_OUTPUT_FORMATS
 
 # Validate user input
 if user_format not in SUPPORTED_OUTPUT_FORMATS:
@@ -445,7 +445,7 @@ if user_format not in SUPPORTED_OUTPUT_FORMATS:
 **Rationale**: Preserves all data (EML) and readability (Markdown)
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_OUTPUT_FORMAT
+from gman.core.constants import DEFAULT_OUTPUT_FORMAT
 
 format_choice = DEFAULT_OUTPUT_FORMAT  # 'both'
 ```
@@ -462,7 +462,7 @@ format_choice = DEFAULT_OUTPUT_FORMAT  # 'both'
 **Usage**: CLI validation, directory structure
 
 ```python
-from gmail_assistant.core.constants import SUPPORTED_ORGANIZATION_TYPES
+from gman.core.constants import SUPPORTED_ORGANIZATION_TYPES
 
 # Validate organization choice
 if org_type not in SUPPORTED_ORGANIZATION_TYPES:
@@ -482,7 +482,7 @@ if org_type not in SUPPORTED_ORGANIZATION_TYPES:
 **Rationale**: Temporal organization useful for archiving
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_ORGANIZATION
+from gman.core.constants import DEFAULT_ORGANIZATION
 
 # Default: organize by date
 path = output_dir / "2025" / "01" / "15" / email.eml
@@ -495,12 +495,12 @@ path = output_dir / "2025" / "01" / "15" / email.eml
 ### KEYRING_SERVICE
 
 **Type**: `str`
-**Value**: `"gmail_assistant"`
+**Value**: `"gman"`
 **Purpose**: Keyring service identifier
 **Usage**: OS credential storage key
 
 ```python
-from gmail_assistant.core.constants import KEYRING_SERVICE
+from gman.core.constants import KEYRING_SERVICE
 
 # Store in system keyring
 keyring.set_password(KEYRING_SERVICE, KEYRING_USERNAME, credentials_json)
@@ -514,14 +514,14 @@ keyring.set_password(KEYRING_SERVICE, KEYRING_USERNAME, credentials_json)
 **Usage**: OS credential storage account
 
 ```python
-from gmail_assistant.core.constants import KEYRING_USERNAME
+from gman.core.constants import KEYRING_USERNAME
 
 # Retrieve from system keyring
 creds = keyring.get_password(KEYRING_SERVICE, KEYRING_USERNAME)
 ```
 
 **Keyring Details**:
-- Service: "gmail_assistant"
+- Service: "gman"
 - Username: "oauth_credentials"
 - Password: Full OAuth credentials JSON
 - Storage: OS-dependent
@@ -546,14 +546,14 @@ creds = keyring.get_password(KEYRING_SERVICE, KEYRING_USERNAME)
 - `%(message)s`: Log message
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_LOG_FORMAT
+from gman.core.constants import DEFAULT_LOG_FORMAT
 
 logging.basicConfig(format=DEFAULT_LOG_FORMAT)
 ```
 
 **Example Output**:
 ```
-2025-01-09 15:30:45,123 - gmail_assistant.core.fetch - INFO - Searching for messages: 'is:unread'
+2025-01-09 15:30:45,123 - gman.core.fetch - INFO - Searching for messages: 'is:unread'
 ```
 
 ### DEFAULT_LOG_LEVEL
@@ -564,9 +564,9 @@ logging.basicConfig(format=DEFAULT_LOG_FORMAT)
 **Valid Values**: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 ```python
-from gmail_assistant.core.constants import DEFAULT_LOG_LEVEL
+from gman.core.constants import DEFAULT_LOG_LEVEL
 
-logging.getLogger("gmail_assistant").setLevel(DEFAULT_LOG_LEVEL)
+logging.getLogger("gman").setLevel(DEFAULT_LOG_LEVEL)
 ```
 
 ---
@@ -577,47 +577,47 @@ All path constants can be overridden via environment variables.
 
 ### Configuration Directory Override
 
-**Variable**: `GMAIL_ASSISTANT_CONFIG_DIR`
+**Variable**: `GMAN_CONFIG_DIR`
 **Overrides**: `CONFIG_DIR`
 
 ```bash
-export GMAIL_ASSISTANT_CONFIG_DIR=/etc/gmail-assistant
+export GMAN_CONFIG_DIR=/etc/gman
 ```
 
 ### Data Directory Override
 
-**Variable**: `GMAIL_ASSISTANT_DATA_DIR`
+**Variable**: `GMAN_DATA_DIR`
 **Overrides**: `DATA_DIR`
 
 ```bash
-export GMAIL_ASSISTANT_DATA_DIR=/var/lib/gmail-assistant
+export GMAN_DATA_DIR=/var/lib/gman
 ```
 
 ### Backup Directory Override
 
-**Variable**: `GMAIL_ASSISTANT_BACKUP_DIR`
+**Variable**: `GMAN_BACKUP_DIR`
 **Overrides**: `BACKUP_DIR`
 
 ```bash
-export GMAIL_ASSISTANT_BACKUP_DIR=/mnt/external/gmail_backups
+export GMAN_BACKUP_DIR=/mnt/external/gmail_backups
 ```
 
 ### Credentials Directory Override
 
-**Variable**: `GMAIL_ASSISTANT_CREDENTIALS_DIR`
+**Variable**: `GMAN_CREDENTIALS_DIR`
 **Overrides**: `CREDENTIALS_DIR`
 
 ```bash
-export GMAIL_ASSISTANT_CREDENTIALS_DIR=/root/.secure/gmail
+export GMAN_CREDENTIALS_DIR=/root/.secure/gmail
 ```
 
 ### Cache Directory Override
 
-**Variable**: `GMAIL_ASSISTANT_CACHE_DIR`
+**Variable**: `GMAN_CACHE_DIR`
 **Overrides**: `CACHE_DIR`
 
 ```bash
-export GMAIL_ASSISTANT_CACHE_DIR=/tmp/gmail_cache
+export GMAN_CACHE_DIR=/tmp/gmail_cache
 ```
 
 ### Implementation
@@ -633,7 +633,7 @@ def _get_env_path(env_var: str, default: Path) -> Path:
     return default
 
 # Usage:
-CONFIG_DIR = _get_env_path('GMAIL_ASSISTANT_CONFIG_DIR', PROJECT_ROOT / 'config')
+CONFIG_DIR = _get_env_path('GMAN_CONFIG_DIR', PROJECT_ROOT / 'config')
 ```
 
 ---
@@ -641,7 +641,7 @@ CONFIG_DIR = _get_env_path('GMAIL_ASSISTANT_CONFIG_DIR', PROJECT_ROOT / 'config'
 ## Complete Constants Example
 
 ```python
-from gmail_assistant.core.constants import (
+from gman.core.constants import (
     # Application
     APP_NAME,
     APP_VERSION,

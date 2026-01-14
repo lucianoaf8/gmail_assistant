@@ -1,18 +1,18 @@
-# Gmail Assistant
+# Gman
 
 **A comprehensive Gmail management and backup solution with advanced email processing, AI-powered content analysis, and automated cleanup capabilities.**
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Gmail API](https://img.shields.io/badge/Gmail%20API-v1-red.svg)](https://developers.google.com/gmail/api)
-[![CI](https://github.com/user/gmail-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/user/gmail-assistant/actions)
+[![CI](https://github.com/user/gman/actions/workflows/ci.yml/badge.svg)](https://github.com/user/gman/actions)
 
 > **v2.0.0 Breaking Changes**: This version introduces a new package structure and CLI.
 > See [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for migration guide.
 
 ## 🌟 Overview
 
-Gmail Fetcher Suite is a powerful collection of tools designed to help you backup, analyze, and manage your Gmail emails efficiently. Whether you need to create archives, clean up AI newsletters, convert emails to readable formats, or analyze email content, this suite provides comprehensive solutions.
+Gman Suite is a powerful collection of tools designed to help you backup, analyze, and manage your Gmail emails efficiently. Whether you need to create archives, clean up AI newsletters, convert emails to readable formats, or analyze email content, this suite provides comprehensive solutions.
 
 ### Key Features
 
@@ -35,7 +35,7 @@ Gmail Fetcher Suite is a powerful collection of tools designed to help you backu
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd gmail_assistant
+   cd gman
    ```
 
 2. **Install the package**
@@ -69,14 +69,14 @@ Gmail Fetcher Suite is a powerful collection of tools designed to help you backu
 ## 📁 Project Structure
 
 ```
-gmail_assistant/
-├── src/gmail_assistant/           # Main package (src-layout)
+gman/
+├── src/gman/           # Main package (src-layout)
 │   ├── cli/                       # Click-based CLI
-│   │   ├── main.py                # Entry point (gmail-assistant command)
+│   │   ├── main.py                # Entry point (gman command)
 │   │   └── commands/              # Subcommand implementations
 │   ├── core/                      # Core functionality
 │   │   ├── fetch/                 # Email fetching
-│   │   │   ├── gmail_assistant.py # GmailFetcher class
+│   │   │   ├── gman.py # GmailFetcher class
 │   │   │   └── gmail_api_client.py # Gmail API client
 │   │   ├── ai/                    # AI-related features
 │   │   │   └── newsletter_cleaner.py # Newsletter detection
@@ -95,7 +95,7 @@ gmail_assistant/
 │   ├── setup/                     # Setup and configuration
 │   │   ├── quick_start.bat        # Windows batch setup
 │   │   └── quick_start.ps1        # PowerShell setup
-│   └── backup/                    # Backup management
+│   └── email-management/          # Email management scripts
 │       ├── move_backup_years.ps1  # Backup folder merger
 │       └── dedupe_merge.ps1       # Email deduplication
 ├── examples/                      # Example usage
@@ -112,7 +112,7 @@ gmail_assistant/
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Package structure | ✅ Complete | `src/gmail_assistant/` layout |
+| Package structure | ✅ Complete | `src/gman/` layout |
 | CLI framework | ✅ Complete | Click-based with subcommands |
 | CLI `fetch` command | ✅ Complete | Email fetching with query support |
 | CLI `delete` command | ✅ Complete | Email deletion with dry-run mode |
@@ -132,15 +132,15 @@ The primary email backup tool with comprehensive search and organization capabil
 **CLI Usage**:
 ```bash
 # Download unread emails
-gmail-assistant fetch --query "is:unread" --max-emails 1000
+gman fetch --query "is:unread" --max-emails 1000
 
 # Download with format and output options
-gmail-assistant fetch --query "after:2025/02/28" --format json --output-dir ./backups
+gman fetch --query "after:2025/02/28" --format json --output-dir ./backups
 ```
 
 **Direct Module Usage**:
 ```python
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 fetcher = GmailFetcher('credentials.json')
 fetcher.authenticate()
@@ -163,7 +163,7 @@ Intelligent email content extraction with multiple parsing strategies.
 
 ```bash
 # Parse HTML email with multiple strategies
-python -m gmail_assistant.parsers.advanced_email_parser email_file.html
+python -m gman.parsers.advanced_email_parser email_file.html
 ```
 
 **Features:**
@@ -178,10 +178,10 @@ Automated AI newsletter detection and management system.
 
 ```bash
 # Analyze emails for AI newsletters (dry run)
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json
+python -m gman.core.ai.newsletter_cleaner email_data.json
 
 # Actually delete identified AI newsletters
-python -m gmail_assistant.core.ai.newsletter_cleaner email_data.json --delete
+python -m gman.core.ai.newsletter_cleaner email_data.json --delete
 ```
 
 **Features:**
@@ -196,10 +196,10 @@ Direct Gmail operations for real-time email management.
 
 ```bash
 # Fetch and analyze unread emails
-python -m gmail_assistant.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000
+python -m gman.core.fetch.gmail_api_client --credentials credentials.json --max-emails 1000
 
 # Actually delete AI newsletters from Gmail
-python -m gmail_assistant.core.fetch.gmail_api_client --delete --max-emails 500
+python -m gman.core.fetch.gmail_api_client --delete --max-emails 500
 ```
 
 **Features:**
@@ -214,7 +214,7 @@ Professional email format converter with metadata preservation.
 
 ```bash
 # Convert EML files to clean Markdown
-python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
+python -m gman.parsers.gmail_eml_to_markdown_cleaner --base backup_folder --year 2025
 ```
 
 **Features:**
@@ -244,13 +244,13 @@ python -m gmail_assistant.parsers.gmail_eml_to_markdown_cleaner --base backup_fo
 
 ```bash
 # First-time authentication
-python src/gmail_assistant.py --auth-only
+python src/gman.py --auth-only
 
 # Backup all unread emails
-python src/gmail_assistant.py --query "is:unread" --max 1000 --format both
+python src/gman.py --query "is:unread" --max 1000 --format both
 
 # Organize by sender for easy browsing
-python src/gmail_assistant.py --query "newer_than:6m" --organize sender --output recent_emails
+python src/gman.py --query "newer_than:6m" --organize sender --output recent_emails
 ```
 
 ### 2. AI Newsletter Management
@@ -273,7 +273,7 @@ python src/gmail_api_client.py --credentials credentials.json --delete
 
 ```bash
 # Step 1: Download emails in EML format
-python src/gmail_assistant.py --query "important:true OR starred:true" --format eml --output important_archive
+python src/gman.py --query "important:true OR starred:true" --format eml --output important_archive
 
 # Step 2: Convert to clean Markdown with metadata
 python src/gmail_eml_to_markdown_cleaner.py --base important_archive --verbose
@@ -286,10 +286,10 @@ python src/advanced_email_parser.py complex_newsletter.html
 
 ```bash
 # Step 1: Backup everything first
-python src/gmail_assistant.py --query "newer_than:2y" --max 5000 --output full_backup
+python src/gman.py --query "newer_than:2y" --max 5000 --output full_backup
 
 # Step 2: Identify and backup AI newsletters separately
-python src/gmail_assistant.py --query "subject:(AI OR newsletter OR digest)" --output newsletters --organize sender
+python src/gman.py --query "subject:(AI OR newsletter OR digest)" --output newsletters --organize sender
 
 # Step 3: Clean up AI newsletters from main inbox
 python src/gmail_api_client.py --credentials credentials.json --delete --max-emails 2000
@@ -302,7 +302,7 @@ python src/gmail_api_client.py --credentials credentials.json --delete --max-ema
 
 ```bash
 # Step 1: Download specific content for analysis
-python src/gmail_assistant.py --query "from:(research.ai OR papers.arxiv.org)" --format markdown --output research_emails
+python src/gman.py --query "from:(research.ai OR papers.arxiv.org)" --format markdown --output research_emails
 
 # Step 2: Apply advanced parsing for better content extraction
 find research_emails -name "*.eml" -exec python src/advanced_email_parser.py {} \;
@@ -324,7 +324,7 @@ python src/gmail_eml_to_markdown_cleaner.py --base research_emails --year 2025
 ### Configuration Files
 The project uses two configuration files in the `config/` directory:
 
-#### Gmail Fetcher Configuration (`config/gmail_assistant_config.json`)
+#### Gmail Fetcher Configuration (`config/gman_config.json`)
 Contains default settings and common queries:
 
 ```json
@@ -496,16 +496,16 @@ pip install -e ".[all,dev]"
 pytest tests/
 
 # Run tests with coverage
-pytest tests/ --cov=gmail_assistant --cov-report=html
+pytest tests/ --cov=gman --cov-report=html
 
 # Code linting (using ruff)
 ruff check src/
 
 # Type checking
-mypy src/gmail_assistant
+mypy src/gman
 
 # All quality checks
-ruff check src/ && mypy src/gmail_assistant && pytest tests/
+ruff check src/ && mypy src/gman && pytest tests/
 ```
 
 ### Code Quality Standards

@@ -5,8 +5,8 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from gmail_assistant.core.processing.file_repository import FileEmailRepository
-from gmail_assistant.core.exceptions import ValidationError
+from gman.core.processing.file_repository import FileEmailRepository
+from gman.core.exceptions import ValidationError
 
 
 class TestFileEmailRepository:

@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.auth.credential_manager module."""
+"""Unit tests for gman.core.auth.credential_manager module."""
 from __future__ import annotations
 
 import json
@@ -7,13 +7,13 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from gmail_assistant.core.auth.credential_manager import SecureCredentialManager
+from gman.core.auth.credential_manager import SecureCredentialManager
 
 
 @pytest.fixture
 def mock_keyring():
     """Mock keyring module."""
-    with patch("gmail_assistant.core.auth.credential_manager.keyring") as mock:
+    with patch("gman.core.auth.credential_manager.keyring") as mock:
         yield mock
 
 
@@ -21,7 +21,7 @@ def mock_keyring():
 def mock_credentials():
     """Create mock Google Credentials."""
     with patch(
-        "gmail_assistant.core.auth.credential_manager.Credentials"
+        "gman.core.auth.credential_manager.Credentials"
     ) as mock_creds:
         creds = Mock()
         creds.valid = True
@@ -44,7 +44,7 @@ def mock_credentials():
 def mock_flow():
     """Mock OAuth flow."""
     with patch(
-        "gmail_assistant.core.auth.credential_manager.InstalledAppFlow"
+        "gman.core.auth.credential_manager.InstalledAppFlow"
     ) as mock_flow:
         flow = Mock()
         mock_creds = Mock()
@@ -61,7 +61,7 @@ def mock_flow():
 @pytest.fixture
 def mock_gmail_service():
     """Mock Gmail API service."""
-    with patch("gmail_assistant.core.auth.credential_manager.build") as mock_build:
+    with patch("gman.core.auth.credential_manager.build") as mock_build:
         service = Mock()
         profile_response = {
             "emailAddress": "test@gmail.com",
@@ -173,7 +173,7 @@ class TestClearCredentials:
     def test_clear_credentials_not_found(self, mock_keyring):
         """Should return True even when no credentials to clear."""
         # Mock PasswordDeleteError as an exception
-        with patch("gmail_assistant.core.auth.credential_manager.keyring.errors") as mock_errors:
+        with patch("gman.core.auth.credential_manager.keyring.errors") as mock_errors:
             mock_error = type('PasswordDeleteError', (Exception,), {})
             mock_errors.PasswordDeleteError = mock_error
             mock_keyring.errors = mock_errors
@@ -189,7 +189,7 @@ class TestClearCredentials:
         """Should return False when clearing fails."""
         # Use a different exception type that's not PasswordDeleteError
         # Mock keyring.errors to avoid the catching issue
-        with patch("gmail_assistant.core.auth.credential_manager.keyring.errors") as mock_errors:
+        with patch("gman.core.auth.credential_manager.keyring.errors") as mock_errors:
             mock_errors.PasswordDeleteError = type('PasswordDeleteError', (Exception,), {})
             mock_keyring.errors = mock_errors
             mock_keyring.delete_password.side_effect = RuntimeError("Keyring error")
@@ -241,7 +241,7 @@ class TestAuthenticate:
         creds.to_json.return_value = json.dumps({"token": "refreshed_token"})
 
         with patch(
-            "gmail_assistant.core.auth.credential_manager.Request"
+            "gman.core.auth.credential_manager.Request"
         ) as mock_request:
             mock_credentials.from_authorized_user_info.return_value = creds
 

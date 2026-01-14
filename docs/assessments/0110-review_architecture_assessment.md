@@ -1,4 +1,4 @@
-# Gmail Assistant - Comprehensive Architecture Assessment
+# Gman - Comprehensive Architecture Assessment
 
 **Assessment Date**: 2026-01-10
 **Version Reviewed**: 2.0.0
@@ -12,7 +12,7 @@
 
 ### Overall Assessment: **GOOD** (7.5/10)
 
-Gmail Assistant demonstrates a **well-structured architecture** with strong adherence to modern Python patterns and security best practices. The project exhibits:
+Gman demonstrates a **well-structured architecture** with strong adherence to modern Python patterns and security best practices. The project exhibits:
 
 **Strengths**:
 - ✅ Protocol-driven design enabling structural subtyping and testability
@@ -65,13 +65,13 @@ External Services (Gmail API, OS Keyring, File System)
 - **Recommendation**: Standardize on absolute imports for all cross-package references:
   ```python
   # Instead of: from ..auth.base import ReadOnlyGmailAuth
-  # Use: from gmail_assistant.core.auth.base import ReadOnlyGmailAuth
+  # Use: from gman.core.auth.base import ReadOnlyGmailAuth
   ```
 - **Files**: 22 files use relative imports (`..|...`) vs absolute
 - **Effort**: Medium (systematic replacement across codebase)
 
 #### **LOW**: CLI Command Stub Implementations
-- **Location**: `src/gmail_assistant/cli/commands/*.py`
+- **Location**: `src/gman/cli/commands/*.py`
 - **Status**: Documented as deferred to v2.1.0
 - **Impact**: Users must use direct module imports for full functionality
 - **Recommendation**: Prioritize CLI completion in v2.1.0 roadmap
@@ -82,7 +82,7 @@ External Services (Gmail API, OS Keyring, File System)
 
 **Directory Structure Analysis**:
 ```
-src/gmail_assistant/
+src/gman/
 ├── cli/                    # ✅ Clean CLI layer
 │   ├── main.py            # Entry point
 │   └── commands/          # Command modules
@@ -137,14 +137,14 @@ src/gmail_assistant/
    - **Implementation**: `core/protocols.py` with 19 runtime-checkable protocols
    - **Examples**: `EmailFetcherProtocol`, `EmailParserProtocol`, `EmailRepositoryProtocol`
    - **Benefit**: Structural subtyping enables duck typing with type safety
-   - **File**: `src/gmail_assistant/core/protocols.py` (933 lines)
+   - **File**: `src/gman/core/protocols.py` (933 lines)
 
 2. **Dependency Injection Container** (8/10)
    - **Implementation**: `core/container.py` with lifecycle management
    - **Lifetimes**: Singleton, Transient, Scoped
    - **Features**: Thread-safe, circular dependency detection, factory registration
    - **Usage**: Factory functions for common configurations
-   - **File**: `src/gmail_assistant/core/container.py`
+   - **File**: `src/gman/core/container.py`
 
 3. **Strategy Pattern** (Parsers) (8/10)
    - **Location**: `parsers/advanced_email_parser.py`
@@ -235,7 +235,7 @@ src/gmail_assistant/
 **Issues**:
 
 #### **LOW**: Long Protocol File
-- **Location**: `src/gmail_assistant/core/protocols.py`
+- **Location**: `src/gman/core/protocols.py`
 - **Size**: 933 lines
 - **Issue**: All protocols in single file reduces modularity
 - **Recommendation**: Split into sub-modules:
@@ -302,7 +302,7 @@ src/gmail_assistant/
 
 **Finding**: Clean, well-documented public API with clear boundaries.
 
-#### **Core Module API** (`src/gmail_assistant/core/__init__.py`):
+#### **Core Module API** (`src/gman/core/__init__.py`):
 
 **Exports** (37 public symbols):
 ```python
@@ -339,7 +339,7 @@ ServiceContainer
 - **Impact**: Cognitive load for users, potential for misuse
 - **Recommendation**: Consider hierarchical API:
   ```python
-  from gmail_assistant.core import auth, fetch, processing, ai
+  from gman.core import auth, fetch, processing, ai
   auth.ReadOnlyGmailAuth(...)
   ```
 - **Effort**: Low (documentation and migration guide)
@@ -350,7 +350,7 @@ ServiceContainer
 
 **Command Structure**:
 ```
-gmail-assistant
+gman
 ├── fetch      # Email fetching
 ├── delete     # Email deletion
 ├── analyze    # Email analysis
@@ -494,7 +494,7 @@ Batch API Wrapper (fetch/batch_api.py)
 1. **Credential Protection** (H-1 Fix)
    - ✅ OS keyring storage (no plaintext tokens)
    - ✅ Repo detection blocks credentials in git repos
-   - ✅ Default storage in `~/.gmail-assistant/` (outside repos)
+   - ✅ Default storage in `~/.gman/` (outside repos)
    - ✅ Explicit `--allow-repo-credentials` flag required for override
 
 2. **Input Validation** (M-3 Fix)
@@ -582,7 +582,7 @@ tests/
 - **Recommendation**: Add protocol conformance tests:
   ```python
   def test_gmail_fetcher_implements_protocol():
-      from gmail_assistant.core.protocols import EmailFetcherProtocol
+      from gman.core.protocols import EmailFetcherProtocol
       fetcher = GmailFetcher("creds.json")
       assert isinstance(fetcher, EmailFetcherProtocol)
   ```
@@ -831,7 +831,7 @@ tenacity>=8.2.0                 # Retry logic
 
 ## 13. Conclusion
 
-Gmail Assistant demonstrates **mature architecture** with strong adherence to modern Python best practices. The codebase exhibits:
+Gman demonstrates **mature architecture** with strong adherence to modern Python best practices. The codebase exhibits:
 
 - **Excellent security posture** with comprehensive threat mitigation
 - **Clean separation of concerns** with clear module boundaries

@@ -1,4 +1,4 @@
-# Gmail Assistant - Component Deep Dive
+# Gman - Component Deep Dive
 
 **Version**: 2.0.0
 **Document Date**: 2026-01-09
@@ -48,13 +48,13 @@ class AppConfig:
 - Returns immutable configuration object
 
 `AppConfig.default_dir() -> Path`
-- Returns default configuration directory: `~/.gmail-assistant/`
+- Returns default configuration directory: `~/.gman/`
 
 **Configuration Resolution Priority**:
 1. CLI argument: `--config /path/to/config.json`
-2. Environment variable: `$GMAIL_ASSISTANT_CONFIG`
-3. Project config: `./gmail-assistant.json`
-4. User config: `~/.gmail-assistant/config.json`
+2. Environment variable: `$GMAN_CONFIG`
+3. Project config: `./gman.json`
+4. User config: `~/.gman/config.json`
 5. Built-in defaults
 
 **Validation Logic**:
@@ -74,7 +74,7 @@ def __post_init__(self) -> None:
 
 **Usage Example**:
 ```python
-from gmail_assistant.core.config import AppConfig
+from gman.core.config import AppConfig
 
 # Load with defaults
 config = AppConfig.load()
@@ -128,7 +128,7 @@ class APIError(GmailAssistantError):
 
 **Usage**:
 ```python
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.exceptions import ConfigError
 
 def load_config(path: Path) -> dict:
     if not path.exists():
@@ -383,7 +383,7 @@ def resolve(self, service_type: Type[T]) -> T:
 
 **Usage Example**:
 ```python
-from gmail_assistant.core.container import create_readonly_container
+from gman.core.container import create_readonly_container
 
 container = create_readonly_container("credentials.json")
 fetcher = container.resolve(GmailFetcher)
@@ -400,7 +400,7 @@ cache = container.resolve(CacheManager)
 
 **Application Metadata**:
 ```python
-APP_NAME: str = "gmail-assistant"
+APP_NAME: str = "gman"
 APP_VERSION: str = "2.0.0"
 ```
 
@@ -424,11 +424,11 @@ def _get_env_path(env_var: str, default: Path) -> Path:
         return Path(env_value)
     return default
 
-CONFIG_DIR: Path = _get_env_path('GMAIL_ASSISTANT_CONFIG_DIR', PROJECT_ROOT / 'config')
-DATA_DIR: Path = _get_env_path('GMAIL_ASSISTANT_DATA_DIR', PROJECT_ROOT / 'data')
-BACKUP_DIR: Path = _get_env_path('GMAIL_ASSISTANT_BACKUP_DIR', PROJECT_ROOT / 'backups')
-CREDENTIALS_DIR: Path = _get_env_path('GMAIL_ASSISTANT_CREDENTIALS_DIR', CONFIG_DIR / 'security')
-CACHE_DIR: Path = _get_env_path('GMAIL_ASSISTANT_CACHE_DIR', Path.home() / '.gmail_assistant_cache')
+CONFIG_DIR: Path = _get_env_path('GMAN_CONFIG_DIR', PROJECT_ROOT / 'config')
+DATA_DIR: Path = _get_env_path('GMAN_DATA_DIR', PROJECT_ROOT / 'data')
+BACKUP_DIR: Path = _get_env_path('GMAN_BACKUP_DIR', PROJECT_ROOT / 'backups')
+CREDENTIALS_DIR: Path = _get_env_path('GMAN_CREDENTIALS_DIR', CONFIG_DIR / 'security')
+CACHE_DIR: Path = _get_env_path('GMAN_CACHE_DIR', Path.home() / '.gman_cache')
 ```
 
 **API Rate Limits**:
@@ -443,7 +443,7 @@ MAX_EMAILS_DEFAULT: int = 1000
 
 **Keyring Configuration**:
 ```python
-KEYRING_SERVICE: str = "gmail_assistant"
+KEYRING_SERVICE: str = "gman"
 KEYRING_USERNAME: str = "oauth_credentials"
 ```
 
@@ -654,7 +654,7 @@ RESET_WINDOW: int = 900         # Time window for attempt counting
 
 ## 3. Fetch Subsystem
 
-### 3.1 Gmail Fetcher (`core/fetch/gmail_assistant.py`)
+### 3.1 Gmail Fetcher (`core/fetch/gman.py`)
 
 **Class**: `GmailFetcher`
 
@@ -1487,7 +1487,7 @@ HALF_OPEN -> (any failure) -> OPEN
 
 **Framework**: Click
 
-**Entry Point**: `gmail-assistant` command (registered in pyproject.toml)
+**Entry Point**: `gman` command (registered in pyproject.toml)
 
 **Global Options**:
 ```python
@@ -1596,7 +1596,7 @@ def handle_errors(func):
 ```
 
 **Functionality**:
-- `--init`: Creates `~/.gmail-assistant/config.json` with defaults
+- `--init`: Creates `~/.gman/config.json` with defaults
 - `--show`: Displays current configuration
 - `--validate`: Validates configuration file
 
@@ -1685,7 +1685,7 @@ class ParseResult:
 - `core/auth/rate_limiter.py`: Authentication rate limiting
 
 ### Fetching Components
-- `core/fetch/gmail_assistant.py`: Main fetcher implementation
+- `core/fetch/gman.py`: Main fetcher implementation
 - `core/fetch/gmail_api_client.py`: Direct API wrapper
 - `core/fetch/streaming.py`: Memory-efficient streaming
 - `core/fetch/async_fetcher.py`: Async concurrent fetching

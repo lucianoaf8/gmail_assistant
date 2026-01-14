@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2026-01-12
+
+### Changed
+- **BREAKING**: Package renamed from `gman` to `gman`
+  - CLI command changed from `gman` to `gman`
+  - PyPI package name changed
+  - All documentation updated
+- **Folder restructuring**:
+  - Merged `backups/` into `data/exports/`
+  - Renamed `scripts/backup/` to `scripts/email-management/`
+  - Removed duplicate config from `src/gman/analysis/daily_analysis_config.json`
+- **Project config renamed**: `gman.json` → `gman.json`
+
+### Added
+- **Centralized logging**: New `setup_logging()` function in CLI with:
+  - `--log-level` option (DEBUG, INFO, WARNING, ERROR)
+  - `--log-dir` option for custom log directory
+  - File logging to `logs/gman.log`
+  - Error-only logging to `logs/errors.log`
+
+### Fixed
+- **Logging not working**: Previously no log files were created; now logging is initialized at CLI startup
+- **Default output directory**: Changed from `~/.gman/backups` to `~/.gman/data`
+
 ## [2.0.2] - 2026-01-11
 
 ### Added
@@ -20,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Documentation**: Updated README.md and CLAUDE.md to reflect CLI commands are fully functional (not stubs)
-- **Package metadata**: Updated author in `pyproject.toml` to "Gmail Assistant Contributors"
+- **Package metadata**: Updated author in `pyproject.toml` to "Gman Contributors"
 - **Ruff config**: Added `SIM102`, `E402` to ignore list for intentional patterns
 
 ## [2.1.0] - 2026-01-09
@@ -74,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Click-based CLI with subcommands (`fetch`, `delete`, `analyze`, `auth`, `config`)
-- Secure configuration system with `~/.gmail-assistant/` defaults
+- Secure configuration system with `~/.gman/` defaults
 - Centralized exception hierarchy (`GmailAssistantError`, `ConfigError`, `AuthError`, `NetworkError`, `APIError`)
 - JSON Schema for configuration validation (`config/schema/config.schema.json`)
 - Comprehensive test suite with 66 tests and 81.52% coverage
@@ -85,13 +109,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release validation checks (`scripts/validation/release_checks.ps1`)
 
 ### Changed
-- **BREAKING**: Migrated to src-layout package structure (`src/gmail_assistant/`)
-- **BREAKING**: All imports now use `gmail_assistant.*` prefix
+- **BREAKING**: Migrated to src-layout package structure (`src/gman/`)
+- **BREAKING**: All imports now use `gman.*` prefix
 - **BREAKING**: CLI completely redesigned with Click framework
-- **BREAKING**: Configuration paths changed to `~/.gmail-assistant/`
-- **BREAKING**: Entry point changed from `python main.py` to `gmail-assistant`
+- **BREAKING**: Configuration paths changed to `~/.gman/`
+- **BREAKING**: Entry point changed from `python main.py` to `gman`
 - Minimum Python version raised to 3.10
-- Package name changed from `gmail-fetcher` to `gmail-assistant`
+- Package name changed from `gman` to `gman`
 
 ### Removed
 - Legacy entry points (`main.py`, `src/cli/main.py`)
@@ -100,7 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Old argparse-based CLI
 
 ### Security
-- Credentials now default to user home directory (`~/.gmail-assistant/`)
+- Credentials now default to user home directory (`~/.gman/`)
 - Added repo-safety checks for credential paths
 - Added gitleaks integration for secret detection
 - Added `--allow-repo-credentials` flag for explicit opt-in
@@ -123,6 +147,6 @@ See [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for detailed migration instructio
 ### Quick Migration
 
 1. Install: `pip install -e .`
-2. Move credentials: `mv credentials.json ~/.gmail-assistant/`
-3. Update CLI: `gmail-assistant fetch` instead of `python src/gmail_assistant.py`
-4. Update imports: `from gmail_assistant.core.config import AppConfig`
+2. Move credentials: `mv credentials.json ~/.gman/`
+3. Update CLI: `gman fetch` instead of `python src/gman.py`
+4. Update imports: `from gman.core.config import AppConfig`

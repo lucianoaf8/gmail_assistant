@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.auth module."""
+"""Unit tests for gman.core.auth module."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.core.auth.base import (
+from gman.core.auth.base import (
     AuthenticationError,
     AuthenticationBase,
     ReadOnlyGmailAuth,
@@ -642,7 +642,7 @@ class TestSetupAuthenticationRecovery:
 
     def test_recovery_handler_handles_auth_error(self, temp_dir: Path):
         """Recovery handler should handle authentication errors."""
-        from gmail_assistant.utils.error_handler import ErrorCategory
+        from gman.utils.error_handler import ErrorCategory
 
         creds_file = temp_dir / "creds.json"
         creds_file.write_text('{}')
@@ -695,7 +695,7 @@ class TestGetAuthenticatedService:
 
     def test_get_authenticated_service_success(self, temp_dir: Path):
         """get_authenticated_service should return service on success."""
-        from gmail_assistant.core.auth.base import get_authenticated_service
+        from gman.core.auth.base import get_authenticated_service
 
         creds_file = temp_dir / "creds.json"
         creds_file.write_text('{}')
@@ -716,7 +716,7 @@ class TestGetAuthenticatedService:
 
     def test_get_authenticated_service_failure(self, temp_dir: Path):
         """get_authenticated_service should raise on auth failure."""
-        from gmail_assistant.core.auth.base import get_authenticated_service
+        from gman.core.auth.base import get_authenticated_service
 
         creds_file = temp_dir / "creds.json"
         creds_file.write_text('{}')

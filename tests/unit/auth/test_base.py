@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.core.auth.base module."""
+"""Unit tests for gman.core.auth.base module."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from gmail_assistant.core.auth.base import (
+from gman.core.auth.base import (
     AuthenticationBase,
     AuthenticationError,
     AuthenticationFactory,
@@ -17,13 +17,13 @@ from gmail_assistant.core.auth.base import (
     get_authenticated_service,
     validate_authentication_setup,
 )
-from gmail_assistant.core.exceptions import AuthError
+from gman.core.exceptions import AuthError
 
 
 @pytest.fixture
 def mock_credential_manager():
     """Create a mock SecureCredentialManager."""
-    with patch("gmail_assistant.core.auth.base.SecureCredentialManager") as mock:
+    with patch("gman.core.auth.base.SecureCredentialManager") as mock:
         manager = Mock()
         manager.authenticate.return_value = True
         manager.get_service.return_value = Mock()
@@ -40,7 +40,7 @@ def mock_credential_manager():
 @pytest.fixture
 def mock_rate_limiter():
     """Create a mock authentication rate limiter."""
-    with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as mock:
+    with patch("gman.core.auth.base.get_auth_rate_limiter") as mock:
         limiter = Mock()
         limiter.check_rate_limit.return_value = True
         limiter.record_attempt.return_value = None
@@ -107,7 +107,7 @@ class TestAuthenticationBase:
         """Service property should raise AuthenticationError on auth failure."""
         mock_credential_manager.return_value.authenticate.return_value = False
 
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 
@@ -157,7 +157,7 @@ class TestAuthenticate:
 
     def test_authenticate_rate_limited(self, mock_credential_manager):
         """Should fail authentication when rate limited."""
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             limiter = Mock()
             limiter.check_rate_limit.return_value = False
             limiter.get_lockout_remaining.return_value = 900
@@ -207,7 +207,7 @@ class TestAuthenticate:
             "Test error"
         )
 
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             limiter = Mock()
             limiter.check_rate_limit.return_value = True
             limiter.record_attempt.return_value = None
@@ -505,7 +505,7 @@ class TestUtilityFunctions:
 
     def test_ensure_authenticated_already_authenticated(self, mock_credential_manager):
         """Should return True when already authenticated."""
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 
@@ -518,7 +518,7 @@ class TestUtilityFunctions:
 
     def test_ensure_authenticated_needs_auth(self, mock_credential_manager):
         """Should authenticate when not authenticated."""
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 
@@ -531,7 +531,7 @@ class TestUtilityFunctions:
 
     def test_get_authenticated_service_success(self, mock_credential_manager):
         """Should return authenticated service."""
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 
@@ -543,7 +543,7 @@ class TestUtilityFunctions:
         """Should raise AuthenticationError when authentication fails."""
         mock_credential_manager.return_value.authenticate.return_value = False
 
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 
@@ -557,7 +557,7 @@ class TestUtilityFunctions:
         creds_file = temp_dir / "credentials.json"
         creds_file.write_text('{"test": "data"}')
 
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 
@@ -570,7 +570,7 @@ class TestUtilityFunctions:
 
     def test_validate_authentication_setup_invalid_file(self, mock_credential_manager):
         """Should return errors when credentials file is invalid."""
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
 
             results = validate_authentication_setup("nonexistent.json")
@@ -587,7 +587,7 @@ class TestUtilityFunctions:
 
         mock_credential_manager.return_value.authenticate.return_value = False
 
-        with patch("gmail_assistant.core.auth.base.get_auth_rate_limiter") as rate_mock:
+        with patch("gman.core.auth.base.get_auth_rate_limiter") as rate_mock:
             rate_mock.return_value.check_rate_limit.return_value = True
             rate_mock.return_value.record_attempt.return_value = None
 

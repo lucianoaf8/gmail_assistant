@@ -12,7 +12,7 @@ from pathlib import Path
 import sys
 import os
 
-from gmail_assistant.core.fetch.gmail_assistant import GmailFetcher
+from gman.core.fetch.gman import GmailFetcher
 
 
 class TestGmailFetcherCore:
@@ -27,7 +27,7 @@ class TestGmailFetcherCore:
         if self.test_dir.exists():
             shutil.rmtree(self.test_dir)
 
-    def test_gmail_assistant_initialization(self):
+    def test_gman_initialization(self):
         """Test GmailFetcher initialization with various credential paths."""
         # Test with default paths
         fetcher = GmailFetcher()

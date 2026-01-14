@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from gmail_assistant.deletion.setup import (
+from gman.deletion.setup import (
     check_dependencies,
     check_credentials,
     test_gmail_connection,
@@ -98,7 +98,7 @@ class TestGmailConnection:
 
     def test_test_gmail_connection_success(self):
         """Test successful Gmail connection."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             deleter_instance = MagicMock()
             deleter_instance.get_email_count.side_effect = [50, 500]  # unread, total
             mock_deleter.return_value = deleter_instance
@@ -111,7 +111,7 @@ class TestGmailConnection:
 
     def test_test_gmail_connection_failure(self):
         """Test Gmail connection failure."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             mock_deleter.side_effect = Exception("Connection failed")
 
             success, stats = test_gmail_connection()
@@ -121,7 +121,7 @@ class TestGmailConnection:
 
     def test_test_gmail_connection_auth_error(self):
         """Test Gmail connection with authentication error."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             deleter_instance = MagicMock()
             deleter_instance.get_email_count.side_effect = RuntimeError("Auth failed")
             mock_deleter.return_value = deleter_instance
@@ -136,7 +136,7 @@ class TestAnalyzeCurrentState:
 
     def test_analyze_current_state_success(self):
         """Test successful state analysis."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             deleter_instance = MagicMock()
 
             # Mock email counts for different categories
@@ -164,7 +164,7 @@ class TestAnalyzeCurrentState:
 
     def test_analyze_current_state_with_opportunities(self):
         """Test state analysis with deletion opportunities."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             deleter_instance = MagicMock()
 
             count_map = {
@@ -185,7 +185,7 @@ class TestAnalyzeCurrentState:
 
     def test_analyze_current_state_no_unread(self):
         """Test state analysis with no unread emails."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             deleter_instance = MagicMock()
             deleter_instance.get_email_count.return_value = 0
 
@@ -196,7 +196,7 @@ class TestAnalyzeCurrentState:
 
     def test_analyze_current_state_error(self):
         """Test state analysis with error."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             mock_deleter.side_effect = Exception("Analysis failed")
 
             results = analyze_current_state()
@@ -240,44 +240,44 @@ class TestMainWorkflow:
 
     def test_main_success_workflow(self):
         """Test successful main workflow."""
-        with patch('gmail_assistant.deletion.setup.check_dependencies', return_value=True), \
-             patch('gmail_assistant.deletion.setup.check_credentials', return_value=True), \
-             patch('gmail_assistant.deletion.setup.test_gmail_connection', return_value=(True, {'total': 1000, 'unread': 150})), \
-             patch('gmail_assistant.deletion.setup.analyze_current_state', return_value={'Total emails': 1000, 'Unread emails': 150}), \
-             patch('gmail_assistant.deletion.setup.create_deletion_plan'):
+        with patch('gman.deletion.setup.check_dependencies', return_value=True), \
+             patch('gman.deletion.setup.check_credentials', return_value=True), \
+             patch('gman.deletion.setup.test_gmail_connection', return_value=(True, {'total': 1000, 'unread': 150})), \
+             patch('gman.deletion.setup.analyze_current_state', return_value={'Total emails': 1000, 'Unread emails': 150}), \
+             patch('gman.deletion.setup.create_deletion_plan'):
 
             # Should complete without errors
             main()
 
     def test_main_missing_dependencies(self):
         """Test main workflow with missing dependencies."""
-        with patch('gmail_assistant.deletion.setup.check_dependencies', return_value=False):
+        with patch('gman.deletion.setup.check_dependencies', return_value=False):
             # Should exit early
             main()
 
     def test_main_missing_credentials(self):
         """Test main workflow with missing credentials."""
-        with patch('gmail_assistant.deletion.setup.check_dependencies', return_value=True), \
-             patch('gmail_assistant.deletion.setup.check_credentials', return_value=False):
+        with patch('gman.deletion.setup.check_dependencies', return_value=True), \
+             patch('gman.deletion.setup.check_credentials', return_value=False):
 
             # Should exit early
             main()
 
     def test_main_connection_failure(self):
         """Test main workflow with connection failure."""
-        with patch('gmail_assistant.deletion.setup.check_dependencies', return_value=True), \
-             patch('gmail_assistant.deletion.setup.check_credentials', return_value=True), \
-             patch('gmail_assistant.deletion.setup.test_gmail_connection', return_value=(False, {})):
+        with patch('gman.deletion.setup.check_dependencies', return_value=True), \
+             patch('gman.deletion.setup.check_credentials', return_value=True), \
+             patch('gman.deletion.setup.test_gmail_connection', return_value=(False, {})):
 
             # Should exit early
             main()
 
     def test_main_analysis_failure(self):
         """Test main workflow with analysis failure."""
-        with patch('gmail_assistant.deletion.setup.check_dependencies', return_value=True), \
-             patch('gmail_assistant.deletion.setup.check_credentials', return_value=True), \
-             patch('gmail_assistant.deletion.setup.test_gmail_connection', return_value=(True, {'total': 1000, 'unread': 150})), \
-             patch('gmail_assistant.deletion.setup.analyze_current_state', return_value={}):
+        with patch('gman.deletion.setup.check_dependencies', return_value=True), \
+             patch('gman.deletion.setup.check_credentials', return_value=True), \
+             patch('gman.deletion.setup.test_gmail_connection', return_value=(True, {'total': 1000, 'unread': 150})), \
+             patch('gman.deletion.setup.analyze_current_state', return_value={}):
 
             # Should still complete
             main()
@@ -288,9 +288,9 @@ class TestIntegration:
 
     def test_full_setup_validation(self):
         """Test complete setup validation flow."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter, \
-             patch('gmail_assistant.deletion.setup.check_dependencies') as mock_check_deps, \
-             patch('gmail_assistant.deletion.setup.check_credentials') as mock_check_creds:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter, \
+             patch('gman.deletion.setup.check_dependencies') as mock_check_deps, \
+             patch('gman.deletion.setup.check_credentials') as mock_check_creds:
 
             # Mock all checks pass
             mock_check_deps.return_value = True
@@ -351,7 +351,7 @@ class TestErrorHandling:
 
     def test_api_error_handling(self):
         """Test handling of Gmail API errors."""
-        with patch('gmail_assistant.deletion.deleter.GmailDeleter') as mock_deleter:
+        with patch('gman.deletion.deleter.GmailDeleter') as mock_deleter:
             from googleapiclient.errors import HttpError
 
             deleter_instance = MagicMock()

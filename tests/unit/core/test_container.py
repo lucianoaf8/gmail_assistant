@@ -10,7 +10,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.core.container import (
+from gman.core.container import (
     CircularDependencyError,
     ServiceContainer,
     ServiceDescriptor,
@@ -623,7 +623,7 @@ class TestCreateDefaultContainer:
 
     def test_default_container_has_cache_manager(self):
         """Default container should have CacheManager registered."""
-        from gmail_assistant.utils.cache_manager import CacheManager
+        from gman.utils.cache_manager import CacheManager
 
         container = create_default_container()
 
@@ -631,7 +631,7 @@ class TestCreateDefaultContainer:
 
     def test_default_container_has_rate_limiter(self):
         """Default container should have GmailRateLimiter registered."""
-        from gmail_assistant.utils.rate_limiter import GmailRateLimiter
+        from gman.utils.rate_limiter import GmailRateLimiter
 
         container = create_default_container()
 
@@ -639,7 +639,7 @@ class TestCreateDefaultContainer:
 
     def test_default_container_has_input_validator(self):
         """Default container should have InputValidator registered."""
-        from gmail_assistant.utils.input_validator import InputValidator
+        from gman.utils.input_validator import InputValidator
 
         container = create_default_container()
 
@@ -647,7 +647,7 @@ class TestCreateDefaultContainer:
 
     def test_default_container_has_error_handler(self):
         """Default container should have ErrorHandler registered."""
-        from gmail_assistant.utils.error_handler import ErrorHandler
+        from gman.utils.error_handler import ErrorHandler
 
         container = create_default_container()
 
@@ -655,7 +655,7 @@ class TestCreateDefaultContainer:
 
     def test_default_container_has_email_repository(self):
         """Default container should have EmailRepositoryProtocol registered."""
-        from gmail_assistant.core.protocols import EmailRepositoryProtocol
+        from gman.core.protocols import EmailRepositoryProtocol
 
         container = create_default_container()
 

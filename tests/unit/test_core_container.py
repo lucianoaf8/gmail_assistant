@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Protocol
 
-from gmail_assistant.core.container import (
+from gman.core.container import (
     ServiceContainer,
     ServiceLifetime,
     ServiceDescriptor,

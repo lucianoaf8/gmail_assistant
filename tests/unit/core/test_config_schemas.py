@@ -11,7 +11,7 @@ from unittest import mock
 import pytest
 from pydantic import ValidationError
 
-from gmail_assistant.core.config_schemas import (
+from gman.core.config_schemas import (
     AIKeywordsConfig,
     AnalysisConfig,
     AppConfig,
@@ -703,13 +703,13 @@ class TestValidateAllConfigs:
 
             # Create valid config files
             gmail_config = {"default_max_emails": 100, "default_format": "both"}
-            with open(config_dir / "gmail_assistant_config.json", 'w') as f:
+            with open(config_dir / "gman_config.json", 'w') as f:
                 json.dump(gmail_config, f)
 
             results = validate_all_configs(config_dir)
 
-            assert "gmail_assistant_config.json" in results
-            assert results["gmail_assistant_config.json"] is True
+            assert "gman_config.json" in results
+            assert results["gman_config.json"] is True
 
     def test_validate_all_configs_missing_files(self):
         """validate_all_configs should handle missing files."""
@@ -729,12 +729,12 @@ class TestValidateAllConfigs:
 
             # Create invalid config file
             invalid_config = {"default_format": "invalid_value"}
-            with open(config_dir / "gmail_assistant_config.json", 'w') as f:
+            with open(config_dir / "gman_config.json", 'w') as f:
                 json.dump(invalid_config, f)
 
             results = validate_all_configs(config_dir)
 
-            assert results["gmail_assistant_config.json"] is False
+            assert results["gman_config.json"] is False
 
     def test_validate_all_configs_mixed_results(self):
         """validate_all_configs should handle mixed valid/invalid/missing configs."""
@@ -743,7 +743,7 @@ class TestValidateAllConfigs:
 
             # Create one valid config
             valid_config = {"default_max_emails": 100}
-            with open(config_dir / "gmail_assistant_config.json", 'w') as f:
+            with open(config_dir / "gman_config.json", 'w') as f:
                 json.dump(valid_config, f)
 
             # Create one invalid config - use fields that exist in DeletionConfig but are invalid
@@ -755,7 +755,7 @@ class TestValidateAllConfigs:
 
             results = validate_all_configs(config_dir)
 
-            assert results["gmail_assistant_config.json"] is True
+            assert results["gman_config.json"] is True
             assert results["deletion_config.json"] is False
             assert results["config.json"] is None
 

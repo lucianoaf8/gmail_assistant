@@ -6,13 +6,13 @@ import pandas as pd
 import pytest
 from googleapiclient.errors import HttpError
 
-from gmail_assistant.deletion.deleter import GmailDeleter
+from gman.deletion.deleter import GmailDeleter
 
 
 @pytest.fixture
 def mock_credentials():
     """Mock credential manager."""
-    with patch('gmail_assistant.deletion.deleter.SecureCredentialManager') as mock:
+    with patch('gman.deletion.deleter.SecureCredentialManager') as mock:
         manager = MagicMock()
         manager.authenticate.return_value = True
         manager.get_service.return_value = MagicMock()
@@ -39,11 +39,11 @@ def mock_service():
 @pytest.fixture
 def deleter(mock_credentials, mock_service):
     """Create GmailDeleter instance with mocked dependencies."""
-    with patch('gmail_assistant.deletion.deleter.GmailRateLimiter') as mock_rate, \
-         patch('gmail_assistant.deletion.deleter.QuotaTracker') as mock_quota, \
-         patch('gmail_assistant.deletion.deleter.Console'), \
-         patch('gmail_assistant.deletion.deleter.Progress'), \
-         patch('gmail_assistant.deletion.deleter.Table'):
+    with patch('gman.deletion.deleter.GmailRateLimiter') as mock_rate, \
+         patch('gman.deletion.deleter.QuotaTracker') as mock_quota, \
+         patch('gman.deletion.deleter.Console'), \
+         patch('gman.deletion.deleter.Progress'), \
+         patch('gman.deletion.deleter.Table'):
 
         # Set up rate limiter mock
         mock_rate.return_value.wait_if_needed.return_value = None
@@ -59,9 +59,9 @@ class TestGmailDeleterInit:
 
     def test_deleter_init_success(self, mock_credentials):
         """Test successful initialization."""
-        with patch('gmail_assistant.deletion.deleter.GmailRateLimiter'), \
-             patch('gmail_assistant.deletion.deleter.QuotaTracker'), \
-             patch('gmail_assistant.deletion.deleter.Console'):
+        with patch('gman.deletion.deleter.GmailRateLimiter'), \
+             patch('gman.deletion.deleter.QuotaTracker'), \
+             patch('gman.deletion.deleter.Console'):
 
             deleter = GmailDeleter()
 
@@ -72,10 +72,10 @@ class TestGmailDeleterInit:
 
     def test_deleter_init_auth_failure(self):
         """Test initialization with authentication failure."""
-        with patch('gmail_assistant.deletion.deleter.SecureCredentialManager') as mock_cred, \
-             patch('gmail_assistant.deletion.deleter.GmailRateLimiter'), \
-             patch('gmail_assistant.deletion.deleter.QuotaTracker'), \
-             patch('gmail_assistant.deletion.deleter.Console'):
+        with patch('gman.deletion.deleter.SecureCredentialManager') as mock_cred, \
+             patch('gman.deletion.deleter.GmailRateLimiter'), \
+             patch('gman.deletion.deleter.QuotaTracker'), \
+             patch('gman.deletion.deleter.Console'):
 
             manager = MagicMock()
             manager.authenticate.return_value = False
@@ -86,10 +86,10 @@ class TestGmailDeleterInit:
 
     def test_deleter_init_custom_credentials(self):
         """Test initialization with custom credentials file."""
-        with patch('gmail_assistant.deletion.deleter.SecureCredentialManager') as mock_cred, \
-             patch('gmail_assistant.deletion.deleter.GmailRateLimiter'), \
-             patch('gmail_assistant.deletion.deleter.QuotaTracker'), \
-             patch('gmail_assistant.deletion.deleter.Console'):
+        with patch('gman.deletion.deleter.SecureCredentialManager') as mock_cred, \
+             patch('gman.deletion.deleter.GmailRateLimiter'), \
+             patch('gman.deletion.deleter.QuotaTracker'), \
+             patch('gman.deletion.deleter.Console'):
 
             manager = MagicMock()
             manager.authenticate.return_value = True

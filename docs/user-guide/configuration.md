@@ -1,6 +1,6 @@
-# Gmail Assistant Configuration Reference
+# Gman Configuration Reference
 
-Complete reference for all configuration files used by gmail-assistant v2.0.0.
+Complete reference for all configuration files used by gman v2.0.0.
 
 **Version**: 2.0.0
 **Status**: Production
@@ -16,7 +16,7 @@ Complete reference for all configuration files used by gmail-assistant v2.0.0.
 4. [Email Organization Config](#email-organization-config)
 5. [Analysis Config](#analysis-config)
 6. [Deletion Patterns Config](#deletion-patterns-config)
-7. [Gmail Assistant Presets](#gmail-assistant-presets)
+7. [Gman Presets](#gman-presets)
 8. [Configuration Loading](#configuration-loading)
 9. [Validation Rules](#validation-rules)
 10. [Environment Variables](#environment-variables)
@@ -28,22 +28,22 @@ Complete reference for all configuration files used by gmail-assistant v2.0.0.
 ### File Locations
 
 ```
-User Config:          ~/.gmail-assistant/config.json
-Project Config:       ./gmail-assistant.json (CWD)
+User Config:          ~/.gman/config.json
+Project Config:       ./gman.json (CWD)
 AI Patterns:          config/config.json
 Organization:        config/organizer_config.json
 Analysis:            config/analysis.json
 Deletion Patterns:    config/deletion.json
-Email Presets:       config/gmail_assistant_config.json
+Email Presets:       config/gman_config.json
 ```
 
 ### Minimal Config
 
 ```json
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "token_path": "~/.gmail-assistant/token.json",
-  "output_dir": "~/.gmail-assistant/backups"
+  "credentials_path": "~/.gman/credentials.json",
+  "token_path": "~/.gman/token.json",
+  "output_dir": "~/.gman/backups"
 }
 ```
 
@@ -51,8 +51,8 @@ Email Presets:       config/gmail_assistant_config.json
 
 ## AppConfig (Main Configuration)
 
-**File**: `~/.gmail-assistant/config.json` or via CLI `--config`
-**Module**: `gmail_assistant.core.config:AppConfig`
+**File**: `~/.gman/config.json` or via CLI `--config`
+**Module**: `gman.core.config:AppConfig`
 **Format**: JSON
 **Required**: No (uses secure defaults if missing)
 
@@ -75,7 +75,7 @@ Email Presets:       config/gmail_assistant_config.json
 
 **Type**: String (file path)
 **Required**: No
-**Default**: `~/.gmail-assistant/credentials.json`
+**Default**: `~/.gman/credentials.json`
 **Security**: Must be outside git repository (enforced unless `--allow-repo-credentials`)
 
 OAuth credentials file from Google Cloud Console. Contains client ID and secret.
@@ -88,7 +88,7 @@ OAuth credentials file from Google Cloud Console. Contains client ID and secret.
 **Example**:
 ```json
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json"
+  "credentials_path": "~/.gman/credentials.json"
 }
 ```
 
@@ -96,7 +96,7 @@ OAuth credentials file from Google Cloud Console. Contains client ID and secret.
 
 **Type**: String (file path)
 **Required**: No
-**Default**: `~/.gmail-assistant/token.json`
+**Default**: `~/.gman/token.json`
 **Security**: Must be outside git repository (enforced unless `--allow-repo-credentials`)
 **Deprecated**: Now uses OS keyring for secure storage
 
@@ -111,7 +111,7 @@ OAuth access token generated after first authentication. Deprecated in favor of 
 **Example**:
 ```json
 {
-  "token_path": "~/.gmail-assistant/token.json"
+  "token_path": "~/.gman/token.json"
 }
 ```
 
@@ -119,7 +119,7 @@ OAuth access token generated after first authentication. Deprecated in favor of 
 
 **Type**: String (directory path)
 **Required**: No
-**Default**: `~/.gmail-assistant/backups`
+**Default**: `~/.gman/backups`
 
 Directory where downloaded emails are saved. Created if missing.
 
@@ -219,9 +219,9 @@ if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
 
 ```json
 {
-  "credentials_path": "~/.gmail-assistant/credentials.json",
-  "token_path": "~/.gmail-assistant/token.json",
-  "output_dir": "~/.gmail-assistant/backups",
+  "credentials_path": "~/.gman/credentials.json",
+  "token_path": "~/.gman/token.json",
+  "output_dir": "~/.gman/backups",
   "max_emails": 5000,
   "rate_limit_per_second": 8.0,
   "log_level": "INFO"
@@ -252,7 +252,7 @@ logger.warning(
 ## AI Newsletter Cleaner Config
 
 **File**: `config/config.json`
-**Module**: `gmail_assistant.core.ai.newsletter_cleaner`
+**Module**: `gman.core.ai.newsletter_cleaner`
 **Format**: JSON
 **Purpose**: AI newsletter detection and classification
 
@@ -686,9 +686,9 @@ Uses same structure as `organizer_config.json` for deletion patterns.
 
 ---
 
-## Gmail Assistant Presets
+## Gman Presets
 
-**File**: `config/gmail_assistant_config.json`
+**File**: `config/gman_config.json`
 **Format**: JSON
 **Purpose**: Pre-defined queries and settings for common tasks
 
@@ -717,7 +717,7 @@ Uses same structure as `organizer_config.json` for deletion patterns.
 **Usage**:
 ```bash
 # Reference named query
-gmail-assistant fetch --query "is:unread"
+gman fetch --query "is:unread"
 ```
 
 #### default_settings
@@ -779,10 +779,10 @@ def load(
 ### Resolution Order
 
 1. CLI argument `--config` → validate exists → load
-2. Environment variable `gmail_assistant_CONFIG` → validate exists → load
-3. Project config `./gmail-assistant.json` → if exists → load
-4. User config `~/.gmail-assistant/config.json` → if exists → load
-5. Use secure defaults → all in `~/.gmail-assistant/`
+2. Environment variable `gman_CONFIG` → validate exists → load
+3. Project config `./gman.json` → if exists → load
+4. User config `~/.gman/config.json` → if exists → load
+5. Use secure defaults → all in `~/.gman/`
 
 ### Path Resolution
 
@@ -800,14 +800,14 @@ def resolve_path(key: str, default: Path) -> Path:
 
 ### Example
 
-If config at `/etc/gmail-assistant/config.json` contains:
+If config at `/etc/gman/config.json` contains:
 ```json
 {
   "output_dir": "./backups"
 }
 ```
 
-Output directory resolves to: `/etc/gmail-assistant/backups`
+Output directory resolves to: `/etc/gman/backups`
 
 ---
 
@@ -865,31 +865,31 @@ if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
 
 ### Configuration Override
 
-**Variable**: `gmail_assistant_CONFIG`
+**Variable**: `gman_CONFIG`
 **Purpose**: Override config file location
 **Priority**: 2nd (after CLI argument, before project/user configs)
 
 ```bash
-export gmail_assistant_CONFIG=/etc/gmail-assistant/prod.json
-gmail-assistant fetch
+export gman_CONFIG=/etc/gman/prod.json
+gman fetch
 ```
 
 ### Path Overrides
 
-**Variables** (in `gmail_assistant.core.constants`):
+**Variables** (in `gman.core.constants`):
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `GMAIL_ASSISTANT_CONFIG_DIR` | Config directory | `{PROJECT_ROOT}/config` |
-| `GMAIL_ASSISTANT_DATA_DIR` | Data directory | `{PROJECT_ROOT}/data` |
-| `GMAIL_ASSISTANT_BACKUP_DIR` | Backup directory | `{PROJECT_ROOT}/backups` |
-| `GMAIL_ASSISTANT_CREDENTIALS_DIR` | Credentials directory | `{CONFIG_DIR}/security` |
-| `GMAIL_ASSISTANT_CACHE_DIR` | Cache directory | `~/.gmail_assistant_cache` |
+| `GMAN_CONFIG_DIR` | Config directory | `{PROJECT_ROOT}/config` |
+| `GMAN_DATA_DIR` | Data directory | `{PROJECT_ROOT}/data` |
+| `GMAN_BACKUP_DIR` | Backup directory | `{PROJECT_ROOT}/backups` |
+| `GMAN_CREDENTIALS_DIR` | Credentials directory | `{CONFIG_DIR}/security` |
+| `GMAN_CACHE_DIR` | Cache directory | `~/.gman_cache` |
 
 **Usage**:
 ```bash
-export GMAIL_ASSISTANT_BACKUP_DIR=/mnt/external_drive/backups
-gmail-assistant fetch
+export GMAN_BACKUP_DIR=/mnt/external_drive/backups
+gman fetch
 ```
 
 ---

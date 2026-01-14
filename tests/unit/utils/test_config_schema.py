@@ -5,7 +5,7 @@ Tests ConfigSchema class for configuration validation.
 
 import pytest
 
-from gmail_assistant.utils.config_schema import (
+from gman.utils.config_schema import (
     ConfigSchema,
     ConfigValidationError,
     ConfigValidator,

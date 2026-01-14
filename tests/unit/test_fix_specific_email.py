@@ -3,7 +3,7 @@
 Test converting the specific problematic email to verify the fix
 """
 
-from gmail_assistant.parsers.robust_eml_converter import RobustEMLConverter
+from gman.parsers.robust_eml_converter import RobustEMLConverter
 from pathlib import Path
 import tempfile
 

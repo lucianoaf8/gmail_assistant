@@ -1,11 +1,11 @@
-"""Unit tests for gmail_assistant.utils.input_validator module."""
+"""Unit tests for gman.utils.input_validator module."""
 from __future__ import annotations
 
 from pathlib import Path
 
 import pytest
 
-from gmail_assistant.utils.input_validator import (
+from gman.utils.input_validator import (
     ValidationError,
     InputValidator,
 )

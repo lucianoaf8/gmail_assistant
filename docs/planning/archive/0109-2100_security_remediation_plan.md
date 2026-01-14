@@ -35,7 +35,7 @@ This document provides a comprehensive implementation plan to remediate 12 secur
 
 ### H-1: Dual Credential Storage
 
-**Location**: `src/gmail_assistant/core/fetch/gmail_api_client.py:37-64`
+**Location**: `src/gman/core/fetch/gmail_api_client.py:37-64`
 **Finding**: OAuth tokens stored in plaintext JSON instead of using SecureCredentialManager
 **Risk**: Credential theft from filesystem, exposure in backups/logs
 
@@ -62,7 +62,7 @@ def authenticate(self):
 
 **Step 1.1**: Update imports and class initialization
 ```python
-# File: src/gmail_assistant/core/fetch/gmail_api_client.py
+# File: src/gman/core/fetch/gmail_api_client.py
 
 # ADD these imports at top
 from ..auth.credential_manager import SecureCredentialManager
@@ -159,7 +159,7 @@ class TestCredentialSecurity:
 
 ### H-2: User-Controlled Input in Subprocess
 
-**Location**: `src/gmail_assistant/core/fetch/incremental.py:230-238`
+**Location**: `src/gman/core/fetch/incremental.py:230-238`
 **Finding**: Unsanitized input passed to subprocess command
 **Risk**: Command injection attack if `eml_dir` contains malicious characters
 
@@ -357,7 +357,7 @@ Before proceeding to Phase 2, verify:
 | Unit tests pass | `pytest tests/test_h*.py -v` | All pass |
 | No plaintext tokens | `grep -r "token.json" src/` | No runtime matches |
 | Subprocess hardened | `grep -r "shell=True" src/` | Zero matches |
-| Integration test | `python -m gmail_assistant --auth-only` | Success with keyring |
+| Integration test | `python -m gman --auth-only` | Success with keyring |
 
 **Rollback Trigger**: Any validation failure requires rollback before Phase 2.
 
@@ -371,7 +371,7 @@ Before proceeding to Phase 2, verify:
 
 ### M-1: Path Traversal Validation Gap
 
-**Location**: `src/gmail_assistant/utils/input_validator.py:122-128`
+**Location**: `src/gman/utils/input_validator.py:122-128`
 **Finding**: Incomplete path validation allows certain traversal patterns
 
 #### Current State Analysis
@@ -531,7 +531,7 @@ class TestPathTraversalValidation:
 
 ### M-2: ReDoS Vulnerability
 
-**Location**: `src/gmail_assistant/core/ai/newsletter_cleaner.py:138-149`
+**Location**: `src/gman/core/ai/newsletter_cleaner.py:138-149`
 **Finding**: Regex patterns without timeout can cause denial of service
 
 #### Current State Analysis
@@ -652,7 +652,7 @@ def _compile_patterns(self):
 
 import time
 import pytest
-from gmail_assistant.core.ai.newsletter_cleaner import AINewsletterDetector, EmailData
+from gman.core.ai.newsletter_cleaner import AINewsletterDetector, EmailData
 
 class TestReDoSProtection:
     """Test cases for M-2: ReDoS vulnerability prevention"""
@@ -702,7 +702,7 @@ class TestReDoSProtection:
 
 ### M-3: Missing API Response Validation
 
-**Location**: `src/gmail_assistant/core/fetch/gmail_assistant.py`
+**Location**: `src/gman/core/fetch/gman.py`
 **Finding**: API responses not validated for expected structure
 
 #### Implementation Steps
@@ -790,7 +790,7 @@ def get_message_details(self, message_id: str) -> Optional[Dict]:
 
 **Step 1**: Create PII redaction utility
 ```python
-# src/gmail_assistant/utils/pii_redactor.py
+# src/gman/utils/pii_redactor.py
 
 import re
 from typing import Optional
@@ -850,7 +850,7 @@ class PIIRedactor:
 
 **Step 2**: Create secure logging wrapper
 ```python
-# src/gmail_assistant/utils/secure_logger.py
+# src/gman/utils/secure_logger.py
 
 import logging
 from .pii_redactor import PIIRedactor
@@ -895,14 +895,14 @@ logger.info(f"Processing email from {email.sender}: {email.subject}")
 
 ### M-5: Unsafe JSON Config Loading
 
-**Location**: `src/gmail_assistant/parsers/advanced_email_parser.py:88-93`
+**Location**: `src/gman/parsers/advanced_email_parser.py:88-93`
 **Finding**: JSON config loaded without schema validation
 
 #### Implementation Steps
 
 **Step 1**: Define config schema
 ```python
-# src/gmail_assistant/utils/config_schema.py
+# src/gman/utils/config_schema.py
 
 from typing import Dict, Any, List
 import json
@@ -1002,7 +1002,7 @@ class ConfigSchema:
 ```python
 # advanced_email_parser.py - Updated _load_config method
 
-from gmail_assistant.utils.config_schema import ConfigSchema
+from gman.utils.config_schema import ConfigSchema
 
 def _load_config(self, config_file: Optional[str]) -> Dict:
     """Load and validate parser configuration"""
@@ -1050,7 +1050,7 @@ def _load_config(self, config_file: Optional[str]) -> Dict:
 }
 
 # Later:
-python ../src/gmail_assistant.py --query "$query" --max $max ...
+python ../src/gman.py --query "$query" --max $max ...
 ```
 
 **Risk**: User could enter `"; Remove-Item -Recurse C:\ -Force"` as query.
@@ -1119,11 +1119,11 @@ function Validate-Integer {
 **Step 3**: Use array-based command execution
 ```powershell
 # Instead of string interpolation:
-# python ../src/gmail_assistant.py --query "$query" --max $max ...
+# python ../src/gman.py --query "$query" --max $max ...
 
 # Use explicit array (safer):
 $pythonArgs = @(
-    "../src/gmail_assistant.py",
+    "../src/gman.py",
     "--query", $query,
     "--max", $max,
     "--output", $output,
@@ -1145,7 +1145,7 @@ $pythonArgs = @(
 
 **Step 1**: Create secure file write utility
 ```python
-# src/gmail_assistant/utils/secure_file.py
+# src/gman/utils/secure_file.py
 
 import os
 import stat
@@ -1232,7 +1232,7 @@ Before proceeding to Phase 3, verify:
 | M-2 no regex hangs | `pytest tests/test_m2_*.py -v --timeout=5` | All pass <5s |
 | M-3 API validation | `pytest tests/test_m3_*.py -v` | All pass |
 | M-4 no PII in logs | `grep -E "[a-z]+@[a-z]+\.[a-z]+" logs/*.log` | Zero matches |
-| M-5 config validation | `python -c "from gmail_assistant.utils.config_schema import *"` | No errors |
+| M-5 config validation | `python -c "from gman.utils.config_schema import *"` | No errors |
 | M-6 PS sanitization | Manual test with special chars | Sanitized |
 | M-7 file permissions | `stat -c %a output/*.json` | 600 |
 
@@ -1246,7 +1246,7 @@ Before proceeding to Phase 3, verify:
 
 ### L-1: Hardcoded Default Paths
 
-**Location**: `src/gmail_assistant/core/constants.py`, various cleaner files
+**Location**: `src/gman/core/constants.py`, various cleaner files
 **Finding**: Hardcoded paths reduce flexibility and may expose installation structure
 
 #### Implementation Steps
@@ -1267,17 +1267,17 @@ def _get_env_path(env_var: str, default: Path) -> Path:
 
 # Configuration paths with env override
 CONFIG_DIR: Path = _get_env_path(
-    'GMAIL_ASSISTANT_CONFIG_DIR',
+    'GMAN_CONFIG_DIR',
     PROJECT_ROOT / 'config'
 )
 
 DATA_DIR: Path = _get_env_path(
-    'GMAIL_ASSISTANT_DATA_DIR',
+    'GMAN_DATA_DIR',
     PROJECT_ROOT / 'data'
 )
 
 CREDENTIALS_DIR: Path = _get_env_path(
-    'GMAIL_ASSISTANT_CREDENTIALS_DIR',
+    'GMAN_CREDENTIALS_DIR',
     CONFIG_DIR / 'security'
 )
 
@@ -1292,9 +1292,9 @@ DEFAULT_CREDENTIALS_PATH: Path = CREDENTIALS_DIR / 'credentials.json'
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| GMAIL_ASSISTANT_CONFIG_DIR | Configuration directory | `./config` |
-| GMAIL_ASSISTANT_DATA_DIR | Data storage directory | `./data` |
-| GMAIL_ASSISTANT_CREDENTIALS_DIR | OAuth credentials directory | `./config/security` |
+| GMAN_CONFIG_DIR | Configuration directory | `./config` |
+| GMAN_DATA_DIR | Data storage directory | `./data` |
+| GMAN_CREDENTIALS_DIR | OAuth credentials directory | `./config/security` |
 ```
 
 ---
@@ -1307,7 +1307,7 @@ DEFAULT_CREDENTIALS_PATH: Path = CREDENTIALS_DIR / 'credentials.json'
 #### Implementation Steps
 
 ```python
-# src/gmail_assistant/core/auth/rate_limiter.py
+# src/gman/core/auth/rate_limiter.py
 
 import time
 from dataclasses import dataclass, field
@@ -1457,7 +1457,7 @@ pip install -e ".[dev]"
 
 | Criteria | Command | Expected |
 |----------|---------|----------|
-| Env vars work | `GMAIL_ASSISTANT_CONFIG_DIR=/tmp python -c "..."` | Uses /tmp |
+| Env vars work | `GMAN_CONFIG_DIR=/tmp python -c "..."` | Uses /tmp |
 | Rate limiting | `pytest tests/test_l2_rate_limit.py -v` | All pass |
 | Lock file valid | `pip-compile --dry-run` | No changes |
 
@@ -1527,8 +1527,8 @@ If Phase 1 fails validation:
 
 ```bash
 # Revert all Phase 1 changes
-git checkout HEAD~1 -- src/gmail_assistant/core/fetch/gmail_api_client.py
-git checkout HEAD~1 -- src/gmail_assistant/core/fetch/incremental.py
+git checkout HEAD~1 -- src/gman/core/fetch/gmail_api_client.py
+git checkout HEAD~1 -- src/gman/core/fetch/incremental.py
 
 # Restore any deleted token files from backup
 # (Recommend keeping token.json backup before migration)
@@ -1540,7 +1540,7 @@ If Phase 2 fails validation:
 
 ```bash
 # Revert specific files (example for M-2)
-git checkout HEAD~1 -- src/gmail_assistant/core/ai/newsletter_cleaner.py
+git checkout HEAD~1 -- src/gman/core/ai/newsletter_cleaner.py
 
 # Or revert entire phase
 git revert --no-commit HEAD~7..HEAD  # Assuming 7 commits for M-1 through M-7

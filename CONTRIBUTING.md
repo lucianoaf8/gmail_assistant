@@ -1,6 +1,6 @@
-# Contributing to Gmail Assistant
+# Contributing to Gman
 
-Thank you for your interest in contributing to Gmail Assistant. This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to Gman. This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -29,13 +29,13 @@ Thank you for your interest in contributing to Gmail Assistant. This document pr
 
 2. **Clone your fork locally**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/gmail-assistant.git
-   cd gmail-assistant
+   git clone https://github.com/YOUR_USERNAME/gman.git
+   cd gman
    ```
 
 3. **Add the upstream remote**
    ```bash
-   git remote add upstream https://github.com/ORIGINAL_OWNER/gmail-assistant.git
+   git remote add upstream https://github.com/ORIGINAL_OWNER/gman.git
    ```
 
 4. **Create a feature branch**
@@ -61,13 +61,13 @@ pip install -e ".[all,dev]"
 
 ```bash
 # Check CLI works
-gmail-assistant --version
+gman --version
 
 # Run linting
 ruff check src/ tests/
 
 # Run type checking
-mypy src/gmail_assistant
+mypy src/gman
 
 # Run tests
 pytest tests/ -v
@@ -141,7 +141,7 @@ ruff check src/ tests/
 ruff check src/ tests/ --fix
 
 # Check specific file
-ruff check src/gmail_assistant/core/config.py
+ruff check src/gman/core/config.py
 ```
 
 #### Ruff Configuration Summary
@@ -168,10 +168,10 @@ This project uses strict type checking with [MyPy](https://mypy.readthedocs.io/)
 
 ```bash
 # Run type checking
-mypy src/gmail_assistant
+mypy src/gman
 
 # Check specific module
-mypy src/gmail_assistant/core/config.py
+mypy src/gman/core/config.py
 ```
 
 #### MyPy Configuration Summary
@@ -220,7 +220,7 @@ Imports are automatically sorted by Ruff with the following order:
 
 1. Standard library imports
 2. Third-party imports
-3. Local application imports (`gmail_assistant`)
+3. Local application imports (`gman`)
 
 ```python
 # Standard library
@@ -233,8 +233,8 @@ import click
 from google.oauth2.credentials import Credentials
 
 # Local
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.config import AppConfig
+from gman.core.exceptions import ConfigError
 ```
 
 ---
@@ -251,7 +251,7 @@ pytest tests/
 pytest tests/ -v
 
 # Run with coverage
-pytest tests/ --cov=src/gmail_assistant --cov-report=html
+pytest tests/ --cov=src/gman --cov-report=html
 
 # Run specific test file
 pytest tests/unit/test_config.py
@@ -314,10 +314,10 @@ pytest tests/ -m "not api"
 
 ```bash
 # Run with coverage and fail if below threshold
-pytest tests/ --cov=src/gmail_assistant --cov-fail-under=70
+pytest tests/ --cov=src/gman --cov-fail-under=70
 
 # Generate HTML coverage report
-pytest tests/ --cov=src/gmail_assistant --cov-report=html
+pytest tests/ --cov=src/gman --cov-report=html
 
 # View report
 open tests/htmlcov/index.html  # macOS
@@ -358,8 +358,8 @@ from __future__ import annotations
 import pytest
 from pathlib import Path
 
-from gmail_assistant.core.config import AppConfig
-from gmail_assistant.core.exceptions import ConfigError
+from gman.core.config import AppConfig
+from gman.core.exceptions import ConfigError
 
 
 @pytest.mark.unit
@@ -463,10 +463,10 @@ git rebase upstream/main
 ruff check src/ tests/
 
 # 3. Run type checking
-mypy src/gmail_assistant
+mypy src/gman
 
 # 4. Run tests with coverage
-pytest tests/ --cov=src/gmail_assistant --cov-fail-under=70
+pytest tests/ --cov=src/gman --cov-fail-under=70
 
 # 5. Build validation (optional)
 pip install build
@@ -622,7 +622,7 @@ Rate limiter crashes when handling concurrent requests
 ### Environment
 - Python: 3.11.5
 - OS: Windows 11
-- gmail-assistant: 2.0.0
+- gman: 2.0.0
 
 ### Steps to Reproduce
 1. Configure async fetching with concurrency=10
@@ -668,8 +668,8 @@ When requesting features, include:
 ### Directory Overview
 
 ```
-gmail_assistant/
-├── src/gmail_assistant/       # Main package (src-layout)
+gman/
+├── src/gman/       # Main package (src-layout)
 │   ├── cli/                   # Click-based CLI
 │   │   ├── main.py            # Entry point
 │   │   └── commands/          # Subcommands
@@ -711,7 +711,7 @@ gmail_assistant/
 
 ### Adding New Modules
 
-1. Create module in appropriate `src/gmail_assistant/` subdirectory
+1. Create module in appropriate `src/gman/` subdirectory
 2. Add `__init__.py` exports if needed
 3. Update `core/__init__.py` for public API exposure
 4. Add corresponding tests in `tests/`
@@ -727,4 +727,4 @@ If you have questions about contributing:
 2. Search existing issues and discussions
 3. Open a new issue with your question
 
-Thank you for contributing to Gmail Assistant!
+Thank you for contributing to Gman!

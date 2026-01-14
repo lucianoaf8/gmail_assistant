@@ -1,4 +1,4 @@
-"""Unit tests for gmail_assistant.utils.circuit_breaker module."""
+"""Unit tests for gman.utils.circuit_breaker module."""
 from __future__ import annotations
 
 import time
@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 
-from gmail_assistant.utils.circuit_breaker import (
+from gman.utils.circuit_breaker import (
     CircuitState,
     CircuitBreakerError,
     CircuitBreaker,

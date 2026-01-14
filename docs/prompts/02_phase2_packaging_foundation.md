@@ -23,10 +23,10 @@ Create `pyproject.toml` in the repo root with the complete configuration from Im
 
 Key elements:
 - Build system: Hatchling
-- Package name: `gmail-assistant`
+- Package name: `gman`
 - Version: `2.0.0`
 - Python: `>=3.10`
-- Console script: `gmail-assistant = "gmail_assistant.cli.main:main"`
+- Console script: `gman = "gman.cli.main:main"`
 - Dev dependencies for testing
 
 ### Task 2: Create Migration Script
@@ -34,14 +34,14 @@ Key elements:
 Create `scripts/migration/move_to_package_layout.ps1` with the content from Implementation Plan Section 8.2.
 
 The script will:
-- Create `src/gmail_assistant/` directory
-- Move: `src/cli` → `src/gmail_assistant/cli`
-- Move: `src/core` → `src/gmail_assistant/core`
-- Move: `src/analysis` → `src/gmail_assistant/analysis`
-- Move: `src/deletion` → `src/gmail_assistant/deletion`
-- Move: `src/handlers` → `src/gmail_assistant/cli/commands`
-- Move: `src/parsers` → `src/gmail_assistant/parsers`
-- Move: `src/utils` → `src/gmail_assistant/utils`
+- Create `src/gman/` directory
+- Move: `src/cli` → `src/gman/cli`
+- Move: `src/core` → `src/gman/core`
+- Move: `src/analysis` → `src/gman/analysis`
+- Move: `src/deletion` → `src/gman/deletion`
+- Move: `src/handlers` → `src/gman/cli/commands`
+- Move: `src/parsers` → `src/gman/parsers`
+- Move: `src/utils` → `src/gman/utils`
 - Create `__init__.py`, `__main__.py`, `py.typed`
 - Skip `src/tools` and `src/plugins` (deferred)
 
@@ -59,7 +59,7 @@ Review the output. Then execute:
 
 ### Task 4: Fix All Imports (AGENT RECOMMENDED)
 
-After migration, all imports need updating from old paths to new `gmail_assistant.*` paths.
+After migration, all imports need updating from old paths to new `gman.*` paths.
 
 **Use the code-refactoring-specialist agent:**
 
@@ -67,15 +67,15 @@ After migration, all imports need updating from old paths to new `gmail_assistan
 I need to update all Python imports in this codebase after a package restructuring.
 
 OLD IMPORT PATTERNS (find and replace):
-- `from core.` → `from gmail_assistant.core.`
-- `from cli.` → `from gmail_assistant.cli.`
-- `from analysis.` → `from gmail_assistant.analysis.`
-- `from deletion.` → `from gmail_assistant.deletion.`
-- `from handlers.` → `from gmail_assistant.cli.commands.`
-- `from parsers.` → `from gmail_assistant.parsers.`
-- `from utils.` → `from gmail_assistant.utils.`
-- `import core` → `import gmail_assistant.core`
-- `import cli` → `import gmail_assistant.cli`
+- `from core.` → `from gman.core.`
+- `from cli.` → `from gman.cli.`
+- `from analysis.` → `from gman.analysis.`
+- `from deletion.` → `from gman.deletion.`
+- `from handlers.` → `from gman.cli.commands.`
+- `from parsers.` → `from gman.parsers.`
+- `from utils.` → `from gman.utils.`
+- `import core` → `import gman.core`
+- `import cli` → `import gman.cli`
 - etc.
 
 ALSO REMOVE all occurrences of:
@@ -83,7 +83,7 @@ ALSO REMOVE all occurrences of:
 - `sys.path.append(...)`
 
 Search in:
-- src/gmail_assistant/**/*.py
+- src/gman/**/*.py
 - tests/**/*.py
 
 Do NOT modify:
@@ -104,14 +104,14 @@ Create `scripts/validation/check_import_resolution.py` with the content from Imp
 Verify these files exist (create empty ones if missing):
 
 ```
-src/gmail_assistant/__init__.py          # With __version__ = "2.0.0"
-src/gmail_assistant/cli/__init__.py
-src/gmail_assistant/cli/commands/__init__.py
-src/gmail_assistant/core/__init__.py
-src/gmail_assistant/analysis/__init__.py
-src/gmail_assistant/deletion/__init__.py
-src/gmail_assistant/parsers/__init__.py
-src/gmail_assistant/utils/__init__.py
+src/gman/__init__.py          # With __version__ = "2.0.0"
+src/gman/cli/__init__.py
+src/gman/cli/commands/__init__.py
+src/gman/core/__init__.py
+src/gman/analysis/__init__.py
+src/gman/deletion/__init__.py
+src/gman/parsers/__init__.py
+src/gman/utils/__init__.py
 ```
 
 ### Task 8: Install Package in Editable Mode
@@ -127,17 +127,17 @@ pip install -e .
 python scripts/validation/check_import_policy.py
 
 # Check no sys.path manipulation
-grep -r "sys.path.insert\|sys.path.append" src/gmail_assistant/ --include="*.py"
+grep -r "sys.path.insert\|sys.path.append" src/gman/ --include="*.py"
 
 # Should return nothing. If it finds matches, remove them.
 
 # Test imports work
-python -c "import gmail_assistant; print(gmail_assistant.__version__)"
-python -c "from gmail_assistant.cli.main import main; print('CLI OK')"
+python -c "import gman; print(gman.__version__)"
+python -c "from gman.cli.main import main; print('CLI OK')"
 
 # Test CLI
-gmail-assistant --version
-python -m gmail_assistant --version
+gman --version
+python -m gman --version
 ```
 
 ---
@@ -145,9 +145,9 @@ python -m gmail_assistant --version
 ## Definition of Done
 
 - [ ] `pip install -e .` succeeds in clean venv
-- [ ] `python -m gmail_assistant --version` works
-- [ ] `gmail-assistant --version` works
-- [ ] `python -m compileall src/gmail_assistant -q` succeeds
+- [ ] `python -m gman --version` works
+- [ ] `gman --version` works
+- [ ] `python -m compileall src/gman -q` succeeds
 - [ ] `python scripts/validation/check_import_policy.py` passes
 - [ ] No `sys.path.insert` or `sys.path.append` in codebase
 
@@ -161,15 +161,15 @@ After completing all tasks:
 git add -A
 git commit -m "phase-2: packaging foundation and src-layout migration
 
-Phase 2 of Gmail Assistant restructuring.
+Phase 2 of Gman restructuring.
 - Created pyproject.toml with Hatchling build
-- Migrated to src/gmail_assistant/ package layout
-- Updated all imports to gmail_assistant.* prefix
+- Migrated to src/gman/ package layout
+- Updated all imports to gman.* prefix
 - Removed all sys.path manipulation
 - Added import policy and resolution checkers
 - Package now installable via pip
 
-BREAKING CHANGE: All import paths changed from 'from core...' to 'from gmail_assistant.core...'
+BREAKING CHANGE: All import paths changed from 'from core...' to 'from gman.core...'
 
 See: Implementation_Plan_Final_Release_Edition.md Section 6.3
 
@@ -184,6 +184,6 @@ git tag migration/phase-2-complete
 
 ```powershell
 git revert $(git rev-parse migration/phase-2-complete) --no-edit
-git clean -fd src/gmail_assistant
-pip uninstall gmail-assistant -y
+git clean -fd src/gman
+pip uninstall gman -y
 ```

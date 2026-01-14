@@ -13,19 +13,19 @@ Successfully created comprehensive test suites for three analysis modules, achie
 ### Test Files Created
 
 1. **`tests/unit/analysis/test_daily_email_analyzer.py`** (817 lines)
-   - Target: `src/gmail_assistant/analysis/daily_email_analyzer.py` (1,317 lines, 49 functions)
+   - Target: `src/gman/analysis/daily_email_analyzer.py` (1,317 lines, 49 functions)
    - Test Classes: 8
    - Test Methods: 44
    - Coverage Target: 0% → 80%
 
 2. **`tests/unit/analysis/test_email_analyzer.py`** (578 lines)
-   - Target: `src/gmail_assistant/analysis/email_analyzer.py` (853 lines, 32 functions)
+   - Target: `src/gman/analysis/email_analyzer.py` (853 lines, 32 functions)
    - Test Classes: 3
    - Test Methods: 38
    - Coverage Target: 0% → 80%
 
 3. **`tests/unit/analysis/test_email_data_converter.py`** (706 lines)
-   - Target: `src/gmail_assistant/analysis/email_data_converter.py` (364 lines, 15 functions)
+   - Target: `src/gman/analysis/email_data_converter.py` (364 lines, 15 functions)
    - Test Classes: 8
    - Test Methods: 31
    - Coverage Target: 0% → 85%

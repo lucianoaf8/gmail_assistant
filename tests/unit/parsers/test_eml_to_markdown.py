@@ -13,7 +13,7 @@ try:
     # Try to import - module may exit if dependencies missing
     import sys
     import importlib.util
-    spec = importlib.util.find_spec('gmail_assistant.parsers.gmail_eml_to_markdown_cleaner')
+    spec = importlib.util.find_spec('gman.parsers.gmail_eml_to_markdown_cleaner')
     if spec is None:
         CLEANER_AVAILABLE = False
     else:
@@ -26,7 +26,7 @@ try:
             from markdownify import markdownify
 
             # Dependencies available, safe to import module
-            from gmail_assistant.parsers.gmail_eml_to_markdown_cleaner import (
+            from gman.parsers.gmail_eml_to_markdown_cleaner import (
                 apply_cid_rewrites,
                 build_front_matter,
                 cid_image_map,
